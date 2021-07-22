@@ -1,6 +1,7 @@
 mod app;
-mod components;
 mod error;
+mod pages;
+mod renders;
 mod routes;
 
 use spair::prelude::*;

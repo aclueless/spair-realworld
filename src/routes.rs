@@ -1,6 +1,5 @@
-/// App routes
-#[derive(Debug, Clone)]
-pub enum AppRoute {
+#[derive(Debug, PartialEq)]
+pub enum Route {
     Home,
     Login,
     Register,
@@ -11,7 +10,7 @@ pub enum AppRoute {
     ProfileFavorites(String),
 }
 
-impl spair::Routes<crate::app::App> for AppRoute {
+impl spair::Routes<crate::app::App> for Route {
     fn url(&self) -> String {
         match self {
             Self::Home => "/#/".to_string(),

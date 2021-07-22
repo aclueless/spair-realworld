@@ -1,42 +1,26 @@
 use spair::prelude::*;
 
 pub struct App {
-    route: Option<crate::routes::AppRoute>,
-    user: Option<types::UserInfo>,
+    pub route: crate::routes::Route,
+    pub user: Option<types::UserInfo>,
 }
 
 impl App {
     fn new() -> Self {
         Self {
-            route: None,
+            route: crate::routes::Route::Home,
             user: None,
         }
-    }
-
-    pub fn is_at_home(&self) -> bool {
-        false
-    }
-
-    pub fn is_at_new_post(&self) -> bool {
-        false
-    }
-
-    pub fn is_at_settings(&self) -> bool {
-        false
-    }
-
-    pub fn is_at_sign_up(&self) -> bool {
-        false
     }
 }
 
 impl spair::Component for App {
-    type Routes = crate::routes::AppRoute;
+    type Routes = crate::routes::Route;
 
     fn render(&self, element: spair::Element<Self>) {
         element
-            .render(crate::components::header::Header)
-            .render(crate::components::footer::Footer);
+            .render(crate::renders::header::Header)
+            .render(crate::renders::footer::Footer);
     }
 }
 
