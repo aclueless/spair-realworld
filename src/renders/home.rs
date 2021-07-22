@@ -1,11 +1,21 @@
+use spair::prelude::*;
+
 impl spair::Component for crate::pages::HomePage {
     type Routes = ();
     fn render(&self, element: spair::Element<Self>) {
         element
             .class("home-page")
             .render(Banner)
-            .render(HomePageContent)
+            .render(Feeds)
         ;
+    }
+}
+
+impl spair::WithParentComp for crate::pages::HomePage {
+    type Parent = crate::app::App;
+    type Properties = ();
+    fn init(_parent: &spair::Comp<Self::Parent>, _comp: spair::Comp<Self>, props: Self::Properties) -> Self {
+        Self::new()
     }
 }
 
@@ -25,9 +35,10 @@ impl spair::Render<crate::pages::HomePage> for Banner {
     }
 }
 
-struct HomePageContent;
-impl spair::Render<crate::pages::HomePage> for HomePageContent {
+struct Feeds;
+impl spair::Render<crate::pages::HomePage> for Feeds {
     fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
+        let state = nodes.state();
         nodes
             .div(|d| {
                 d.class("container").class("page")
@@ -36,14 +47,19 @@ impl spair::Render<crate::pages::HomePage> for HomePageContent {
                             .div(|d| {
                                 d.class("col-md-9")
                                     .render(FeedTabs)
+                                    .list(
+                                        state.article_list.articles.iter(),
+                                        spair::ListElementCreation::Clone,
+                                    )
+                                    .render(Pagenation)
                                 ;
                             })
                             .div(|d| {
-                                d.class("col-md-3")
+                                d.class("col-md-3").render(PopularTags)
                                 ;
-                            })
-                    })
-            })
+                            });
+                    });
+            });
     }
 }
 
@@ -59,84 +75,106 @@ impl spair::Render<crate::pages::HomePage> for FeedTabs {
                     u.class("nav")
                         .class("nav-pills")
                         .class("outline-active")
-                        .li(|i| {
-                            i.class("nav-item")
-                                .a(|a| a.class("nav-link").class_if("actived", state.is_your_feed()).href_str("").r#static("Your Feed").done())
+                        .render(FeedTab{
+                            title: "Your Feed",
+                            active: state.is_your_feed(),
+                            handler: comp.handler(crate::pages::HomePage::your_feed),
                         })
-                        .li(|i| {
-                            i.class("nav-item")
-                                .a(|a| a.class("nav-link").class_if("actived", state.is_your_feed()).href_str("").r#static("Global Feed").done())
+                        .render(FeedTab{
+                            title: "Global Feed",
+                            active: state.is_global_feed(),
+                            handler: comp.handler(crate::pages::HomePage::global_feed),
+                        })
+                        .render(FeedTab{
+                            title: "Tag Feed",
+                            active: state.is_tag_feed(),
+                            handler: comp.handler(crate::pages::HomePage::tag_feed),
                         });
-                })
-        })
+                });
+        });
     }
 }
 
-struct FeedTab<'a, F: spair::Click> {
+struct FeedTab<'a, F> {
     title: &'a str,
     active: bool,
     handler: F,
 }
-impl<'a> spair::Render<crate::pages::HomePage> for FeedTab<'a> {
+impl<'a, F: spair::Click> spair::Render<crate::pages::HomePage> for FeedTab<'a, F> {
     fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
-        nodes.render(self.title);
+        nodes
+        .li(|i| {
+            i.class("nav-item")
+                .a(|a| a.class("nav-link").class_if("actived", self.active).href_str("").on_click(self.handler).r#static(self.title).done());
+        });
     }
 }
 
+impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
+    const ROOT_ELEMENT_TAG: &'static str = "div";
+    fn render(self, element: spair::Element<crate::pages::HomePage>) {
+        element
+            .class("article-preview")
+            .div(|d| {
+                d.class("article-meta")
+                    .a(|a| {
+                        // Hack on the routes, must be fixed after a redesign of spair's Router
+                        a.href_str(&crate::routes::Route::Profile(self.author.username.clone()).url())
+                            .img(|i| i.src(&self.author.image).done());
+                    })
+                    .div(|d| {
+                        d.class("info")
+                            .a(|a| {
+                                a.href_str("")
+                                    .class("author")
+                                    .render(&self.author.username);
+                            })
+                            .span(|s| {
+                                s.class("date").render(&self.created_at.to_string());
+                            });
+                    })
+                    .button(|b| {
+                        b
+                            .static_attributes()
+                            .class("btn")
+                            .class("btn-outline-primary")
+                            .class("btn-sm")
+                            .class("pull-xs-right")
+                            .i(|i| i.class("icon-heart").done())
+                            .render(self.favorites_count);
+                    });
+            })
+            .a(|a| {
+                a.class("preview-link")
+                    .h1(|h| h.render(&self.title).done())
+                    .p(|p| p.render(&self.description).done())
+                    .static_nodes()
+                    .span(|s| s.r#static("Read more...").done());
+            });
+    }
+}
 
+struct Pagenation;
+impl spair::Render<crate::pages::HomePage> for Pagenation {
+    fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
+        nodes.render("Pagenation");
+    }
+}
+
+struct PopularTags;
+impl spair::Render<crate::pages::HomePage> for PopularTags {
+    fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
+        nodes.render("PopularTags");
+    }
+}
+
+/*
 <div class="home-page">
 
   <div class="container page">
     <div class="row">
 
       <div class="col-md-9">
-        <div class="feed-toggle">
-          <ul class="nav nav-pills outline-active">
-            <li class="nav-item">
-              <a class="nav-link disabled" href="">Your Feed</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" href="">Global Feed</a>
-            </li>
-          </ul>
-        </div>
-
-        <div class="article-preview">
-          <div class="article-meta">
-            <a href="profile.html"><img src="http://i.imgur.com/Qr71crq.jpg" /></a>
-            <div class="info">
-              <a href="" class="author">Eric Simons</a>
-              <span class="date">January 20th</span>
-            </div>
-            <button class="btn btn-outline-primary btn-sm pull-xs-right">
-              <i class="ion-heart"></i> 29
-            </button>
-          </div>
-          <a href="" class="preview-link">
-            <h1>How to build webapps that scale</h1>
-            <p>This is the description for the post.</p>
-            <span>Read more...</span>
-          </a>
-        </div>
-
-        <div class="article-preview">
-          <div class="article-meta">
-            <a href="profile.html"><img src="http://i.imgur.com/N4VcUeJ.jpg" /></a>
-            <div class="info">
-              <a href="" class="author">Albert Pai</a>
-              <span class="date">January 20th</span>
-            </div>
-            <button class="btn btn-outline-primary btn-sm pull-xs-right">
-              <i class="ion-heart"></i> 32
-            </button>
-          </div>
-          <a href="" class="preview-link">
-            <h1>The song you won't ever stop singing. No matter how hard you try.</h1>
-            <p>This is the description for the post.</p>
-            <span>Read more...</span>
-          </a>
-        </div>
-
       </div>
 
       <div class="col-md-3">
