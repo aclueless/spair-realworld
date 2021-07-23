@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use super::ProfileInfo;
 
-#[derive(newtype::NewType, Clone, Default, Debug, PartialEq)]
+#[derive(derive_more::AsRef, derive_more::Deref, Clone, Default, Debug, PartialEq)]
 pub struct Slug(String);
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

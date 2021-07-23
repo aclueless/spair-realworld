@@ -14,7 +14,7 @@ impl crate::pages::HomePage {
     }
 
     fn request_feeds(&self) -> spair::Command<Self> {
-        let url = super::UrlBuilder::new().article().page(self.page_number);
+        let url: String = super::UrlBuilder::new().articles_in_page(self.page_number).into();
         spair::Request::get(&url)
             .text_mode()
             .response()
