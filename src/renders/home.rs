@@ -3,18 +3,18 @@ use spair::prelude::*;
 impl spair::Component for crate::pages::HomePage {
     type Routes = ();
     fn render(&self, element: spair::Element<Self>) {
-        element
-            .class("home-page")
-            .render(Banner)
-            .render(Feeds)
-        ;
+        element.class("home-page").render(Banner).render(Feeds);
     }
 }
 
 impl spair::WithParentComp for crate::pages::HomePage {
     type Parent = crate::app::App;
     type Properties = ();
-    fn init(_parent: &spair::Comp<Self::Parent>, _comp: spair::Comp<Self>, props: Self::Properties) -> Self {
+    fn init(
+        _parent: &spair::Comp<Self::Parent>,
+        _comp: spair::Comp<Self>,
+        _props: Self::Properties,
+    ) -> Self {
         Self::new()
     }
 }
@@ -22,16 +22,13 @@ impl spair::WithParentComp for crate::pages::HomePage {
 struct Banner;
 impl spair::Render<crate::pages::HomePage> for Banner {
     fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
-        nodes
-            .static_nodes()
-            .div(|d| {
-                d.class("banner")
-                .div(|d| {
-                    d.class("container")
+        nodes.static_nodes().div(|d| {
+            d.class("banner").div(|d| {
+                d.class("container")
                     .h1(|h| h.class("logo-font").r#static("conduit").done())
                     .p(|p| p.r#static("A place to share your knowledge.").done());
-                });
             });
+        });
     }
 }
 
@@ -39,27 +36,21 @@ struct Feeds;
 impl spair::Render<crate::pages::HomePage> for Feeds {
     fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
         let state = nodes.state();
-        nodes
-            .div(|d| {
-                d.class("container").class("page")
+        nodes.div(|d| {
+            d.static_attributes().class("container").class("page").div(|d| {
+                d.static_attributes().class("row")
                     .div(|d| {
-                        d.class("row")
-                            .div(|d| {
-                                d.class("col-md-9")
-                                    .render(FeedTabs)
-                                    .list(
-                                        state.article_list.articles.iter(),
-                                        spair::ListElementCreation::Clone,
-                                    )
-                                    .render(Pagenation)
-                                ;
-                            })
-                            .div(|d| {
-                                d.class("col-md-3").render(PopularTags)
-                                ;
-                            });
-                    });
+                        d.static_attributes().class("col-md-9")
+                            .render(FeedTabs)
+                            .list(
+                                state.article_list.articles.iter(),
+                                spair::ListElementCreation::Clone,
+                            )
+                            .render(Pagenation);
+                    })
+                    .render(PopularTags);
             });
+        });
     }
 }
 
@@ -68,29 +59,27 @@ impl spair::Render<crate::pages::HomePage> for FeedTabs {
     fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
         let state = nodes.state();
         let comp = nodes.comp();
-        nodes
-        .div(|d| {
-            d.class("feed-toggle")
-                .ul(|u| {
-                    u.class("nav")
-                        .class("nav-pills")
-                        .class("outline-active")
-                        .render(FeedTab{
-                            title: "Your Feed",
-                            active: state.is_your_feed(),
-                            handler: comp.handler(crate::pages::HomePage::your_feed),
-                        })
-                        .render(FeedTab{
-                            title: "Global Feed",
-                            active: state.is_global_feed(),
-                            handler: comp.handler(crate::pages::HomePage::global_feed),
-                        })
-                        .render(FeedTab{
-                            title: "Tag Feed",
-                            active: state.is_tag_feed(),
-                            handler: comp.handler(crate::pages::HomePage::tag_feed),
-                        });
-                });
+        nodes.div(|d| {
+            d.static_attributes().class("feed-toggle").ul(|u| {
+                u.static_attributes().class("nav")
+                    .class("nav-pills")
+                    .class("outline-active")
+                    .render(FeedTab {
+                        title: "Your Feed",
+                        active: state.is_your_feed(),
+                        handler: comp.handler(crate::pages::HomePage::your_feed),
+                    })
+                    .render(FeedTab {
+                        title: "Global Feed",
+                        active: state.is_global_feed(),
+                        handler: comp.handler(crate::pages::HomePage::global_feed),
+                    })
+                    .render(FeedTab {
+                        title: "Tag Feed",
+                        active: state.is_tag_feed(),
+                        handler: comp.handler(crate::pages::HomePage::tag_feed),
+                    });
+            });
         });
     }
 }
@@ -102,10 +91,16 @@ struct FeedTab<'a, F> {
 }
 impl<'a, F: spair::Click> spair::Render<crate::pages::HomePage> for FeedTab<'a, F> {
     fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
-        nodes
-        .li(|i| {
-            i.class("nav-item")
-                .a(|a| a.class("nav-link").class_if("actived", self.active).href_str("").on_click(self.handler).r#static(self.title).done());
+        nodes.li(|i| {
+            i.static_attributes().class("nav-item").a(|a| {
+                a.class_if("actived", self.active)
+                    .href_str("")
+                    .on_click(self.handler)
+                    .static_attributes()
+                    .class("nav-link")
+                    .r#static(self.title)
+                    .done()
+            });
         });
     }
 }
@@ -114,38 +109,37 @@ impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
     const ROOT_ELEMENT_TAG: &'static str = "div";
     fn render(self, element: spair::Element<crate::pages::HomePage>) {
         element
-            .class("article-preview")
+            .static_attributes().class("article-preview")
             .div(|d| {
-                d.class("article-meta")
+                d.static_attributes().class("article-meta")
                     .a(|a| {
                         // Hack on the routes, must be fixed after a redesign of spair's Router
-                        a.href_str(&crate::routes::Route::Profile(self.author.username.clone()).url())
-                            .img(|i| i.src(&self.author.image).done());
+                        a.href_str(
+                            &crate::routes::Route::Profile(self.author.username.clone()).url(),
+                        )
+                        .img(|i| i.src(&self.author.image).done());
                     })
                     .div(|d| {
-                        d.class("info")
+                        d.static_attributes().class("info")
                             .a(|a| {
-                                a.href_str("")
-                                    .class("author")
-                                    .render(&self.author.username);
+                                a.href_str("").static_attributes().class("author").render(&self.author.username);
                             })
                             .span(|s| {
-                                s.class("date").render(&self.created_at.to_string());
+                                s.static_attributes().class("date").render(&self.created_at.to_string());
                             });
                     })
                     .button(|b| {
-                        b
-                            .static_attributes()
+                        b.static_attributes()
                             .class("btn")
                             .class("btn-outline-primary")
                             .class("btn-sm")
                             .class("pull-xs-right")
-                            .i(|i| i.class("icon-heart").done())
+                            .i(|i| i.static_attributes().class("icon-heart").done())
                             .render(self.favorites_count);
                     });
             })
             .a(|a| {
-                a.class("preview-link")
+                a.static_attributes().class("preview-link")
                     .h1(|h| h.render(&self.title).done())
                     .p(|p| p.render(&self.description).done())
                     .static_nodes()
@@ -164,38 +158,32 @@ impl spair::Render<crate::pages::HomePage> for Pagenation {
 struct PopularTags;
 impl spair::Render<crate::pages::HomePage> for PopularTags {
     fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
-        nodes.render("PopularTags");
+        let state = nodes.state();
+        nodes.div(|d| {
+            d.static_attributes().class("col-md-3")
+            .div(|d| {
+                d.static_attributes().class("sidebar")
+                    .static_nodes()
+                    .p(|p| p.render("Popular Tags").done())
+                    .nodes()
+                    .div(|d| {
+                        d.static_attributes().class("tag-list")
+                            .list_with_render(
+                                state.tag_list.tags.iter(),
+                                spair::ListElementCreation::Clone,
+                                "a",
+                                |tag, a| {
+                                    a
+                                    .href_str("")
+                                    .static_attributes()
+                                    .class("tag-pill")
+                                    .class("tag-default")
+                                    .render(tag);
+                                }
+                            );
+                    });
+            });
+        });
     }
 }
 
-/*
-<div class="home-page">
-
-  <div class="container page">
-    <div class="row">
-
-      <div class="col-md-9">
-      </div>
-
-      <div class="col-md-3">
-        <div class="sidebar">
-          <p>Popular Tags</p>
-
-          <div class="tag-list">
-            <a href="" class="tag-pill tag-default">programming</a>
-            <a href="" class="tag-pill tag-default">javascript</a>
-            <a href="" class="tag-pill tag-default">emberjs</a>
-            <a href="" class="tag-pill tag-default">angularjs</a>
-            <a href="" class="tag-pill tag-default">react</a>
-            <a href="" class="tag-pill tag-default">mean</a>
-            <a href="" class="tag-pill tag-default">node</a>
-            <a href="" class="tag-pill tag-default">rails</a>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-</div>
-*/

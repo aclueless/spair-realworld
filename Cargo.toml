@@ -21,7 +21,8 @@ thiserror = "1"
 # wasm-bindgen = "0.2.63"
 # wasm-logger = "0.2.0"
 #wee_alloc = "0.4.5"
-spair = { path = "../../spair", features = ["partial-non-keyed-list"] }
+newtype = "0.2"
+spair = { path = "../../spair", features = ["partial-non-keyed-list", "fetch-json"] }
 types = { path = "./types" }
 
 # [dependencies.web-sys]

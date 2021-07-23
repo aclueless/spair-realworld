@@ -3,6 +3,7 @@ mod error;
 mod pages;
 mod renders;
 mod routes;
+mod fetch;
 
 use spair::prelude::*;
 
