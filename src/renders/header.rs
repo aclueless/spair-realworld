@@ -32,7 +32,7 @@ impl spair::Render<crate::app::App> for Header {
                                         .class_if("active", state.route == route)
                                         .href(&route)
                                         .i(|i| i.class("ion-compose").done())
-                                        .r#static("&nbsp;New Post");
+                                        .r#static("New Post");
                                 });
                             })
                             .li(|i| {
@@ -42,7 +42,7 @@ impl spair::Render<crate::app::App> for Header {
                                         .class_if("active", state.route == route)
                                         .href(&route)
                                         .i(|i| i.class("ion-gear-a").done())
-                                        .r#static("&nbsp;Settings");
+                                        .r#static("Settings");
                                 });
                             })
                             .li(|i| {

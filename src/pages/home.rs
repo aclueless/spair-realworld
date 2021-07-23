@@ -5,10 +5,25 @@ pub struct HomePage {
     pub tag_list: types::TagListInfo,
 }
 
+#[derive(Debug)]
 pub enum Feed {
     Global,
     Your(String),
     Tag(String),
+}
+
+impl Feed {
+    pub fn is_global(&self) -> bool {
+        matches!(self, Self::Global)
+    }
+
+    pub fn is_your(&self) -> bool {
+        matches!(self, Self::Your(_))
+    }
+
+    pub fn is_tag(&self) -> bool {
+        matches!(self, Self::Tag(_))
+    }
 }
 
 impl HomePage {
@@ -29,16 +44,4 @@ impl HomePage {
     pub fn global_feed(&mut self) {}
 
     pub fn tag_feed(&mut self) {}
-
-    pub fn is_your_feed(&self) -> bool {
-        false
-    }
-
-    pub fn is_global_feed(&self) -> bool {
-        false
-    }
-
-    pub fn is_tag_feed(&self) -> bool {
-        false
-    }
 }

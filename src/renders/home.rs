@@ -2,6 +2,9 @@ use spair::prelude::*;
 
 impl spair::Component for crate::pages::HomePage {
     type Routes = ();
+    fn initialize(comp: &spair::Comp<Self>) {
+        spair::update_component(comp.callback(Self::request_data_for_home_page));
+    }
     fn render(&self, element: spair::Element<Self>) {
         element.class("home-page").render(Banner).render(Feeds);
     }
@@ -66,18 +69,18 @@ impl spair::Render<crate::pages::HomePage> for FeedTabs {
                     .class("outline-active")
                     .render(FeedTab {
                         title: "Your Feed",
-                        active: state.is_your_feed(),
-                        handler: comp.handler(crate::pages::HomePage::your_feed),
+                        active: state.feed.is_your(),
+                        handler: comp.handler_mut(crate::pages::HomePage::your_feed),
                     })
                     .render(FeedTab {
                         title: "Global Feed",
-                        active: state.is_global_feed(),
-                        handler: comp.handler(crate::pages::HomePage::global_feed),
+                        active: state.feed.is_global(),
+                        handler: comp.handler_mut(crate::pages::HomePage::global_feed),
                     })
                     .render(FeedTab {
                         title: "Tag Feed",
-                        active: state.is_tag_feed(),
-                        handler: comp.handler(crate::pages::HomePage::tag_feed),
+                        active: state.feed.is_tag(),
+                        handler: comp.handler_mut(crate::pages::HomePage::tag_feed),
                     });
             });
         });
@@ -93,7 +96,7 @@ impl<'a, F: spair::Click> spair::Render<crate::pages::HomePage> for FeedTab<'a, 
     fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
         nodes.li(|i| {
             i.static_attributes().class("nav-item").a(|a| {
-                a.class_if("actived", self.active)
+                a.class_if("active", self.active)
                     .href_str("")
                     .on_click(self.handler)
                     .static_attributes()
@@ -134,7 +137,8 @@ impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
                             .class("btn-outline-primary")
                             .class("btn-sm")
                             .class("pull-xs-right")
-                            .i(|i| i.static_attributes().class("icon-heart").done())
+                            .i(|i| i.static_attributes().class("ion-heart").done())
+                            .r#static(" ")
                             .render(self.favorites_count);
                     });
             })

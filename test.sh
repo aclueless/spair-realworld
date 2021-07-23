@@ -1,8 +1,6 @@
 #!/bin/bash
 set -ex
 
-TARGET="--target=wasm32-unknown-unknown"
-
 #cargo fmt -- --check
 #cargo clippy -- -D warnings
 
