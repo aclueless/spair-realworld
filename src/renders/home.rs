@@ -111,21 +111,24 @@ impl<'a, F: spair::Click> spair::Render<crate::pages::HomePage> for FeedTab<'a, 
 impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
     const ROOT_ELEMENT_TAG: &'static str = "div";
     fn render(self, element: spair::Element<crate::pages::HomePage>) {
+        let profile = crate::routes::Route::Profile(self.author.username.clone());
         element
             .static_attributes().class("article-preview")
             .div(|d| {
                 d.static_attributes().class("article-meta")
                     .a(|a| {
-                        // Hack on the routes, must be fixed after a redesign of spair's Router
-                        a.href_str(
-                            &crate::routes::Route::Profile(self.author.username.clone()).url(),
-                        )
+                        // FIXME: Hack on the routes, must be fixed after a redesign of spair's Router
+                        a.href_str(&profile.url())
                         .img(|i| i.src(&self.author.image).done());
                     })
                     .div(|d| {
                         d.static_attributes().class("info")
                             .a(|a| {
-                                a.href_str("").static_attributes().class("author").render(&self.author.username);
+                                // FIXME: Hack on the routes, must be fixed after a redesign of spair's Router
+                                a.href_str(&profile.url())
+                                    .static_attributes()
+                                    .class("author")
+                                    .render(&self.author.username);
                             })
                             .span(|s| {
                                 s.static_attributes().class("date").render(&self.created_at.to_string());
@@ -143,7 +146,11 @@ impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
                     });
             })
             .a(|a| {
-                a.static_attributes().class("preview-link")
+                let route = crate::routes::Route::Article(From::from(self.slug.clone()));
+                a
+                    // FIXME: Hack on the routes, must be fixed after a redesign of spair's Router
+                    .href_str(&route.url())
+                    .static_attributes().class("preview-link")
                     .h1(|h| h.render(&self.title).done())
                     .p(|p| p.render(&self.description).done())
                     .static_nodes()

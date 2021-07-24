@@ -7,36 +7,40 @@ use derive_more as dmore;
 
 #[derive(Debug, dmore::AsMut)]
 struct UrlBuilder(String);
-#[derive(Debug, dmore::Into, dmore::AsMut)]
+#[derive(Debug, dmore::AsMut)]
 struct Article(String);
-#[derive(Debug, dmore::Into, dmore::AsMut)]
-struct No(String);
+#[derive(Debug, dmore::AsMut)]
+struct AnArticle(String);
+#[derive(Debug, dmore::AsMut)]
+struct ArticleInPage(String);
 
 trait Builder: Sized + AsMut<String> {
     fn filter(&mut self, filter: &str, value: &str) {
         self.as_mut().push_str(filter);
-        self.as_mut().push_str("=");
+        self.as_mut().push('=');
         self.as_mut().push_str(value);
     }
 
     fn first_filter(&mut self, filter: &str, value: &str) {
-        self.as_mut().push_str("?");
+        self.as_mut().push('?');
         self.filter(filter, value);
     }
 
     fn more_filter(&mut self, filter: &str, value: &str) {
-        self.as_mut().push_str("&");
+        self.as_mut().push('&');
         self.filter(filter, value);
     }
 
     fn path(&mut self, path: &str) {
-        self.as_mut().push_str("/");
+        self.as_mut().push('/');
         self.as_mut().push_str(path);
     }
 }
 
 impl Builder for UrlBuilder {}
 impl Builder for Article {}
+impl Builder for AnArticle {}
+impl Builder for ArticleInPage {}
 
 impl UrlBuilder {
     fn new() -> Self {
@@ -59,27 +63,24 @@ impl UrlBuilder {
         self.0
     }
 
-    fn user_profile(mut self, username: &str) -> String {
+    fn _user_profile(&mut self, username: &str) {
         self.path("profiles");
         self.path(username);
+    }
+
+    fn user_profile(mut self, username: &str) -> String {
+        self._user_profile(username);
         self.0
     }
 
     fn follow_user(mut self, username: &str) -> String {
-        self.path("profiles");
-        self.path(username);
+        self._user_profile(username);
         self.path("follow");
         self.0
     }
 
-    fn articles_in_page(self, page_number: u32) -> Article {
-        self.articles_in_page_with_size(page_number, 10)
-    }
-
-    fn articles_in_page_with_size(mut self, page_number: u32, page_size: u32) -> Article {
+    fn articles(mut self) -> Article {
         self.path("articles");
-        self.first_filter("offset", &page_number.to_string());
-        self.more_filter("limit", &page_size.to_string());
         Article(self.0)
     }
 
@@ -90,6 +91,41 @@ impl UrlBuilder {
 }
 
 impl Article {
+    fn page(self, page_number: u32) -> ArticleInPage {
+        self.page_with_size(page_number, 10)
+    }
+
+    fn page_with_size(mut self, page_number: u32, page_size: u32) -> ArticleInPage {
+        self.first_filter("offset", &page_number.to_string());
+        self.more_filter("limit", &page_size.to_string());
+        ArticleInPage(self.0)
+    }
+
+    fn feed_in_page(mut self, page_number: u32) -> String {
+        self.path("feed");
+        self.page_with_size(page_number, 10).0
+    }
+
+    fn feed_in_page_with_size(mut self, page_number: u32, page_size: u32) -> String {
+        self.path("feed");
+        self.page_with_size(page_number, page_size).0
+    }
+
+    fn slug(mut self, slug: &types::Slug) -> AnArticle {
+        self.path(&slug);
+        AnArticle(self.0)
+    }
+
+    fn create_article(self) -> String {
+        self.0
+    }
+}
+
+impl ArticleInPage {
+    fn done(self) -> String {
+        self.0
+    }
+
     fn tag(mut self, tag: &str) -> String {
         self.filter("tag", tag);
         self.0
@@ -102,6 +138,28 @@ impl Article {
 
     fn favorited(mut self, favorited: &str) -> String {
         self.filter("favorited", favorited);
+        self.0
+    }
+}
+
+impl AnArticle {
+    fn done(self) -> String {
+        self.0
+    }
+
+    fn comment(mut self) -> String {
+        self.path("comments");
+        self.0
+    }
+
+    fn delete_comment(mut self, id: u32) -> String {
+        self.path("comments");
+        self.path(&id.to_string());
+        self.0
+    }
+
+    fn favorite(mut self) -> String {
+        self.path("favorite");
         self.0
     }
 }

@@ -1,9 +1,10 @@
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
+use derive_more as dmore;
 
 use super::ProfileInfo;
 
-#[derive(derive_more::AsRef, derive_more::Deref, Clone, Default, Debug, PartialEq)]
+#[derive(dmore::AsRef, dmore::Deref, dmore::From, Clone, Default, Debug, PartialEq)]
 pub struct Slug(String);
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
