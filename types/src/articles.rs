@@ -4,13 +4,13 @@ use derive_more as dmore;
 
 use super::ProfileInfo;
 
-#[derive(dmore::AsRef, dmore::Deref, dmore::From, Clone, Default, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq, dmore::AsRef, dmore::Deref, dmore::From)]
 pub struct Slug(String);
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ArticleInfo {
-    pub slug: String,
+    pub slug: Slug,
     pub title: String,
     pub description: String,
     pub body: String,

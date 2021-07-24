@@ -111,7 +111,9 @@ impl<'a, F: spair::Click> spair::Render<crate::pages::HomePage> for FeedTab<'a, 
 impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
     const ROOT_ELEMENT_TAG: &'static str = "div";
     fn render(self, element: spair::Element<crate::pages::HomePage>) {
+        let comp = element.comp();
         let profile = crate::routes::Route::Profile(self.author.username.clone());
+        let article_slug = self.slug.clone();
         element
             .static_attributes().class("article-preview")
             .div(|d| {
@@ -135,9 +137,11 @@ impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
                             });
                     })
                     .button(|b| {
-                        b.static_attributes()
+                        b
+                            .on_click(comp.handler_mut(move |state| state.toggle_favorite(&article_slug)))
+                            .static_attributes()
                             .class("btn")
-                            .class("btn-outline-primary")
+                            .class_or(self.favorited, "btn-primary", "btn-outline-primary")
                             .class("btn-sm")
                             .class("pull-xs-right")
                             .i(|i| i.static_attributes().class("ion-heart").done())
@@ -155,7 +159,23 @@ impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
                     .p(|p| p.render(&self.description).done())
                     .static_nodes()
                     .span(|s| s.r#static("Read more...").done());
-            });
+            })
+            .ul(|u| {
+                u.static_attributes()
+                    .class("tag-list")
+                    .list_with_render(
+                        self.tag_list.iter(),
+                        spair::ListElementCreation::Clone,
+                        "li",
+                        |tag, li| {
+                            li.class("tag-default")
+                            .class("tag-pill")
+                            .class("tag-outlinepill")
+                            .render(tag);
+                        }
+                    );
+            })
+            ;
     }
 }
 

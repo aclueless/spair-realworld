@@ -39,9 +39,19 @@ impl HomePage {
         }
     }
 
-    pub fn your_feed(&mut self) {}
+    pub fn your_feed(&mut self) {
+        todo!()
+    }
 
-    pub fn global_feed(&mut self) {}
+    pub fn global_feed(&mut self) {
+        todo!()
+    }
 
-    pub fn tag_feed(&mut self) {}
+    pub fn tag_feed(&mut self) {
+        todo!()
+    }
+
+    pub fn toggle_favorite(&mut self, slug: &types::Slug) {
+        todo!()
+    }
 }

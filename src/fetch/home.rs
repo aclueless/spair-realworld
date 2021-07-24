@@ -28,4 +28,6 @@ impl crate::pages::HomePage {
             .response()
             .json(|state, tag_list| state.tag_list = tag_list, Self::fetch_error)
     }
+
+    fn favorite(&self) {}
 }
