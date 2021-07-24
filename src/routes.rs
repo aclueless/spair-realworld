@@ -1,6 +1,6 @@
 #[derive(Debug, PartialEq)]
 pub enum Route {
-    Home,
+    Home(crate::pages::Feed),
     Login,
     Register,
     Settings,
@@ -13,32 +13,17 @@ pub enum Route {
 impl spair::Routes<crate::app::App> for Route {
     fn url(&self) -> String {
         match self {
-            Self::Home => "/#/".to_string(),
+            Self::Home(crate::pages::Feed::Global) => "/#/global-feed".to_string(),
+            Self::Home(crate::pages::Feed::Your(_)) => "/#/your-feed".to_string(),
+            Self::Home(crate::pages::Feed::Tag(tag)) => format!("/#/#{}", tag),
             Self::Login => "/#/login".to_string(),
             Self::Register => "/#/register".to_string(),
             Self::Settings => "/#/settings".to_string(),
             Self::Editor(None) => "/#/editor".to_string(),
-            Self::Editor(Some(slug)) => {
-                let mut url = "/#/editor/".to_string();
-                url.push_str(slug);
-                url
-            }
-            Self::Article(slug) => {
-                let mut url = "/#/article/".to_string();
-                url.push_str(slug);
-                url
-            }
-            Self::Profile(user_name) => {
-                let mut url = "/#/profile/".to_string();
-                url.push_str(user_name);
-                url
-            }
-            Self::ProfileFavorites(user_name) => {
-                let mut url = "/#/profile/".to_string();
-                url.push_str(user_name);
-                url.push_str("/favorites");
-                url
-            }
+            Self::Editor(Some(slug)) => format!("/#/editor/{}", slug.as_ref()),
+            Self::Article(slug) => format!("/#/article/{}", slug.as_ref()),
+            Self::Profile(user_name) => format!("/#/profile/{}", user_name),
+            Self::ProfileFavorites(user_name) => format!("/#/profile/{}/favorites", user_name),
         }
     }
 

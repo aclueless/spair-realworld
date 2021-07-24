@@ -9,7 +9,7 @@ pub struct App {
 
 impl App {
     fn new(comp: spair::Comp<Self>) -> Self {
-        let route = crate::routes::Route::Home;
+        let route = crate::routes::Route::Home(crate::pages::Feed::Global);
         let page = crate::pages::Page::new(&route, &comp);
         Self {
             comp,

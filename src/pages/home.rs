@@ -5,7 +5,7 @@ pub struct HomePage {
     pub tag_list: types::TagListInfo,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Feed {
     Global,
     Your(String),
@@ -53,5 +53,10 @@ impl HomePage {
 
     pub fn toggle_favorite(&mut self, slug: &types::Slug) {
         todo!()
+    }
+
+    pub fn set_selected_tag(&mut self, tag: &str) {
+        self.feed = Feed::Tag(tag.to_string());
+        self.page_number = 0;
     }
 }

@@ -8,7 +8,7 @@ impl spair::Render<crate::app::App> for Footer {
                 d.class("container")
                     .a(|a| {
                         a.class("logo-font")
-                            .href(&crate::routes::Route::Home)
+                            .href(&crate::routes::Route::Home(crate::pages::Feed::Global))
                             .r#static("conduit");
                     })
                     .span(|s| {

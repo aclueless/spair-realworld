@@ -77,11 +77,15 @@ impl spair::Render<crate::pages::HomePage> for FeedTabs {
                         active: state.feed.is_global(),
                         handler: comp.handler_mut(crate::pages::HomePage::global_feed),
                     })
-                    .render(FeedTab {
-                        title: "Tag Feed",
-                        active: state.feed.is_tag(),
-                        handler: comp.handler_mut(crate::pages::HomePage::tag_feed),
-                    });
+                    .match_if(|mi| match &state.feed {
+                        crate::pages::Feed::Tag(tag) => spair::set_arm!(mi).render(FeedTab {
+                            title: &format!("#{}", tag),
+                            active: state.feed.is_tag(),
+                            handler: comp.handler_mut(crate::pages::HomePage::tag_feed),
+                        }).done(),
+                        _ => spair::set_arm!(mi).done(),
+                    })
+                    ;
             });
         });
     }
@@ -97,7 +101,7 @@ impl<'a, F: spair::Click> spair::Render<crate::pages::HomePage> for FeedTab<'a, 
         nodes.li(|i| {
             i.static_attributes().class("nav-item").a(|a| {
                 a.class_if("active", self.active)
-                    .href_str("")
+                    //.href_str("")
                     .on_click(self.handler)
                     .static_attributes()
                     .class("nav-link")
@@ -190,6 +194,7 @@ struct PopularTags;
 impl spair::Render<crate::pages::HomePage> for PopularTags {
     fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
         let state = nodes.state();
+        let comp = nodes.comp();
         nodes.div(|d| {
             d.static_attributes().class("col-md-3")
             .div(|d| {
@@ -204,8 +209,11 @@ impl spair::Render<crate::pages::HomePage> for PopularTags {
                                 spair::ListElementCreation::Clone,
                                 "a",
                                 |tag, a| {
+                                    let route = crate::routes::Route::Home(crate::pages::Feed::Tag(tag.to_string()));
                                     a
-                                    .href_str("")
+                                    // FIXME: Hack on the routes, must be fixed after a redesign of spair's Router
+                                    .href_str(&route.url())
+                                    //.on_click(comp.handler_mut(move |state| state.set_selected_tag(&cloned_tag)))
                                     .static_attributes()
                                     .class("tag-pill")
                                     .class("tag-default")
