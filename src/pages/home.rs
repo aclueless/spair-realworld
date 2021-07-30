@@ -5,10 +5,10 @@ pub struct HomePage {
     pub tag_list: types::TagListInfo,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Feed {
     Global,
-    Your(String),
+    Your,
     Tag(String),
 }
 
@@ -18,7 +18,7 @@ impl Feed {
     }
 
     pub fn is_your(&self) -> bool {
-        matches!(self, Self::Your(_))
+        matches!(self, Self::Your)
     }
 
     pub fn is_tag(&self) -> bool {
@@ -37,6 +37,11 @@ impl HomePage {
             },
             tag_list: types::TagListInfo { tags: Vec::new() },
         }
+    }
+
+    pub fn set_feed(&mut self, feed: Feed) {
+        log::debug!("set_feed");
+        self.feed = feed;
     }
 
     pub fn your_feed(&mut self) {

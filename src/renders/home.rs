@@ -1,10 +1,21 @@
 use spair::prelude::*;
 
 impl spair::Component for crate::pages::HomePage {
-    type Routes = ();
+    type Routes = crate::routes::Route;
     fn initialize(comp: &spair::Comp<Self>) {
         spair::update_component(comp.callback(Self::request_data_for_home_page));
     }
+
+    fn register_routing_callback(router: &mut crate::routes::Router, comp: &spair::Comp<Self>) {
+        log::debug!("register_routing_callback for home page");
+        router.home = Some(comp.clone());
+    }
+
+    fn remove_routing_callback(router: &mut crate::routes::Router) {
+        log::debug!("remove_routing_callback  for home page");
+        router.home = None;
+    }
+
     fn render(&self, element: spair::Element<Self>) {
         element.class("home-page").render(Banner).render(Feeds);
     }
@@ -15,7 +26,7 @@ impl spair::WithParentComp for crate::pages::HomePage {
     type Properties = ();
     fn init(
         _parent: &spair::Comp<Self::Parent>,
-        _comp: spair::Comp<Self>,
+        _comp: &spair::Comp<Self>,
         _props: Self::Properties,
     ) -> Self {
         Self::new()
@@ -123,15 +134,13 @@ impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
             .div(|d| {
                 d.static_attributes().class("article-meta")
                     .a(|a| {
-                        // FIXME: Hack on the routes, must be fixed after a redesign of spair's Router
-                        a.href_str(&profile.url())
+                        a.href(&profile)
                         .img(|i| i.src(&self.author.image).done());
                     })
                     .div(|d| {
                         d.static_attributes().class("info")
                             .a(|a| {
-                                // FIXME: Hack on the routes, must be fixed after a redesign of spair's Router
-                                a.href_str(&profile.url())
+                                a.href(&profile)
                                     .static_attributes()
                                     .class("author")
                                     .render(&self.author.username);
@@ -156,8 +165,7 @@ impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
             .a(|a| {
                 let route = crate::routes::Route::Article(From::from(self.slug.clone()));
                 a
-                    // FIXME: Hack on the routes, must be fixed after a redesign of spair's Router
-                    .href_str(&route.url())
+                    .href(&route)
                     .static_attributes().class("preview-link")
                     .h1(|h| h.render(&self.title).done())
                     .p(|p| p.render(&self.description).done())
@@ -211,8 +219,7 @@ impl spair::Render<crate::pages::HomePage> for PopularTags {
                                 |tag, a| {
                                     let route = crate::routes::Route::Home(crate::pages::Feed::Tag(tag.to_string()));
                                     a
-                                    // FIXME: Hack on the routes, must be fixed after a redesign of spair's Router
-                                    .href_str(&route.url())
+                                    .href(&route)
                                     //.on_click(comp.handler_mut(move |state| state.set_selected_tag(&cloned_tag)))
                                     .static_attributes()
                                     .class("tag-pill")

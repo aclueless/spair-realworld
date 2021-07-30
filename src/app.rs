@@ -18,6 +18,11 @@ impl App {
             page,
         }
     }
+
+    pub fn set_route(&mut self, route: crate::routes::Route) {
+        log::debug!("set_route");
+        self.route = route;
+    }
 }
 
 impl spair::Component for App {
@@ -26,6 +31,7 @@ impl spair::Component for App {
     fn render(&self, element: spair::Element<Self>) {
         element
             .render(crate::renders::header::Header)
+            .render(&self.route.url())
             .div(|d| match &self.page {
                 crate::pages::Page::Home(child) => d.component(child),
             })
@@ -34,7 +40,14 @@ impl spair::Component for App {
 }
 
 impl spair::Application for App {
-    fn with_comp(comp: spair::Comp<Self>) -> Self {
-        Self::new(comp)
+    fn init(comp: &spair::Comp<Self>) -> Self {
+        Self::new(comp.clone())
+    }
+
+    fn init_router(comp: &spair::Comp<Self>) -> Option<crate::routes::Router> {
+        Some(crate::routes::Router {
+            app: comp.clone(),
+            home: None,
+        })
     }
 }
