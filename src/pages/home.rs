@@ -40,20 +40,7 @@ impl HomePage {
     }
 
     pub fn set_feed(&mut self, feed: Feed) {
-        log::debug!("set_feed");
         self.feed = feed;
-    }
-
-    pub fn your_feed(&mut self) {
-        todo!()
-    }
-
-    pub fn global_feed(&mut self) {
-        todo!()
-    }
-
-    pub fn tag_feed(&mut self) {
-        todo!()
     }
 
     pub fn toggle_favorite(&mut self, slug: &types::Slug) {

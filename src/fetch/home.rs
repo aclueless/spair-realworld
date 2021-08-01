@@ -28,7 +28,10 @@ impl crate::pages::HomePage {
             .header("Access-Control-Allow-Origin", "*")
             .text_mode()
             .response()
-            .json(|state, tag_list| state.tag_list = tag_list, Self::fetch_error)
+            .json(|state, tag_list| {
+                state.tag_list = tag_list;
+                state.tag_list.tags.push("MyTagString".to_string());
+            }, Self::fetch_error)
     }
 
     fn favorite(&self) {}

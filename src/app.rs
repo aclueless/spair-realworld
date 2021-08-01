@@ -20,7 +20,6 @@ impl App {
     }
 
     pub fn set_route(&mut self, route: crate::routes::Route) {
-        log::debug!("set_route");
         self.route = route;
     }
 }

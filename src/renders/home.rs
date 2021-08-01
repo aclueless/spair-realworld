@@ -17,7 +17,7 @@ impl spair::Component for crate::pages::HomePage {
     }
 
     fn render(&self, element: spair::Element<Self>) {
-        element.class("home-page").render(Banner).render(Feeds);
+        element.class("home-page").render(Banner).render(&format!("{:?}", self.feed)).render(Feeds);
     }
 }
 
@@ -81,19 +81,22 @@ impl spair::Render<crate::pages::HomePage> for FeedTabs {
                     .render(FeedTab {
                         title: "Your Feed",
                         active: state.feed.is_your(),
-                        handler: comp.handler_mut(crate::pages::HomePage::your_feed),
+                        handler: comp.handler_mut(|state| state.set_feed(crate::pages::Feed::Your)),
                     })
                     .render(FeedTab {
                         title: "Global Feed",
                         active: state.feed.is_global(),
-                        handler: comp.handler_mut(crate::pages::HomePage::global_feed),
+                        handler: comp.handler_mut(|state| state.set_feed(crate::pages::Feed::Global)),
                     })
                     .match_if(|mi| match &state.feed {
-                        crate::pages::Feed::Tag(tag) => spair::set_arm!(mi).render(FeedTab {
-                            title: &format!("#{}", tag),
-                            active: state.feed.is_tag(),
-                            handler: comp.handler_mut(crate::pages::HomePage::tag_feed),
-                        }).done(),
+                        crate::pages::Feed::Tag(tag) => {
+                            let tag = tag.to_string();
+                            spair::set_arm!(mi).render(FeedTab {
+                                title: &format!("#{}", tag),
+                                active: state.feed.is_tag(),
+                                handler: comp.handler_mut(move |state| state.set_feed(crate::pages::Feed::Tag(tag.clone()))),
+                            });
+                        }
                         _ => spair::set_arm!(mi).done(),
                     })
                     ;

@@ -36,6 +36,9 @@ impl spair::Routes for Route {
 
 impl spair::Router for Router {
     fn routing(&self, location: spair::web_sys::Location) {
+        log::debug!("{:?}", location);
+        log::debug!("{:?}", location.hash());
+        log::debug!("{:?}", location.href());
         let route = match location.hash().unwrap_or_else(|_| String::new()).as_str() {
             "" | "#" | "#/" | "#/global-feed" => Route::Home(crate::pages::Feed::Global),
             "#/your-feed" => Route::Home(crate::pages::Feed::Your),
@@ -43,24 +46,25 @@ impl spair::Router for Router {
             "#/register" => Route::Register,
             "#/settings" => Route::Settings,
             "#/editor" => Route::Editor(None),
-            hash if hash.starts_with("#/#") => Route::Home(crate::pages::Feed::Tag(hash[3..].to_string())),
-            hash => {
+            hash if hash.starts_with("#/#") => {
                 log::debug!("{}", hash);
+                let tag = hash.split_at("#/#".len()).1.to_string();
+                log::debug!("{}", tag);
+                Route::Home(crate::pages::Feed::Tag(tag))
+            }
+            _ => {
                 Route::Home(crate::pages::Feed::Global)
             }
         };
-        log::debug!("{}", spair::Routes::url(&route));
         match &route {
             Route::Home(feed) => {
                 if let Some(home) = self.home.as_ref() {
-                    log::debug!("home page feed");
                     home.callback_arg_mut(crate::pages::HomePage::set_feed)(feed.clone());
                     return;
                 }
             }
             _ => {}
         }
-        log::debug!("app route");
         self.app.callback_arg_mut(crate::app::App::set_route)(route);
     }
 }
