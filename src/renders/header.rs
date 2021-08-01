@@ -9,7 +9,7 @@ impl spair::Render<crate::app::App> for Header {
                 d.class("container")
                     .a(|a| {
                         a.class("navbar-brand")
-                            .href(&crate::routes::Route::Home(crate::pages::Feed::Global))
+                            .href(&crate::routes::Route::Home)
                             .r#static("conduit");
                     })
                     .ul(|u| {
@@ -18,7 +18,7 @@ impl spair::Render<crate::app::App> for Header {
                             .class("pull-xs-right")
                             .li(|i| {
                                 i.class("nav-item").a(|a| {
-                                    let route = crate::routes::Route::Home(crate::pages::Feed::Global);
+                                    let route = crate::routes::Route::Home;
                                     a.class("nav-link")
                                         .class_if("active", state.route == route)
                                         .href(&route)

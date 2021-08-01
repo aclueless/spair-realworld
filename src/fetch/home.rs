@@ -19,7 +19,7 @@ impl crate::pages::HomePage {
             .header("Access-Control-Allow-Origin", "*")
             .text_mode()
             .response()
-            .json(|state, article_list| state.article_list = article_list, Self::fetch_error)
+            .json(|state, article_list| state.article_list = Some(article_list), Self::fetch_error)
     }
 
     fn request_tags(&self) -> spair::Command<Self> {
@@ -28,10 +28,7 @@ impl crate::pages::HomePage {
             .header("Access-Control-Allow-Origin", "*")
             .text_mode()
             .response()
-            .json(|state, tag_list| {
-                state.tag_list = tag_list;
-                state.tag_list.tags.push("MyTagString".to_string());
-            }, Self::fetch_error)
+            .json(|state, tag_list| state.tag_list = Some(tag_list), Self::fetch_error)
     }
 
     fn favorite(&self) {}

@@ -7,13 +7,13 @@ impl spair::Component for crate::pages::HomePage {
     }
 
     fn register_routing_callback(router: &mut crate::routes::Router, comp: &spair::Comp<Self>) {
-        log::debug!("register_routing_callback for home page");
-        router.home = Some(comp.clone());
+        //log::debug!("register_routing_callback for home page");
+        //router.home = Some(comp.clone());
     }
 
     fn remove_routing_callback(router: &mut crate::routes::Router) {
-        log::debug!("remove_routing_callback  for home page");
-        router.home = None;
+        //log::debug!("remove_routing_callback  for home page");
+        //router.home = None;
     }
 
     fn render(&self, element: spair::Element<Self>) {
@@ -56,10 +56,14 @@ impl spair::Render<crate::pages::HomePage> for Feeds {
                     .div(|d| {
                         d.static_attributes().class("col-md-9")
                             .render(FeedTabs)
-                            .list(
-                                state.article_list.articles.iter(),
-                                spair::ListElementCreation::Clone,
-                            )
+                            .match_if(|mi| match state.article_list.as_ref() {
+                                None => spair::set_arm!(mi).r#static("Loading...").done(),
+                                Some(article_list) => spair::set_arm!(mi)
+                                    .list(
+                                        article_list.articles.iter(),
+                                        spair::ListElementCreation::Clone,
+                                    ).done(),
+                            })
                             .render(Pagenation);
                     })
                     .render(PopularTags);
@@ -213,24 +217,30 @@ impl spair::Render<crate::pages::HomePage> for PopularTags {
                     .static_nodes()
                     .p(|p| p.render("Popular Tags").done())
                     .nodes()
-                    .div(|d| {
-                        d.static_attributes().class("tag-list")
-                            .list_with_render(
-                                state.tag_list.tags.iter(),
-                                spair::ListElementCreation::Clone,
-                                "a",
-                                |tag, a| {
-                                    let route = crate::routes::Route::Home(crate::pages::Feed::Tag(tag.to_string()));
-                                    a
-                                    .href(&route)
-                                    //.on_click(comp.handler_mut(move |state| state.set_selected_tag(&cloned_tag)))
-                                    .static_attributes()
-                                    .class("tag-pill")
-                                    .class("tag-default")
-                                    .render(tag);
-                                }
-                            );
-                    });
+                    .match_if(|mi| match state.tag_list.as_ref() {
+                        None => spair::set_arm!(mi).r#static("Loading tags...").done(),
+                        Some(tag_list) => spair::set_arm!(mi)
+                            .div(|d| {
+                                d.static_attributes().class("tag-list")
+                                    .list_with_render(
+                                        tag_list.tags.iter(),
+                                        spair::ListElementCreation::Clone,
+                                        "a",
+                                        |tag, a| {
+                                            //let route = crate::routes::Route::Home(crate::pages::Feed::Tag(tag.to_string()));
+                                            let cloned_tag = tag.to_string();
+                                            a
+                                            .href_str("/#")
+                                            .on_click(comp.handler_mut(move |state| state.set_selected_tag(&cloned_tag)))
+                                            .static_attributes()
+                                            .class("tag-pill")
+                                            .class("tag-default")
+                                            .render(tag);
+                                        }
+                                    );
+                            }).done(),
+                    })
+;
             });
         });
     }

@@ -9,7 +9,7 @@ pub struct App {
 
 impl App {
     fn new(comp: spair::Comp<Self>) -> Self {
-        let route = crate::routes::Route::Home(crate::pages::Feed::Global);
+        let route = crate::routes::Route::Home;
         let page = crate::pages::Page::new(&route, &comp);
         Self {
             comp,
@@ -46,7 +46,7 @@ impl spair::Application for App {
     fn init_router(comp: &spair::Comp<Self>) -> Option<crate::routes::Router> {
         Some(crate::routes::Router {
             app: comp.clone(),
-            home: None,
+            //home: None,
         })
     }
 }
