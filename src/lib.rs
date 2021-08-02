@@ -1,9 +1,8 @@
 mod app;
 mod error;
-mod pages;
-mod renders;
+mod home;
 mod routes;
-mod fetch;
+mod urls;
 
 use spair::prelude::*;
 

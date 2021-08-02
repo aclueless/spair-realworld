@@ -1,6 +1,6 @@
 use spair::prelude::*;
 
-impl spair::Component for crate::pages::HomePage {
+impl spair::Component for super::HomePage {
     type Routes = crate::routes::Route;
     fn initialize(comp: &spair::Comp<Self>) {
         spair::update_component(comp.callback(Self::request_data_for_home_page));
@@ -21,7 +21,7 @@ impl spair::Component for crate::pages::HomePage {
     }
 }
 
-impl spair::WithParentComp for crate::pages::HomePage {
+impl spair::WithParentComp for super::HomePage {
     type Parent = crate::app::App;
     type Properties = ();
     fn init(
@@ -34,8 +34,8 @@ impl spair::WithParentComp for crate::pages::HomePage {
 }
 
 struct Banner;
-impl spair::Render<crate::pages::HomePage> for Banner {
-    fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
+impl spair::Render<super::HomePage> for Banner {
+    fn render(self, nodes: spair::Nodes<super::HomePage>) {
         nodes.static_nodes().div(|d| {
             d.class("banner").div(|d| {
                 d.class("container")
@@ -47,8 +47,8 @@ impl spair::Render<crate::pages::HomePage> for Banner {
 }
 
 struct Feeds;
-impl spair::Render<crate::pages::HomePage> for Feeds {
-    fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
+impl spair::Render<super::HomePage> for Feeds {
+    fn render(self, nodes: spair::Nodes<super::HomePage>) {
         let state = nodes.state();
         nodes.div(|d| {
             d.static_attributes().class("container").class("page").div(|d| {
@@ -73,8 +73,8 @@ impl spair::Render<crate::pages::HomePage> for Feeds {
 }
 
 struct FeedTabs;
-impl spair::Render<crate::pages::HomePage> for FeedTabs {
-    fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
+impl spair::Render<super::HomePage> for FeedTabs {
+    fn render(self, nodes: spair::Nodes<super::HomePage>) {
         let state = nodes.state();
         let comp = nodes.comp();
         nodes.div(|d| {
@@ -85,20 +85,20 @@ impl spair::Render<crate::pages::HomePage> for FeedTabs {
                     .render(FeedTab {
                         title: "Your Feed",
                         active: state.feed.is_your(),
-                        handler: comp.handler_mut(|state| state.set_feed(crate::pages::Feed::Your)),
+                        handler: comp.handler_mut(|state| state.set_feed(super::Feed::Your)),
                     })
                     .render(FeedTab {
                         title: "Global Feed",
                         active: state.feed.is_global(),
-                        handler: comp.handler_mut(|state| state.set_feed(crate::pages::Feed::Global)),
+                        handler: comp.handler_mut(|state| state.set_feed(super::Feed::Global)),
                     })
                     .match_if(|mi| match &state.feed {
-                        crate::pages::Feed::Tag(tag) => {
+                        super::Feed::Tag(tag) => {
                             let tag = tag.to_string();
                             spair::set_arm!(mi).render(FeedTab {
                                 title: &format!("#{}", tag),
                                 active: state.feed.is_tag(),
-                                handler: comp.handler_mut(move |state| state.set_feed(crate::pages::Feed::Tag(tag.clone()))),
+                                handler: comp.handler_mut(move |state| state.set_feed(super::Feed::Tag(tag.clone()))),
                             });
                         }
                         _ => spair::set_arm!(mi).done(),
@@ -114,8 +114,8 @@ struct FeedTab<'a, F> {
     active: bool,
     handler: F,
 }
-impl<'a, F: spair::Click> spair::Render<crate::pages::HomePage> for FeedTab<'a, F> {
-    fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
+impl<'a, F: spair::Click> spair::Render<super::HomePage> for FeedTab<'a, F> {
+    fn render(self, nodes: spair::Nodes<super::HomePage>) {
         nodes.li(|i| {
             i.static_attributes().class("nav-item").a(|a| {
                 a.class_if("active", self.active)
@@ -130,9 +130,9 @@ impl<'a, F: spair::Click> spair::Render<crate::pages::HomePage> for FeedTab<'a, 
     }
 }
 
-impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
+impl spair::ListItemRender<super::HomePage> for &types::ArticleInfo {
     const ROOT_ELEMENT_TAG: &'static str = "div";
-    fn render(self, element: spair::Element<crate::pages::HomePage>) {
+    fn render(self, element: spair::Element<super::HomePage>) {
         let comp = element.comp();
         let profile = crate::routes::Route::Profile(self.author.username.clone());
         let article_slug = self.slug.clone();
@@ -199,15 +199,15 @@ impl spair::ListItemRender<crate::pages::HomePage> for &types::ArticleInfo {
 }
 
 struct Pagenation;
-impl spair::Render<crate::pages::HomePage> for Pagenation {
-    fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
+impl spair::Render<super::HomePage> for Pagenation {
+    fn render(self, nodes: spair::Nodes<super::HomePage>) {
         nodes.render("Pagenation");
     }
 }
 
 struct PopularTags;
-impl spair::Render<crate::pages::HomePage> for PopularTags {
-    fn render(self, nodes: spair::Nodes<crate::pages::HomePage>) {
+impl spair::Render<super::HomePage> for PopularTags {
+    fn render(self, nodes: spair::Nodes<super::HomePage>) {
         let state = nodes.state();
         let comp = nodes.comp();
         nodes.div(|d| {

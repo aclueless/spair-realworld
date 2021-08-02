@@ -1,3 +1,6 @@
+mod fetch;
+mod renders;
+
 pub struct HomePage {
     pub feed: Feed,
     pub page_number: u32,

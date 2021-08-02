@@ -1,6 +1,6 @@
 use spair::prelude::*;
 
-impl crate::pages::HomePage {
+impl super::HomePage {
     fn fetch_error(&mut self, error: spair::FetchError) {
         //
     }
@@ -14,7 +14,7 @@ impl crate::pages::HomePage {
     }
 
     fn request_feeds(&self) -> spair::Command<Self> {
-        let url = super::UrlBuilder::new().articles().page(self.page_number).done();
+        let url = crate::urls::UrlBuilder::new().articles().page(self.page_number).done();
         spair::Request::get(&url)
             .text_mode()
             .response()
@@ -22,7 +22,7 @@ impl crate::pages::HomePage {
     }
 
     fn request_tags(&self) -> spair::Command<Self> {
-        let url = super::UrlBuilder::new().tags();
+        let url = crate::urls::UrlBuilder::new().tags();
         spair::Request::get(&url)
             .text_mode()
             .response()
