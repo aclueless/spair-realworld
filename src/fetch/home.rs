@@ -16,7 +16,6 @@ impl crate::pages::HomePage {
     fn request_feeds(&self) -> spair::Command<Self> {
         let url = super::UrlBuilder::new().articles().page(self.page_number).done();
         spair::Request::get(&url)
-            .header("Access-Control-Allow-Origin", "*")
             .text_mode()
             .response()
             .json(|state, article_list| state.article_list = Some(article_list), Self::fetch_error)
@@ -25,7 +24,6 @@ impl crate::pages::HomePage {
     fn request_tags(&self) -> spair::Command<Self> {
         let url = super::UrlBuilder::new().tags();
         spair::Request::get(&url)
-            .header("Access-Control-Allow-Origin", "*")
             .text_mode()
             .response()
             .json(|state, tag_list| state.tag_list = Some(tag_list), Self::fetch_error)

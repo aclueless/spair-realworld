@@ -32,7 +32,9 @@ impl HomePage {
             feed: Feed::Global,
             page_number: 0,
             article_list: None,
-            tag_list: None,
+            tag_list: Some(types::TagListInfo{
+                tags: vec!["TagToTest".to_string()]
+            }),
         }
     }
 

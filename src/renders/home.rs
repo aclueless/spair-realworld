@@ -57,7 +57,7 @@ impl spair::Render<crate::pages::HomePage> for Feeds {
                         d.static_attributes().class("col-md-9")
                             .render(FeedTabs)
                             .match_if(|mi| match state.article_list.as_ref() {
-                                None => spair::set_arm!(mi).r#static("Loading...").done(),
+                                None => spair::set_arm!(mi).r#static("Loading articles...").done(),
                                 Some(article_list) => spair::set_arm!(mi)
                                     .list(
                                         article_list.articles.iter(),
@@ -227,10 +227,10 @@ impl spair::Render<crate::pages::HomePage> for PopularTags {
                                         spair::ListElementCreation::Clone,
                                         "a",
                                         |tag, a| {
-                                            //let route = crate::routes::Route::Home(crate::pages::Feed::Tag(tag.to_string()));
+                                            let route = crate::routes::Route::Home;
                                             let cloned_tag = tag.to_string();
                                             a
-                                            .href_str("/#")
+                                            .href(&route) // This is a hack?
                                             .on_click(comp.handler_mut(move |state| state.set_selected_tag(&cloned_tag)))
                                             .static_attributes()
                                             .class("tag-pill")
@@ -245,4 +245,3 @@ impl spair::Render<crate::pages::HomePage> for PopularTags {
         });
     }
 }
-
