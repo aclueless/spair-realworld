@@ -20,6 +20,7 @@ impl spair::Component for super::Register {
 
 impl super::Register {
     fn render_register(&self, nodes: spair::Nodes<Self>) {
+        let comp = nodes.comp();
         nodes
             .h1(|h| h.class("text-xs-center").r#static("Sign up").done())
             .p(|p| {
@@ -28,14 +29,21 @@ impl super::Register {
                         .r#static("Have an account?");
                 });
             })
-            .ul(|u| {
-                u.class("error-messages")
-                    .li(|li| li.r#static("That email is already taken").done());
-            })
+            .render(crate::renders::Error(self.error.as_ref()))
             .form(|f| {
-                f.fieldset(|f| {
+                f
+                .fieldset(|f| {
                     f.class("form-group").input(|i| {
-                        i.class("form-control")
+                        i.value(&self.register_info.username)
+                            .static_attributes()
+                            .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
+                                if let Some(value) =
+                                    event.target_as_input_element().map(|i| i.value())
+                                {
+                                    state.set_username(value);
+                                }
+                            }))
+                            .class("form-control")
                             .class("form-control-lg")
                             .r#type(spair::InputType::Text)
                             .placeholder("Your Name");
@@ -43,7 +51,16 @@ impl super::Register {
                 })
                 .fieldset(|f| {
                     f.class("form-group").input(|i| {
-                        i.class("form-control")
+                        i.value(&self.register_info.email)
+                            .static_attributes()
+                            .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
+                                if let Some(value) =
+                                    event.target_as_input_element().map(|i| i.value())
+                                {
+                                    state.set_email(value);
+                                }
+                            }))
+                            .class("form-control")
                             .class("form-control-lg")
                             .r#type(spair::InputType::Text)
                             .placeholder("Email");
@@ -51,17 +68,28 @@ impl super::Register {
                 })
                 .fieldset(|f| {
                     f.class("form-group").input(|i| {
-                        i.class("form-control")
+                        i.value(&self.register_info.password)
+                            .static_attributes()
+                            .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
+                                if let Some(value) =
+                                    event.target_as_input_element().map(|i| i.value())
+                                {
+                                    state.set_password(value);
+                                }
+                            }))
+                            .class("form-control")
                             .class("form-control-lg")
                             .r#type(spair::InputType::Password)
                             .placeholder("Password");
                     });
                 })
+                .static_nodes()
                 .button(|b| {
                     b.class("btn")
                         .class("btn-lg")
                         .class("btn-primary")
                         .class("pull-xs-right")
+                        .on_click(comp.handler(super::Register::send_register_request))
                         .r#static("Sign up");
                 });
             });
