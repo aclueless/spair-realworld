@@ -1,4 +1,5 @@
-const API_URL: &str = "https://conduit.productionready.io/api";
+//const API_URL: &str = "https://conduit.productionready.io/api";
+const API_URL: &str = "http://localhost:8000/api";
 
 use derive_more as dmore;
 
@@ -41,7 +42,7 @@ impl Builder for ArticleInPage {}
 
 impl UrlBuilder {
     pub fn new() -> Self {
-        Self (API_URL.to_string())
+        Self(API_URL.to_string())
     }
 
     pub fn login(mut self) -> String {

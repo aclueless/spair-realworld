@@ -12,7 +12,7 @@ pub enum Route {
 
 pub struct Router {
     pub app: spair::Comp<crate::app::App>,
-//    pub home: Option<spair::Comp<crate::pages::HomePage>>,
+    //    pub home: Option<spair::Comp<crate::pages::HomePage>>,
 }
 
 impl spair::Routes for Route {
@@ -40,9 +40,7 @@ impl spair::Router for Router {
             "#/register" => Route::Register,
             "#/settings" => Route::Settings,
             "#/editor" => Route::Editor(None),
-            _ => {
-                Route::Home
-            }
+            _ => Route::Home,
         };
         // match &route {
         //     Route::Home(feed) => {

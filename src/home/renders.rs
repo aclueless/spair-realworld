@@ -17,7 +17,11 @@ impl spair::Component for super::HomePage {
     }
 
     fn render(&self, element: spair::Element<Self>) {
-        element.class("home-page").render(Banner).render(&format!("{:?}", self.feed)).render(Feeds);
+        element
+            .class("home-page")
+            .render(Banner)
+            .render(&format!("{:?}", self.feed))
+            .render(Feeds);
     }
 }
 
@@ -51,23 +55,31 @@ impl spair::Render<super::HomePage> for Feeds {
     fn render(self, nodes: spair::Nodes<super::HomePage>) {
         let state = nodes.state();
         nodes.div(|d| {
-            d.static_attributes().class("container").class("page").div(|d| {
-                d.static_attributes().class("row")
-                    .div(|d| {
-                        d.static_attributes().class("col-md-9")
-                            .render(FeedTabs)
-                            .match_if(|mi| match state.article_list.as_ref() {
-                                None => spair::set_arm!(mi).r#static("Loading articles...").done(),
-                                Some(article_list) => spair::set_arm!(mi)
-                                    .list(
-                                        article_list.articles.iter(),
-                                        spair::ListElementCreation::Clone,
-                                    ).done(),
-                            })
-                            .render(Pagenation);
-                    })
-                    .render(PopularTags);
-            });
+            d.static_attributes()
+                .class("container")
+                .class("page")
+                .div(|d| {
+                    d.static_attributes()
+                        .class("row")
+                        .div(|d| {
+                            d.static_attributes()
+                                .class("col-md-9")
+                                .render(FeedTabs)
+                                .match_if(|mi| match state.article_list.as_ref() {
+                                    None => {
+                                        spair::set_arm!(mi).r#static("Loading articles...").done()
+                                    }
+                                    Some(article_list) => spair::set_arm!(mi)
+                                        .list(
+                                            article_list.articles.iter(),
+                                            spair::ListElementCreation::Clone,
+                                        )
+                                        .done(),
+                                })
+                                .render(Pagenation);
+                        })
+                        .render(PopularTags);
+                });
         });
     }
 }
@@ -79,7 +91,8 @@ impl spair::Render<super::HomePage> for FeedTabs {
         let comp = nodes.comp();
         nodes.div(|d| {
             d.static_attributes().class("feed-toggle").ul(|u| {
-                u.static_attributes().class("nav")
+                u.static_attributes()
+                    .class("nav")
                     .class("nav-pills")
                     .class("outline-active")
                     .render(FeedTab {
@@ -98,12 +111,13 @@ impl spair::Render<super::HomePage> for FeedTabs {
                             spair::set_arm!(mi).render(FeedTab {
                                 title: &format!("#{}", tag),
                                 active: state.feed.is_tag(),
-                                handler: comp.handler_mut(move |state| state.set_feed(super::Feed::Tag(tag.clone()))),
+                                handler: comp.handler_mut(move |state| {
+                                    state.set_feed(super::Feed::Tag(tag.clone()))
+                                }),
                             });
                         }
                         _ => spair::set_arm!(mi).done(),
-                    })
-                    ;
+                    });
             });
         });
     }
@@ -137,15 +151,17 @@ impl spair::ListItemRender<super::HomePage> for &types::ArticleInfo {
         let profile = crate::routes::Route::Profile(self.author.username.clone());
         let article_slug = self.slug.clone();
         element
-            .static_attributes().class("article-preview")
+            .static_attributes()
+            .class("article-preview")
             .div(|d| {
-                d.static_attributes().class("article-meta")
+                d.static_attributes()
+                    .class("article-meta")
                     .a(|a| {
-                        a.href(&profile)
-                        .img(|i| i.src(&self.author.image).done());
+                        a.href(&profile).img(|i| i.src(&self.author.image).done());
                     })
                     .div(|d| {
-                        d.static_attributes().class("info")
+                        d.static_attributes()
+                            .class("info")
                             .a(|a| {
                                 a.href(&profile)
                                     .static_attributes()
@@ -153,48 +169,48 @@ impl spair::ListItemRender<super::HomePage> for &types::ArticleInfo {
                                     .render(&self.author.username);
                             })
                             .span(|s| {
-                                s.static_attributes().class("date").render(&self.created_at.to_string());
+                                s.static_attributes()
+                                    .class("date")
+                                    .render(&self.created_at.to_string());
                             });
                     })
                     .button(|b| {
-                        b
-                            .on_click(comp.handler_mut(move |state| state.toggle_favorite(&article_slug)))
-                            .static_attributes()
-                            .class("btn")
-                            .class_or(self.favorited, "btn-primary", "btn-outline-primary")
-                            .class("btn-sm")
-                            .class("pull-xs-right")
-                            .i(|i| i.static_attributes().class("ion-heart").done())
-                            .r#static(" ")
-                            .render(self.favorites_count);
+                        b.on_click(
+                            comp.handler_mut(move |state| state.toggle_favorite(&article_slug)),
+                        )
+                        .static_attributes()
+                        .class("btn")
+                        .class_or(self.favorited, "btn-primary", "btn-outline-primary")
+                        .class("btn-sm")
+                        .class("pull-xs-right")
+                        .i(|i| i.static_attributes().class("ion-heart").done())
+                        .r#static(" ")
+                        .render(self.favorites_count);
                     });
             })
             .a(|a| {
                 let route = crate::routes::Route::Article(From::from(self.slug.clone()));
-                a
-                    .href(&route)
-                    .static_attributes().class("preview-link")
+                a.href(&route)
+                    .static_attributes()
+                    .class("preview-link")
                     .h1(|h| h.render(&self.title).done())
                     .p(|p| p.render(&self.description).done())
                     .static_nodes()
                     .span(|s| s.r#static("Read more...").done());
             })
             .ul(|u| {
-                u.static_attributes()
-                    .class("tag-list")
-                    .list_with_render(
-                        self.tag_list.iter(),
-                        spair::ListElementCreation::Clone,
-                        "li",
-                        |tag, li| {
-                            li.class("tag-default")
+                u.static_attributes().class("tag-list").list_with_render(
+                    self.tag_list.iter(),
+                    spair::ListElementCreation::Clone,
+                    "li",
+                    |tag, li| {
+                        li.class("tag-default")
                             .class("tag-pill")
                             .class("tag-outlinepill")
                             .render(tag);
-                        }
-                    );
-            })
-            ;
+                    },
+                );
+            });
     }
 }
 

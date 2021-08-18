@@ -35,8 +35,8 @@ impl HomePage {
             feed: Feed::Global,
             page_number: 0,
             article_list: None,
-            tag_list: Some(types::TagListInfo{
-                tags: vec!["TagToTest".to_string()]
+            tag_list: Some(types::TagListInfo {
+                tags: vec!["TagToTest".to_string()],
             }),
         }
     }
@@ -50,8 +50,8 @@ impl HomePage {
     }
 
     pub fn set_selected_tag(&mut self, tag: &str) {
+        log::info!("{}", tag);
         self.feed = Feed::Tag(tag.to_string());
         self.page_number = 0;
-
     }
 }

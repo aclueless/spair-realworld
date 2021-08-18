@@ -12,11 +12,16 @@ pub struct App {
 
 pub enum Page {
     Home(spair::ChildComp<crate::home::HomePage>),
+    Register(spair::ChildComp<crate::register::Register>),
 }
 
 impl Page {
-    pub fn new(_route: &crate::routes::Route, comp: &spair::Comp<crate::app::App>) -> Self {
-        Self::Home(spair::ChildComp::init(comp, ()))
+    pub fn new(route: &crate::routes::Route, comp: &spair::Comp<crate::app::App>) -> Self {
+        use crate::routes::Route;
+        match route {
+            Route::Register => Self::Register(spair::ChildComp::init(comp, ())),
+            _ => Self::Home(spair::ChildComp::init(comp, ())),
+        }
     }
 }
 
@@ -37,6 +42,7 @@ impl App {
             return spair::ShouldRender::No;
         }
         self.route = route;
+        self.page = Page::new(&self.route, &self.comp);
         spair::ShouldRender::Yes
     }
 }
@@ -50,6 +56,7 @@ impl spair::Component for App {
             .render(&self.route.url())
             .div(|d| match &self.page {
                 Page::Home(child) => d.component(child),
+                Page::Register(child) => d.component(child),
             })
             .render(footer::Footer);
     }
