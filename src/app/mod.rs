@@ -45,6 +45,11 @@ impl App {
         self.page = Page::new(&self.route, &self.comp);
         spair::ShouldRender::Yes
     }
+
+    pub fn set_user(&mut self, user: types::UserInfo) {
+        self.user = Some(user);
+        self.set_route(crate::routes::Route::Home);
+    }
 }
 
 impl spair::Component for App {
