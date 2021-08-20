@@ -1,3 +1,5 @@
+use spair::prelude::*;
+
 mod renders;
 
 pub struct Register {
@@ -26,6 +28,20 @@ impl Register {
     }
 
     fn send_register_request(&self) -> spair::Command<Self> {
-        spair::Request::post()
+        let url = crate::urls::UrlBuilder::new().register_user();
+        spair::Request::post(&url)
+            .text_mode()
+            .body()
+            .json(&self.register_info)
+            .response()
+            .json(Self::register_ok, Self::register_error)
+    }
+
+    fn register_ok(&mut self, user: types::UserInfoWrapper) {
+        //
+    }
+
+    fn register_error(&mut self, e: spair::ResponsedError<types::ErrorInfo>) {
+        //
     }
 }

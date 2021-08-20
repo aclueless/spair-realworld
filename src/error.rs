@@ -31,3 +31,25 @@ pub enum Error {
     #[error("Http Request Error")]
     RequestError,
 }
+
+impl From<spair::ResponsedError<types::ErrorInfo>> for Error {
+    fn from(e: spair::ResponsedError<types::ErrorInfo>) -> Self {
+        match e {
+            spair::ResponsedError::FetchError(spair::FetchError::DeserializeJsonError(_)) => {
+                Self::DeserializeError
+            }
+            spair::ResponsedError::ApiError(e) => {
+                match (e.data, e.status) {
+                    (_, spair::StatusCode::UNAUTHORIZED) => Self::Unauthorized,
+                    (_, spair::StatusCode::FORBIDDEN) => Self::Forbidden,
+                    (_, spair::StatusCode::NOT_FOUND) => Self::NotFound,
+                    (_, spair::StatusCode::INTERNAL_SERVER_ERROR) => Self::InternalServerError,
+                    (Ok(e), _) => Self::UnprocessableEntity(e),
+                    (Err(spair::FetchError::DeserializeJsonError(_)), _) => Self::DeserializeError,
+                    _ => Self::RequestError,
+                }
+            }
+            _ => Self::RequestError,
+        }
+    }
+}
