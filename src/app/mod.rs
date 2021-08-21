@@ -1,13 +1,26 @@
 use spair::prelude::*;
 
-mod footer;
-mod header;
+mod renders;
+
+const REALWORLD_TOKEN_KEY: &str = "realworld-token-key";
+
+fn store_token(token: &str) {
+    spair::local_storage()
+        .set_item(REALWORLD_TOKEN_KEY, token)
+        .expect_throw("Unable to store user token to local storage");
+}
+
+fn get_token() -> Option<String> {
+    spair::local_storage()
+        .get_item(REALWORLD_TOKEN_KEY)
+        .expect_throw("Unable to get user token from local storage")
+}
 
 pub struct App {
-    pub comp: spair::Comp<Self>,
-    pub route: crate::routes::Route,
-    pub user: Option<types::UserInfo>,
-    pub page: Page,
+    comp: spair::Comp<Self>,
+    route: crate::routes::Route,
+    user: Option<types::UserInfo>,
+    page: Page,
 }
 
 pub enum Page {
@@ -48,37 +61,21 @@ impl App {
         spair::ShouldRender::Yes
     }
 
-    pub fn set_user(&mut self, user: types::UserInfo) {
+    pub fn set_user(&mut self, user: types::UserInfoWrapper) {
+        let user = user.user;
+        store_token(&user.token);
         self.user = Some(user);
         self.set_route(crate::routes::Route::Home);
     }
-}
 
-impl spair::Component for App {
-    type Routes = crate::routes::Route;
-
-    fn render(&self, element: spair::Element<Self>) {
-        element
-            .render(header::Header)
-            .render(&self.route.url())
-            .div(|d| match &self.page {
-                Page::Home(child) => d.component(child),
-                Page::Register(child) => d.component(child),
-                Page::Login(child) => d.component(child),
-            })
-            .render(footer::Footer);
+    fn get_logged_in_user_info(&mut self, token: String) -> spair::Command<Self> {
+        let url = crate::urls::UrlBuilder::new().user();
+        spair::Request::get(&url)
+            .header("Authorization", format!("Token {}", token))
+            .text_mode()
+            .response()
+            .json(Self::set_user, |_, _: spair::FetchError| {})
     }
 }
 
-impl spair::Application for App {
-    fn init(comp: &spair::Comp<Self>) -> Self {
-        Self::new(comp.clone())
-    }
 
-    fn init_router(comp: &spair::Comp<Self>) -> Option<crate::routes::Router> {
-        Some(crate::routes::Router {
-            app: comp.clone(),
-            //home: None,
-        })
-    }
-}

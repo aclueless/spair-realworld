@@ -2,7 +2,7 @@ use spair::prelude::*;
 
 impl spair::Component for super::HomePage {
     type Routes = crate::routes::Route;
-    fn initialize(comp: &spair::Comp<Self>) {
+    fn init(comp: &spair::Comp<Self>) {
         spair::update_component(comp.callback(Self::request_data_for_home_page));
     }
 

@@ -43,7 +43,7 @@ impl Register {
     }
 
     fn register_ok(&mut self, user: types::UserInfoWrapper) {
-        spair::update_component(self.app_comp.callback_once_mut(move |state| state.set_user(user.user)));
+        spair::update_component(self.app_comp.callback_once_mut(move |state| state.set_user(user)));
     }
 
     fn register_error(&mut self, e: spair::ResponsedError<types::ErrorInfo>) {
