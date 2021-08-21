@@ -32,7 +32,7 @@ impl Register {
     fn send_register_request(&mut self) -> spair::Command<Self> {
         self.error = None;
         let url = crate::urls::UrlBuilder::new().register_user();
-        spair::Request::post(&url)
+        spair::http::Request::post(&url)
             .text_mode()
             .body()
             .json(&types::RegisterInfoWrapper {

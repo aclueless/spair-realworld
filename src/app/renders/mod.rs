@@ -7,8 +7,8 @@ impl spair::Component for super::App {
     type Routes = crate::routes::Route;
 
     fn init(comp: &spair::Comp<Self>) {
-        if let Some(token) = super::get_token() {
-            spair::update_component(comp.callback_once_mut(|state| state.get_logged_in_user_info(token)));
+        if crate::get_token().is_some() {
+            spair::update_component(comp.callback_once_mut(super::App::get_logged_in_user_info));
         }
     }
 

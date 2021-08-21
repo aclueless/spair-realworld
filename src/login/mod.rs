@@ -28,7 +28,7 @@ impl Login {
     fn send_login_request(&mut self) -> spair::Command<Self> {
         self.error = None;
         let url = crate::urls::UrlBuilder::new().login();
-        spair::Request::post(&url)
+        spair::http::Request::post(&url)
             .text_mode()
             .body()
             .json(&types::LoginInfoWrapper {

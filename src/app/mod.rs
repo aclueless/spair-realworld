@@ -1,20 +1,7 @@
+use crate::SetAuthorizationToken;
 use spair::prelude::*;
 
 mod renders;
-
-const REALWORLD_TOKEN_KEY: &str = "realworld-token-key";
-
-fn store_token(token: &str) {
-    spair::local_storage()
-        .set_item(REALWORLD_TOKEN_KEY, token)
-        .expect_throw("Unable to store user token to local storage");
-}
-
-fn get_token() -> Option<String> {
-    spair::local_storage()
-        .get_item(REALWORLD_TOKEN_KEY)
-        .expect_throw("Unable to get user token from local storage")
-}
 
 pub struct App {
     comp: spair::Comp<Self>,
@@ -63,15 +50,15 @@ impl App {
 
     pub fn set_user(&mut self, user: types::UserInfoWrapper) {
         let user = user.user;
-        store_token(&user.token);
+        crate::store_token(&user.token);
         self.user = Some(user);
         self.set_route(crate::routes::Route::Home);
     }
 
-    fn get_logged_in_user_info(&mut self, token: String) -> spair::Command<Self> {
+    fn get_logged_in_user_info(&mut self) -> spair::Command<Self> {
         let url = crate::urls::UrlBuilder::new().user();
-        spair::Request::get(&url)
-            .header("Authorization", format!("Token {}", token))
+        spair::http::Request::get(&url)
+            .set_token()
             .text_mode()
             .response()
             .json(Self::set_user, |_, _: spair::FetchError| {})

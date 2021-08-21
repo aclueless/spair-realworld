@@ -18,7 +18,7 @@ impl super::HomePage {
             .articles()
             .page(self.page_number)
             .done();
-        spair::Request::get(&url).text_mode().response().json(
+        spair::http::Request::get(&url).text_mode().response().json(
             |state, article_list| state.article_list = Some(article_list),
             Self::fetch_error,
         )
@@ -26,7 +26,7 @@ impl super::HomePage {
 
     fn request_tags(&self) -> spair::Command<Self> {
         let url = crate::urls::UrlBuilder::new().tags();
-        spair::Request::get(&url).text_mode().response().json(
+        spair::http::Request::get(&url).text_mode().response().json(
             |state, tag_list| state.tag_list = Some(tag_list),
             Self::fetch_error,
         )
