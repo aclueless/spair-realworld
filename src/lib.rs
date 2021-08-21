@@ -2,6 +2,7 @@ mod app;
 mod error;
 mod home;
 mod register;
+mod login;
 mod renders;
 mod routes;
 mod urls;

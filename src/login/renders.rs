@@ -1,6 +1,6 @@
 use spair::prelude::*;
 
-impl spair::Component for super::Register {
+impl spair::Component for super::Login {
     type Routes = crate::routes::Route;
     fn render(&self, element: spair::Element<Self>) {
         element.div(|d| {
@@ -10,7 +10,7 @@ impl spair::Component for super::Register {
                         d.class("col-md-6")
                             .class("offset-md-3")
                             .class("col-xs-12")
-                            .render_fn(|nodes| self.render_register(nodes));
+                            .render_fn(|nodes| self.render_login(nodes));
                     });
                 });
             });
@@ -18,15 +18,15 @@ impl spair::Component for super::Register {
     }
 }
 
-impl super::Register {
-    fn render_register(&self, nodes: spair::Nodes<Self>) {
+impl super::Login {
+    fn render_login(&self, nodes: spair::Nodes<Self>) {
         let comp = nodes.comp();
         nodes
-            .h1(|h| h.class("text-xs-center").r#static("Sign up").done())
+            .h1(|h| h.class("text-xs-center").r#static("Sign in").done())
             .p(|p| {
                 p.class("text-xs-center").a(|a| {
-                    a.href(&crate::routes::Route::Login)
-                        .r#static("Have an account?");
+                    a.href(&crate::routes::Route::Register)
+                        .r#static("Need an account?");
                 });
             })
             .render(crate::renders::Error(self.error.as_ref()))
@@ -34,24 +34,7 @@ impl super::Register {
                 f
                 .fieldset(|f| {
                     f.class("form-group").input(|i| {
-                        i.value(&self.register_info.username)
-                            .static_attributes()
-                            .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
-                                if let Some(input) =
-                                    event.target_as_input_element()
-                                {
-                                    state.set_username(input.value());
-                                }
-                            }))
-                            .class("form-control")
-                            .class("form-control-lg")
-                            .r#type(spair::InputType::Text)
-                            .placeholder("Your Name");
-                    });
-                })
-                .fieldset(|f| {
-                    f.class("form-group").input(|i| {
-                        i.value(&self.register_info.email)
+                        i.value(&self.login_info.email)
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
                                 if let Some(input) =
@@ -68,7 +51,7 @@ impl super::Register {
                 })
                 .fieldset(|f| {
                     f.class("form-group").input(|i| {
-                        i.value(&self.register_info.password)
+                        i.value(&self.login_info.password)
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
                                 if let Some(input) =
@@ -89,14 +72,14 @@ impl super::Register {
                         .class("btn-lg")
                         .class("btn-primary")
                         .class("pull-xs-right")
-                        .on_click(comp.handler_mut(super::Register::send_register_request))
-                        .r#static("Sign up");
+                        .on_click(comp.handler_mut(super::Login::send_login_request))
+                        .r#static("Sign in");
                 });
             });
     }
 }
 
-impl spair::WithParentComp for super::Register {
+impl spair::WithParentComp for super::Login {
     type Parent = crate::app::App;
     type Properties = ();
     fn init(parent: &spair::Comp<Self::Parent>, _: &spair::Comp<Self>, _: Self::Properties) -> Self {

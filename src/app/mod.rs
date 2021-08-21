@@ -13,6 +13,7 @@ pub struct App {
 pub enum Page {
     Home(spair::ChildComp<crate::home::HomePage>),
     Register(spair::ChildComp<crate::register::Register>),
+    Login(spair::ChildComp<crate::login::Login>),
 }
 
 impl Page {
@@ -20,6 +21,7 @@ impl Page {
         use crate::routes::Route;
         match route {
             Route::Register => Self::Register(spair::ChildComp::init(comp, ())),
+            Route::Login => Self::Login(spair::ChildComp::init(comp, ())),
             _ => Self::Home(spair::ChildComp::init(comp, ())),
         }
     }
@@ -62,6 +64,7 @@ impl spair::Component for App {
             .div(|d| match &self.page {
                 Page::Home(child) => d.component(child),
                 Page::Register(child) => d.component(child),
+                Page::Login(child) => d.component(child),
             })
             .render(footer::Footer);
     }
