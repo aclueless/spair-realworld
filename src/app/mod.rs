@@ -64,5 +64,3 @@ impl App {
             .json(Self::set_user, |_, _: spair::FetchError| {})
     }
 }
-
-

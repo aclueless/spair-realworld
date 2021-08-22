@@ -32,14 +32,17 @@ impl Login {
             .text_mode()
             .body()
             .json(&types::LoginInfoWrapper {
-                user: self.login_info.clone()
+                user: self.login_info.clone(),
             })
             .response()
             .json(Self::login_ok, Self::login_error)
     }
 
     fn login_ok(&mut self, user: types::UserInfoWrapper) {
-        spair::update_component(self.app_comp.callback_once_mut(move |state| state.set_user(user)));
+        spair::update_component(
+            self.app_comp
+                .callback_once_mut(move |state| state.set_user(user)),
+        );
     }
 
     fn login_error(&mut self, e: spair::ResponsedError<types::ErrorInfo>) {

@@ -31,15 +31,12 @@ impl super::Login {
             })
             .render(crate::renders::Error(self.error.as_ref()))
             .form(|f| {
-                f
-                .fieldset(|f| {
+                f.fieldset(|f| {
                     f.class("form-group").input(|i| {
                         i.value(&self.login_info.email)
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
-                                if let Some(input) =
-                                    event.target_as_input_element()
-                                {
+                                if let Some(input) = event.target_as_input_element() {
                                     state.set_email(input.value());
                                 }
                             }))
@@ -54,9 +51,7 @@ impl super::Login {
                         i.value(&self.login_info.password)
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
-                                if let Some(input) =
-                                    event.target_as_input_element()
-                                {
+                                if let Some(input) = event.target_as_input_element() {
                                     state.set_password(input.value());
                                 }
                             }))
@@ -82,7 +77,11 @@ impl super::Login {
 impl spair::WithParentComp for super::Login {
     type Parent = crate::app::App;
     type Properties = ();
-    fn init(parent: &spair::Comp<Self::Parent>, _: &spair::Comp<Self>, _: Self::Properties) -> Self {
+    fn init(
+        parent: &spair::Comp<Self::Parent>,
+        _: &spair::Comp<Self>,
+        _: Self::Properties,
+    ) -> Self {
         Self::new(parent.clone())
     }
 }

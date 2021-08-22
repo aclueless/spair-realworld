@@ -38,17 +38,15 @@ impl From<spair::ResponsedError<types::ErrorInfo>> for Error {
             spair::ResponsedError::FetchError(spair::FetchError::DeserializeJsonError(_)) => {
                 Self::DeserializeError
             }
-            spair::ResponsedError::ApiError(e) => {
-                match (e.data, e.status) {
-                    (_, spair::http::StatusCode::UNAUTHORIZED) => Self::Unauthorized,
-                    (_, spair::http::StatusCode::FORBIDDEN) => Self::Forbidden,
-                    (_, spair::http::StatusCode::NOT_FOUND) => Self::NotFound,
-                    (_, spair::http::StatusCode::INTERNAL_SERVER_ERROR) => Self::InternalServerError,
-                    (Ok(e), _) => Self::UnprocessableEntity(e),
-                    (Err(spair::FetchError::DeserializeJsonError(_)), _) => Self::DeserializeError,
-                    _ => Self::RequestError,
-                }
-            }
+            spair::ResponsedError::ApiError(e) => match (e.data, e.status) {
+                (_, spair::http::StatusCode::UNAUTHORIZED) => Self::Unauthorized,
+                (_, spair::http::StatusCode::FORBIDDEN) => Self::Forbidden,
+                (_, spair::http::StatusCode::NOT_FOUND) => Self::NotFound,
+                (_, spair::http::StatusCode::INTERNAL_SERVER_ERROR) => Self::InternalServerError,
+                (Ok(e), _) => Self::UnprocessableEntity(e),
+                (Err(spair::FetchError::DeserializeJsonError(_)), _) => Self::DeserializeError,
+                _ => Self::RequestError,
+            },
             _ => Self::RequestError,
         }
     }

@@ -36,14 +36,17 @@ impl Register {
             .text_mode()
             .body()
             .json(&types::RegisterInfoWrapper {
-                user: self.register_info.clone()
+                user: self.register_info.clone(),
             })
             .response()
             .json(Self::register_ok, Self::register_error)
     }
 
     fn register_ok(&mut self, user: types::UserInfoWrapper) {
-        spair::update_component(self.app_comp.callback_once_mut(move |state| state.set_user(user)));
+        spair::update_component(
+            self.app_comp
+                .callback_once_mut(move |state| state.set_user(user)),
+        );
     }
 
     fn register_error(&mut self, e: spair::ResponsedError<types::ErrorInfo>) {
