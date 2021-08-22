@@ -14,6 +14,7 @@ pub enum Page {
     Home(spair::ChildComp<crate::home::HomePage>),
     Register(spair::ChildComp<crate::register::Register>),
     Login(spair::ChildComp<crate::login::Login>),
+    Editor(spair::ChildComp<crate::article_editor::Editor>),
 }
 
 impl Page {
@@ -22,6 +23,7 @@ impl Page {
         match route {
             Route::Register => Self::Register(spair::ChildComp::init(comp, ())),
             Route::Login => Self::Login(spair::ChildComp::init(comp, ())),
+            Route::Editor(slug) => Self::Editor(spair::ChildComp::init(comp, slug.clone())),
             _ => Self::Home(spair::ChildComp::init(comp, ())),
         }
     }
@@ -62,5 +64,9 @@ impl App {
             .text_mode()
             .response()
             .json(Self::set_user, |_, _: spair::FetchError| {})
+    }
+
+    pub fn view_article(&mut self, article_info: types::ArticleInfoWrapper) {
+        //
     }
 }

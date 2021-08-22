@@ -20,6 +20,7 @@ impl spair::Component for super::App {
                 super::Page::Home(child) => d.component(child),
                 super::Page::Register(child) => d.component(child),
                 super::Page::Login(child) => d.component(child),
+                super::Page::Editor(child) => d.component(child),
             })
             .render(footer::Footer);
     }

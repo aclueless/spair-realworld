@@ -89,11 +89,15 @@ impl super::Editor {
                 .fieldset(|f| {
                     f.class("form-group")
                         .input(|i| {
-                            i.value(&self.tag_string)
+                            i//.value(&self.tag_string)
                                 .static_attributes()
-                                .on_click(comp.handler_arg_mut(move |state, event: spair::InputEvent| {
-                                    if let Some(input) = event.target_as_input_element() {
-                                        state.set_tags(input.value());
+                                .on_key_up(comp.handler_arg_mut(move |state, event: spair::KeyboardEvent| {
+                                    if event.raw().code() != "Enter" {
+                                        return;
+                                    }
+                                    if let Some(input) = event.target_as::<spair::web_sys::HtmlInputElement>() {
+                                        state.add_tag(input.value());
+                                        input.set_value("");
                                     }
                                 }))
                                 .r#type(spair::InputType::Text)
@@ -111,11 +115,11 @@ impl super::Editor {
                                             .static_attributes()
                                             .class("tag-default")
                                             .class("tag-pill")
-                                            .static_nodes()
                                             .i(|i| {
                                                 let tag = tag.to_string();
-                                                i.class("ion-close-round")
-                                                    .on_click(comp.handler_mut(move |state| state.remove_tag(&tag)));
+                                                i.on_click(comp.handler_mut(move |state| state.remove_tag(&tag)))
+                                                    .static_attributes()
+                                                    .class("ion-close-round");
                                             })
                                             .render(tag);
                                     }
