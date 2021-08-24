@@ -82,6 +82,7 @@ impl super::Register {
                         .class("btn-lg")
                         .class("btn-primary")
                         .class("pull-xs-right")
+                        .r#type(spair::ButtonType::Button)
                         .on_click(comp.handler_mut(super::Register::send_register_request))
                         .r#static("Sign up");
                 });

@@ -54,7 +54,8 @@ impl App {
         let user = user.user;
         crate::store_token(&user.token);
         self.user = Some(user);
-        self.set_route(crate::routes::Route::Home);
+        //self.set_route(crate::routes::Route::Home);
+        crate::routes::Route::Home.execute_routing();
     }
 
     fn get_logged_in_user_info(&mut self) -> spair::Command<Self> {

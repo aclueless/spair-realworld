@@ -67,6 +67,7 @@ impl super::Login {
                         .class("btn-lg")
                         .class("btn-primary")
                         .class("pull-xs-right")
+                        .r#type(spair::ButtonType::Button)
                         .on_click(comp.handler_mut(super::Login::send_login_request))
                         .r#static("Sign in");
                 });
