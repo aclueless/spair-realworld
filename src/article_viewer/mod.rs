@@ -5,6 +5,7 @@ pub struct ArticleViewer {
     user: Option<types::UserInfo>,
     slug: types::Slug,
     article: Option<types::ArticleInfo>,
+    comments: Option<Vec::Comment>,
     error: Option<crate::error::Error>,
 }
 

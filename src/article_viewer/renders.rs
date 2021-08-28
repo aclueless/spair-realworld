@@ -26,6 +26,7 @@ impl spair::WithParentComp for super::ArticleViewer {
 
 impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
     fn render(self, nodes: spair::Nodes<super::ArticleViewer>) {
+        let state = nodes.state();
         nodes
             .div(|d| {
                 d.class("banner")
@@ -33,7 +34,7 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
                         d.class("container")
                             .h1(|h| h.render(&self.title).done())
                             .render(ArticleMeta(self));
-                    })
+                    });
             })
             .div(|d| {
                 d.class("container").class("page")
@@ -42,15 +43,41 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
                             .class("article-content")
                             .div(|d| {
                                 d.class("col-md-12")
-                                .p(|p| p.render(&self.body))
+                                    .render(&self.body);
                             })
+                            .ul(|u| {
+                                u.class("tag-list")
+                                    .list_with_render(
+                                        self.0.tag_list.iter(),
+                                        spair::ListElementCreation::Clone,
+                                        "li",
+                                        |tag, li| {
+                                            li.class("tag-default")
+                                                .class("tag-pill")
+                                                .class("tag-outline")
+                                                .render(tag);
+                                        }
+                                    )
+                            });
                     })
                     .horizontal_line()
                     .div(|d| {
                         d.class("article-actions")
+                            .render(ArticleMeta(self));
                     })
                     .div(|d| {
                         d.class("row")
+                            .div(|d| {
+                                d.class("col-xs-12")
+                                    .class("col-md-8")
+                                    .class("offset-md-2")
+                                    .render(CommentForm)
+                                    .list(
+                                        state.comments.iter().flatten().iter(),
+                                        spair::ListElementCreation::Clone,
+                                    )
+                            })
+                            .render(Comments);
                     })
             })
     }
@@ -125,6 +152,39 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
     }
 }
 
+impl spair::ListItem<super::ArticleViewer> for &types::Comment {
+    const ROOT_HTML_ELEMENT: &'static str = "div";
+    fn render(self, element: spair::Element<super::ArticleViewer>) {
+        element
+            .div(|d| {
+                d.class("card")
+                    .div(|d| {
+                        d.class("card-block")
+                            .render(&self.comment);
+                    })
+                    .div(|d| {
+                        let profile = crate::routes::Route::Profile();
+                        d.class("card-footer")
+                            .a(|a| {
+                                a.class("comment-author")
+                                    .href(&route)
+                                    .img(|i| {
+                                        i.class("comment-author-img")
+                                            .src();
+                                    })
+                            })
+                            .r#static(" ")
+                            .a(|a| {
+                                a.class("comment-author")
+                                    .href(&route)
+                                    .render();
+                            })
+                            .span(|s| {})
+                            .span(|s| {});
+                    });
+            });
+    }
+}
 /*
 <div class="article-page">
 
