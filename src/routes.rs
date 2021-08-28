@@ -40,7 +40,13 @@ impl spair::Router for Router {
             "#/register" => Route::Register,
             "#/settings" => Route::Settings,
             "#/editor" => Route::Editor(None),
-            _ => Route::Home,
+            hash => {
+                if hash.starts_with("#/article/") {
+                    Route::Article(types::Slug::from(hash.replace("#/article/", "")))
+                } else {
+                    Route::Home
+                }
+            }
         };
         // match &route {
         //     Route::Home(feed) => {

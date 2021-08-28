@@ -7,6 +7,7 @@ mod register;
 mod renders;
 mod routes;
 mod urls;
+mod article_viewer;
 
 use spair::prelude::*;
 

@@ -3,7 +3,7 @@ use crate::SetAuthorizationToken;
 
 mod renders;
 
-pub struct Editor {
+pub struct ArticleEditor {
     app_comp: spair::Comp<crate::app::App>,
     slug: Option<types::Slug>,
     article: types::ArticleCreateUpdateInfo,
@@ -11,7 +11,7 @@ pub struct Editor {
     error: Option<crate::error::Error>,
 }
 
-impl Editor {
+impl ArticleEditor {
     fn new(app_comp: spair::Comp<crate::app::App>, slug: Option<types::Slug>) -> Self {
         Self {
             app_comp,
@@ -100,6 +100,6 @@ impl Editor {
     }
 
     fn responsed_article(&mut self, article_info: types::ArticleInfoWrapper) {
-        spair::update_component(self.app_comp.callback_once_mut(move |state| state.view_article(article_info)));
+        spair::update_component(self.app_comp.callback_once_mut(move |state| state.view_article(article_info.article)));
     }
 }

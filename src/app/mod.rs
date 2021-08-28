@@ -14,16 +14,18 @@ pub enum Page {
     Home(spair::ChildComp<crate::home::HomePage>),
     Register(spair::ChildComp<crate::register::Register>),
     Login(spair::ChildComp<crate::login::Login>),
-    Editor(spair::ChildComp<crate::article_editor::Editor>),
+    Editor(spair::ChildComp<crate::article_editor::ArticleEditor>),
+    Viewer(spair::ChildComp<crate::article_viewer::ArticleViewer>)
 }
 
 impl Page {
-    pub fn new(route: &crate::routes::Route, comp: &spair::Comp<crate::app::App>) -> Self {
+    pub fn new(route: &crate::routes::Route, user: Option<&types::UserInfo>, comp: &spair::Comp<crate::app::App>) -> Self {
         use crate::routes::Route;
         match route {
             Route::Register => Self::Register(spair::ChildComp::init(comp, ())),
             Route::Login => Self::Login(spair::ChildComp::init(comp, ())),
             Route::Editor(slug) => Self::Editor(spair::ChildComp::init(comp, slug.clone())),
+            Route::Article(slug) => Self::Viewer(spair::ChildComp::init(comp, (user.cloned(), crate::article_viewer::ArticleToView::Slug(slug.clone())))),
             _ => Self::Home(spair::ChildComp::init(comp, ())),
         }
     }
@@ -32,7 +34,7 @@ impl Page {
 impl App {
     fn new(comp: spair::Comp<Self>) -> Self {
         let route = crate::routes::Route::Home;
-        let page = Page::new(&route, &comp);
+        let page = Page::new(&route, None, &comp);
         Self {
             comp,
             route,
@@ -46,7 +48,7 @@ impl App {
             return spair::ShouldRender::No;
         }
         self.route = route;
-        self.page = Page::new(&self.route, &self.comp);
+        self.page = Page::new(&self.route, self.user.as_ref(), &self.comp);
         spair::ShouldRender::Yes
     }
 
@@ -67,7 +69,8 @@ impl App {
             .json(Self::set_user, |_, _: spair::FetchError| {})
     }
 
-    pub fn view_article(&mut self, article_info: types::ArticleInfoWrapper) {
-        //
+    pub fn view_article(&mut self, article_info: types::ArticleInfo) {
+        crate::routes::Route::Article(article_info.slug.clone()).update_address_bar();
+        self.page = Page::Viewer(spair::ChildComp::init(&self.comp, (self.user.clone(), crate::article_viewer::ArticleToView::Article(article_info))));
     }
 }

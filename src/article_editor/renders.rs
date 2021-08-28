@@ -1,9 +1,9 @@
 use spair::prelude::*;
 
-impl spair::Component for super::Editor {
+impl spair::Component for super::ArticleEditor {
     type Routes = crate::routes::Route;
     fn init(comp: &spair::Comp<Self>) {
-        spair::update_component(comp.callback_once_mut(super::Editor::get_article));
+        spair::update_component(comp.callback_once_mut(super::ArticleEditor::get_article));
     }
 
     fn render(&self, element: spair::Element<Self>) {
@@ -22,7 +22,7 @@ impl spair::Component for super::Editor {
     }
 }
 
-impl spair::WithParentComp for super::Editor {
+impl spair::WithParentComp for super::ArticleEditor {
     type Parent = crate::app::App;
     type Properties = Option<types::Slug>;
     fn init(
@@ -34,7 +34,7 @@ impl spair::WithParentComp for super::Editor {
     }
 }
 
-impl super::Editor {
+impl super::ArticleEditor {
     fn render_form(&self, nodes: spair::Nodes<Self>) {
         let comp = nodes.comp();
         nodes.form(|f| {
@@ -134,7 +134,7 @@ impl super::Editor {
                         .class("pull-xs-right")
                         .class("btn-primary")
                         .r#type(spair::ButtonType::Button)
-                        .on_click(comp.handler(super::Editor::publish_article))
+                        .on_click(comp.handler(super::ArticleEditor::publish_article))
                         .render("Publish Article");
                 });
             });
@@ -142,34 +142,3 @@ impl super::Editor {
     }
 }
 
-/*
-<div class="editor-page">
-  <div class="container page">
-    <div class="row">
-
-      <div class="col-md-10 offset-md-1 col-xs-12">
-        <form>
-          <fieldset>
-            <fieldset class="form-group">
-                <input type="text" class="form-control form-control-lg" placeholder="Article Title">
-            </fieldset>
-            <fieldset class="form-group">
-                <input type="text" class="form-control" placeholder="What's this article about?">
-            </fieldset>
-            <fieldset class="form-group">
-                <textarea class="form-control" rows="8" placeholder="Write your article (in markdown)"></textarea>
-            </fieldset>
-            <fieldset class="form-group">
-                <input type="text" class="form-control" placeholder="Enter tags"><div class="tag-list"></div>
-            </fieldset>
-            <button class="btn btn-lg pull-xs-right btn-primary" type="button">
-                Publish Article
-            </button>
-          </fieldset>
-        </form>
-      </div>
-
-    </div>
-  </div>
-</div>
-*/
