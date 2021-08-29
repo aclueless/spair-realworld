@@ -3,6 +3,10 @@ use spair::prelude::*;
 impl spair::Component for super::ArticleViewer {
     type Routes = crate::routes::Route;
 
+    fn init(comp: &spair::Comp<Self>) {
+        spair::update_component(comp.callback(Self::get_article));
+    }
+
     fn render(&self, element: spair::Element<Self>) {
         element.div(|d| {
             d.class("article-page")
@@ -35,7 +39,8 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
                 d.class("banner").div(|d| {
                     d.class("container")
                         .h1(|h| h.render(&self.title).done())
-                        .render(ArticleMeta(self));
+                        .render(ArticleMeta(self))
+                        .render(crate::renders::Error(state.error.as_ref()));
                 });
             })
             .div(|d| {
@@ -134,7 +139,7 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                         b.class("btn")
                             .class("btn-sm")
                             .class("btn-outline-danger")
-                            .on_click(comp.handler(super::Article::delete_article))
+                            .on_click(comp.handler(super::ArticleViewer::delete_article))
                             .i(|i| i.class("ion-trash-a").done())
                             .r#static("Delete Article");
                     })
@@ -160,7 +165,7 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                         b.class("btn")
                             .class("btn-sm")
                             .class_or(self.0.favorited, "btn-primary", "btn-outline-primary")
-                            .on_click(comp.handler(move |state| state.toggle_favorite(&username)))
+                            .on_click(comp.handler(super::ArticleViewer::toggle_favorite))
                             .i(|i| i.class("ion-heart").done())
                             .r#static(" Favorite Post ")
                             .span(|s| {
@@ -207,8 +212,10 @@ impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
                             .placeholder("Write a comment...")
                             .rows(3)
                             .value(&state.new_comment)
-                            .on_input(comp.handler_arg_mut(|state, event| {
-                                state.set_new_comment();
+                            .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
+                                if let Some(ta) = event.target_as::<spair::web_sys::HtmlTextAreaElement>() {
+                                    state.set_new_comment(ta.value());
+                                }
                             }));
                     });
                 })
@@ -227,6 +234,7 @@ impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
                                 .class("btn-sm")
                                 .class("btn-primary")
                                 .on_click(comp.handler(super::ArticleViewer::post_comment))
+                                .enabled(state.new_comment.is_empty() == false)
                                 .r#static("Post comment");
                         });
                 });

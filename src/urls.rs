@@ -8,11 +8,11 @@ pub struct UrlBuilder(String);
 #[derive(Debug, dmore::AsMut)]
 pub struct Profile(String);
 #[derive(Debug, dmore::AsMut)]
-pub struct Article(String);
+pub struct Articles(String);
 #[derive(Debug, dmore::AsMut)]
-pub struct AnArticle(String);
+pub struct TheSpecifiedArticle(String);
 #[derive(Debug, dmore::AsMut)]
-pub struct ArticleInPage(String);
+pub struct ArticlesInPage(String);
 
 trait Builder: Sized + AsMut<String> {
     fn filter(&mut self, filter: &str, value: &str) {
@@ -39,9 +39,9 @@ trait Builder: Sized + AsMut<String> {
 
 impl Builder for UrlBuilder {}
 impl Builder for Profile {}
-impl Builder for Article {}
-impl Builder for AnArticle {}
-impl Builder for ArticleInPage {}
+impl Builder for Articles {}
+impl Builder for TheSpecifiedArticle {}
+impl Builder for ArticlesInPage {}
 
 impl UrlBuilder {
     pub fn new() -> Self {
@@ -70,9 +70,9 @@ impl UrlBuilder {
         Profile(self.0)
     }
 
-    pub fn articles(mut self) -> Article {
+    pub fn articles(mut self) -> Articles {
         self.path("articles");
-        Article(self.0)
+        Articles(self.0)
     }
 
     pub fn tags(mut self) -> String {
@@ -90,22 +90,17 @@ impl Profile {
         self.path("follow");
         self.0
     }
-
-    pub fn unfollow(mut self) -> String {
-        self.path("unfollow");
-        self.0
-    }
 }
 
-impl Article {
-    pub fn page(self, page_number: u32) -> ArticleInPage {
+impl Articles {
+    pub fn page(self, page_number: u32) -> ArticlesInPage {
         self.page_with_size(page_number, 10)
     }
 
-    pub fn page_with_size(mut self, page_number: u32, page_size: u32) -> ArticleInPage {
+    pub fn page_with_size(mut self, page_number: u32, page_size: u32) -> ArticlesInPage {
         self.first_filter("offset", &page_number.to_string());
         self.more_filter("limit", &page_size.to_string());
-        ArticleInPage(self.0)
+        ArticlesInPage(self.0)
     }
 
     pub fn feed_in_page(mut self, page_number: u32) -> String {
@@ -118,9 +113,9 @@ impl Article {
         self.page_with_size(page_number, page_size).0
     }
 
-    pub fn slug(mut self, slug: &types::Slug) -> AnArticle {
+    pub fn slug(mut self, slug: &types::Slug) -> TheSpecifiedArticle {
         self.path(&slug);
-        AnArticle(self.0)
+        TheSpecifiedArticle(self.0)
     }
 
     pub fn create_article(self) -> String {
@@ -128,7 +123,7 @@ impl Article {
     }
 }
 
-impl ArticleInPage {
+impl ArticlesInPage {
     pub fn done(self) -> String {
         self.0
     }
@@ -149,8 +144,16 @@ impl ArticleInPage {
     }
 }
 
-impl AnArticle {
-    pub fn done(self) -> String {
+impl TheSpecifiedArticle {
+    pub fn get(self) -> String {
+        self.0
+    }
+
+    pub fn update(self) -> String {
+        self.0
+    }
+
+    pub fn delete(self) -> String {
         self.0
     }
 

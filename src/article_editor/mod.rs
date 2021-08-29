@@ -25,7 +25,7 @@ impl ArticleEditor {
     fn get_article(&mut self) -> spair::OptionCommand<Self> {
         self.slug
             .as_ref()
-            .map(|slug| crate::urls::UrlBuilder::new().articles().slug(slug).done())
+            .map(|slug| crate::urls::UrlBuilder::new().articles().slug(slug).get())
             .map(|url| {
                 spair::http::Request::get(&url)
                     .set_token()
@@ -82,7 +82,7 @@ impl ArticleEditor {
         let url = crate::urls::UrlBuilder::new().articles();
         let builder = match self.slug.as_ref() {
             Some(slug) => {
-                let url = url.slug(slug).done();
+                let url = url.slug(slug).update();
                 spair::http::Request::put(&url)
             }
             None => {
