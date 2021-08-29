@@ -40,90 +40,99 @@ impl super::ArticleEditor {
         nodes.form(|f| {
             f.fieldset(|f| {
                 f.fieldset(|f| {
-                    f.class("form-group")
-                        .input(|i| {
-                            i.value(&self.article.title)
-                                .static_attributes()
-                                .on_input(comp.handler_arg_mut(move |state, event: spair::InputEvent| {
+                    f.class("form-group").input(|i| {
+                        i.value(&self.article.title)
+                            .static_attributes()
+                            .on_input(comp.handler_arg_mut(
+                                move |state, event: spair::InputEvent| {
                                     if let Some(input) = event.target_as_input_element() {
                                         state.set_title(input.value());
                                     }
-                                }))
-                                .r#type(spair::InputType::Text)
-                                .class("form-control")
-                                .class("form-control-lg")
-                                .placeholder("Article Title");
-                        });
+                                },
+                            ))
+                            .r#type(spair::InputType::Text)
+                            .class("form-control")
+                            .class("form-control-lg")
+                            .placeholder("Article Title");
+                    });
                 })
                 .fieldset(|f| {
-                    f.class("form-group")
-                        .input(|i| {
-                            i.value(&self.article.description)
-                                .static_attributes()
-                                .on_input(comp.handler_arg_mut(move |state, event: spair::InputEvent| {
+                    f.class("form-group").input(|i| {
+                        i.value(&self.article.description)
+                            .static_attributes()
+                            .on_input(comp.handler_arg_mut(
+                                move |state, event: spair::InputEvent| {
                                     if let Some(input) = event.target_as_input_element() {
                                         state.set_description(input.value());
                                     }
-                                }))
-                                .r#type(spair::InputType::Text)
-                                .class("form-control")
-                                .placeholder("What's this article about?");
-                        });
+                                },
+                            ))
+                            .r#type(spair::InputType::Text)
+                            .class("form-control")
+                            .placeholder("What's this article about?");
+                    });
                 })
                 .fieldset(|f| {
-                    f.class("form-group")
-                        .textarea(|i| {
-                            i.value(&self.article.body)
-                                .static_attributes()
-                                .on_input(comp.handler_arg_mut(move |state, event: spair::InputEvent| {
+                    f.class("form-group").textarea(|i| {
+                        i.value(&self.article.body)
+                            .static_attributes()
+                            .on_input(comp.handler_arg_mut(
+                                move |state, event: spair::InputEvent| {
                                     if let Some(input) = event.target_as_input_element() {
                                         state.set_body(input.value());
                                     }
-                                }))
-                                .r#type(spair::InputType::Text)
-                                .rows(8)
-                                .class("form-control")
-                                .placeholder("Write your article (in markdown)");
-                        });
+                                },
+                            ))
+                            .r#type(spair::InputType::Text)
+                            .rows(8)
+                            .class("form-control")
+                            .placeholder("Write your article (in markdown)");
+                    });
                 })
                 .fieldset(|f| {
                     f.class("form-group")
                         .input(|i| {
-                            i//.value(&self.tag_string)
+                            i //.value(&self.tag_string)
                                 .static_attributes()
-                                .on_key_up(comp.handler_arg_mut(move |state, event: spair::KeyboardEvent| {
-                                    if event.raw().code() != "Enter" {
-                                        return;
-                                    }
-                                    if let Some(input) = event.target_as::<spair::web_sys::HtmlInputElement>() {
-                                        state.add_tag(input.value());
-                                        input.set_value("");
-                                    }
-                                }))
+                                .on_key_up(comp.handler_arg_mut(
+                                    move |state, event: spair::KeyboardEvent| {
+                                        if event.raw().code() != "Enter" {
+                                            return;
+                                        }
+                                        if let Some(input) =
+                                            event.target_as::<spair::web_sys::HtmlInputElement>()
+                                        {
+                                            state.add_tag(input.value());
+                                            input.set_value("");
+                                        }
+                                    },
+                                ))
                                 .r#type(spair::InputType::Text)
                                 .class("form-control")
                                 .placeholder("Enter tags");
                         })
                         .div(|d| {
-                            d.class("tag-list")
-                                .list_with_render(
-                                    self.article.tag_list.iter().flat_map(|tags| tags.iter()),
-                                    spair::ListElementCreation::Clone,
-                                    "span",
-                                    |tag, s| {
-                                        s
+                            d.class("tag-list").list_with_render(
+                                self.article.tag_list.iter().flat_map(|tags| tags.iter()),
+                                spair::ListElementCreation::Clone,
+                                "span",
+                                |tag, s| {
+                                    s.static_attributes()
+                                        .class("tag-default")
+                                        .class("tag-pill")
+                                        .i(|i| {
+                                            let tag = tag.to_string();
+                                            i.on_click(
+                                                comp.handler_mut(move |state| {
+                                                    state.remove_tag(&tag)
+                                                }),
+                                            )
                                             .static_attributes()
-                                            .class("tag-default")
-                                            .class("tag-pill")
-                                            .i(|i| {
-                                                let tag = tag.to_string();
-                                                i.on_click(comp.handler_mut(move |state| state.remove_tag(&tag)))
-                                                    .static_attributes()
-                                                    .class("ion-close-round");
-                                            })
-                                            .render(tag);
-                                    }
-                                );
+                                            .class("ion-close-round");
+                                        })
+                                        .render(tag);
+                                },
+                            );
                         });
                 })
                 .static_nodes()
@@ -141,4 +150,3 @@ impl super::ArticleEditor {
         });
     }
 }
-

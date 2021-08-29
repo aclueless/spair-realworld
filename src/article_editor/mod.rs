@@ -1,5 +1,5 @@
-use spair::prelude::*;
 use crate::SetAuthorizationToken;
+use spair::prelude::*;
 
 mod renders;
 
@@ -22,9 +22,8 @@ impl ArticleEditor {
         }
     }
 
-    fn get_article(&mut self) ->  spair::OptionCommand<Self> {
-        self
-            .slug
+    fn get_article(&mut self) -> spair::OptionCommand<Self> {
+        self.slug
             .as_ref()
             .map(|slug| crate::urls::UrlBuilder::new().articles().slug(slug).done())
             .map(|url| {
@@ -33,7 +32,8 @@ impl ArticleEditor {
                     .text_mode()
                     .response()
                     .json(Self::set_article_for_editting, Self::responsed_error)
-            }).into()
+            })
+            .into()
     }
 
     fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
@@ -100,6 +100,9 @@ impl ArticleEditor {
     }
 
     fn responsed_article(&mut self, article_info: types::ArticleInfoWrapper) {
-        spair::update_component(self.app_comp.callback_once_mut(move |state| state.view_article(article_info.article)));
+        spair::update_component(
+            self.app_comp
+                .callback_once_mut(move |state| state.view_article(article_info.article)),
+        );
     }
 }

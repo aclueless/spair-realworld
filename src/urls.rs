@@ -6,6 +6,8 @@ use derive_more as dmore;
 #[derive(Debug, dmore::AsMut)]
 pub struct UrlBuilder(String);
 #[derive(Debug, dmore::AsMut)]
+pub struct Profile(String);
+#[derive(Debug, dmore::AsMut)]
 pub struct Article(String);
 #[derive(Debug, dmore::AsMut)]
 pub struct AnArticle(String);
@@ -36,6 +38,7 @@ trait Builder: Sized + AsMut<String> {
 }
 
 impl Builder for UrlBuilder {}
+impl Builder for Profile {}
 impl Builder for Article {}
 impl Builder for AnArticle {}
 impl Builder for ArticleInPage {}
@@ -61,20 +64,10 @@ impl UrlBuilder {
         self.0
     }
 
-    fn _user_profile(&mut self, username: &str) {
+    pub fn profile(&mut self, username: &str) -> Profile {
         self.path("profiles");
         self.path(username);
-    }
-
-    pub fn user_profile(mut self, username: &str) -> String {
-        self._user_profile(username);
-        self.0
-    }
-
-    pub fn follow_user(mut self, username: &str) -> String {
-        self._user_profile(username);
-        self.path("follow");
-        self.0
+        Profile(self.0)
     }
 
     pub fn articles(mut self) -> Article {
@@ -84,6 +77,22 @@ impl UrlBuilder {
 
     pub fn tags(mut self) -> String {
         self.path("tags");
+        self.0
+    }
+}
+
+impl Profile {
+    pub fn done(mut self) -> String {
+        self.0
+    }
+
+    pub fn follow(mut self) -> String {
+        self.path("follow");
+        self.0
+    }
+
+    pub fn unfollow(mut self) -> String {
+        self.path("unfollow");
         self.0
     }
 }

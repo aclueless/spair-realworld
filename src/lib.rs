@@ -1,5 +1,6 @@
 mod app;
 mod article_editor;
+mod article_viewer;
 mod error;
 mod home;
 mod login;
@@ -7,7 +8,6 @@ mod register;
 mod renders;
 mod routes;
 mod urls;
-mod article_viewer;
 
 use spair::prelude::*;
 
