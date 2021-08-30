@@ -22,6 +22,7 @@ impl spair::Component for super::App {
                 super::Page::Login(child) => d.component(child),
                 super::Page::Editor(child) => d.component(child),
                 super::Page::Viewer(child) => d.component(child),
+                super::Page::Profile(child) => d.component(child),
             })
             .render(footer::Footer);
     }
@@ -34,8 +35,8 @@ impl spair::Application for super::App {
 
     fn init_router(comp: &spair::Comp<Self>) -> Option<crate::routes::Router> {
         Some(crate::routes::Router {
-            app: comp.clone(),
-            //home: None,
+            app_comp: comp.clone(),
+            profile_comp: None,
         })
     }
 }

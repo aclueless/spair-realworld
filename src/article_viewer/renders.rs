@@ -50,7 +50,11 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
                         d.class("row")
                             .class("article-content")
                             .div(|d| {
-                                d.class("col-md-12").render(&self.body);
+                                let parser = pulldown_cmark::Parser::new(&self.body);
+                                let mut html_text = String::new();
+                                pulldown_cmark::html::push_html(&mut html_text, parser);
+                                d.class("col-md-12")
+                                    .set_inner_html_raw(&html_text);
                             })
                             .ul(|u| {
                                 u.class("tag-list").list_with_render(

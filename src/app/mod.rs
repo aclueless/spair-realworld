@@ -16,6 +16,7 @@ pub enum Page {
     Login(spair::ChildComp<crate::login::Login>),
     Editor(spair::ChildComp<crate::article_editor::ArticleEditor>),
     Viewer(spair::ChildComp<crate::article_viewer::ArticleViewer>),
+    Profile(spair::ChildComp<crate::profile::Profile>),
 }
 
 impl Page {
@@ -36,6 +37,7 @@ impl Page {
                     crate::article_viewer::ArticleToView::Slug(slug.clone()),
                 ),
             )),
+            Route::Profile(username) => Self::Profile(spair::ChildComp::init(comp, username.to_string())),
             _ => Self::Home(spair::ChildComp::init(comp, ())),
         }
     }

@@ -8,6 +8,7 @@ mod register;
 mod renders;
 mod routes;
 mod urls;
+mod profile;
 
 use spair::prelude::*;
 

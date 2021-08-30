@@ -11,8 +11,8 @@ pub enum Route {
 }
 
 pub struct Router {
-    pub app: spair::Comp<crate::app::App>,
-    //    pub home: Option<spair::Comp<crate::pages::HomePage>>,
+    pub app_comp: spair::Comp<crate::app::App>,
+    pub profile_comp: Option<spair::Comp<crate::profile::Profile>>,
 }
 
 impl spair::Routes for Route {
@@ -26,8 +26,8 @@ impl spair::Routes for Route {
             Self::Editor(None) => "/#/editor".to_string(),
             Self::Editor(Some(slug)) => format!("/#/editor/{}", slug.as_ref()),
             Self::Article(slug) => format!("/#/article/{}", slug.as_ref()),
-            Self::Profile(user_name) => format!("/#/profile/{}", user_name),
-            Self::ProfileFavorites(user_name) => format!("/#/profile/{}/favorites", user_name),
+            Self::Profile(username) => format!("/#/profile/{}", username),
+            Self::ProfileFavorites(username) => format!("/#/profile/{}/favorites", username),
         }
     }
 }
@@ -43,20 +43,32 @@ impl spair::Router for Router {
             hash => {
                 if hash.starts_with("#/article/") {
                     Route::Article(types::Slug::from(hash.replace("#/article/", "")))
+                } else if hash.starts_with("#/editor/") {
+                    Route::Editor(Some(types::Slug::from(hash.replace("#/editor/", ""))))
+                } else if hash.starts_with("#/profile/") {
+                    let tail = hash.replace("#/profile/", "");
+                    if tail.ends_with("/favorites") {
+                        Route::ProfileFavorites(tail.replace("/favorites", ""))
+                    } else if tail.contains("/") {
+                        Route::Home
+                    } else {
+                        Route::Profile(tail)
+                    }
                 } else {
                     Route::Home
                 }
             }
         };
-        // match &route {
-        //     Route::Home(feed) => {
-        //         if let Some(home) = self.home.as_ref() {
-        //             home.callback_arg_mut(crate::pages::HomePage::set_feed)(feed.clone());
-        //             return;
-        //         }
-        //     }
-        //     _ => {}
-        // }
-        self.app.callback_arg_mut(crate::app::App::set_route)(route);
+        if let Some(profile_comp) = self.profile_comp.as_ref() {
+            if let Some(uf) = match &route {
+                Route::Profile(username) => Some((username.to_string(), false)),
+                Route::ProfileFavorites(username) => Some((username.to_string(), true)),
+                _ => None,
+            } {
+                profile_comp.callback_arg_mut(crate::profile::Profile::set_username_and_favorited)(uf);
+                return;
+            }
+        }
+        self.app_comp.callback_arg_mut(crate::app::App::set_route)(route);
     }
 }

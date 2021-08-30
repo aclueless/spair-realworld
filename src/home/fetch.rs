@@ -1,8 +1,8 @@
 use spair::prelude::*;
 
 impl super::HomePage {
-    fn fetch_error(&mut self, error: spair::FetchError) {
-        //
+    fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
+        //self.error = Some(error.into());
     }
 
     pub fn request_data_for_home_page(&self) -> spair::Checklist<Self> {
@@ -20,7 +20,7 @@ impl super::HomePage {
             .done();
         spair::http::Request::get(&url).text_mode().response().json(
             |state, article_list| state.article_list = Some(article_list),
-            Self::fetch_error,
+            Self::responsed_error,
         )
     }
 
@@ -28,7 +28,7 @@ impl super::HomePage {
         let url = crate::urls::UrlBuilder::new().tags();
         spair::http::Request::get(&url).text_mode().response().json(
             |state, tag_list| state.tag_list = Some(tag_list),
-            Self::fetch_error,
+            Self::responsed_error,
         )
     }
 

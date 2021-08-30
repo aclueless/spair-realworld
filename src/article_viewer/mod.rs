@@ -50,7 +50,7 @@ impl ArticleViewer {
         if self.article.is_some() {
             return None.into();
         }
-        let url = crate::urls::UrlBuilder::new().articles().slug(&self.slug).get();
+        let url = self.current_article_url().get();
         spair::http::Request::get(&url)
             .text_mode()
             .response()
@@ -87,7 +87,7 @@ impl ArticleViewer {
     }
 
     fn delete_article(&self) -> spair::Command<Self> {
-        let url = crate::urls::UrlBuilder::new().articles().slug(&self.slug).delete();
+        let url = self.current_article_url().delete();
         spair::http::Request::delete(&url)
             .set_token()
             .text_mode()
@@ -100,11 +100,11 @@ impl ArticleViewer {
     }
 
     fn toggle_favorite(&self) -> spair::OptionCommand<Self> {
+        let url = self.current_article_url().favorite();
         self
             .article
             .as_ref()
             .map(|a| {
-                let url = crate::urls::UrlBuilder::new().articles().slug(&self.slug).favorite();
                 match a.favorited {
                     false =>spair::http::Request::post(&url),
                     true => spair::http::Request::delete(&url),
@@ -121,23 +121,22 @@ impl ArticleViewer {
     }
 
     fn post_comment(&self) -> spair::OptionCommand<Self> {
+        if self.article.is_none() {
+            return None.into();
+        }
         let url = self.current_article_url().comment();
-        self
-            .article
-            .as_ref()
-            .map(|a| {
-                spair::http::Request::post(&url)
-                    .set_token()
-                    .text_mode()
-                    .body()
-                    .json(&types::CommentCreateInfoWrapper {
-                        comment: types::CommentCreateInfo {
-                            body: self.new_comment.clone(),
-                        }
-                    })
-                    .response()
-                    .json(Self::add_comment, Self::responsed_error)
-            }).into()
+        spair::http::Request::post(&url)
+            .set_token()
+            .text_mode()
+            .body()
+            .json(&types::CommentCreateInfoWrapper {
+                comment: types::CommentCreateInfo {
+                    body: self.new_comment.clone(),
+                }
+            })
+            .response()
+            .json(Self::add_comment, Self::responsed_error)
+            .into()
     }
 
     fn add_comment(&mut self, comment: types::CommentInfoWrapper) {
