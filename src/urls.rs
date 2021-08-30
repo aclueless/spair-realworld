@@ -64,7 +64,7 @@ impl UrlBuilder {
         self.0
     }
 
-    pub fn profile(&mut self, username: &str) -> Profile {
+    pub fn profile(mut self, username: &str) -> Profile {
         self.path("profiles");
         self.path(username);
         Profile(self.0)
@@ -82,7 +82,7 @@ impl UrlBuilder {
 }
 
 impl Profile {
-    pub fn done(mut self) -> String {
+    pub fn get(self) -> String {
         self.0
     }
 

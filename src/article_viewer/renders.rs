@@ -273,8 +273,9 @@ impl spair::ListItemRender<super::ArticleViewer> for &types::CommentInfo {
                                 Some(true) => spair::set_arm!(mi)
                                     .span(|s| {
                                         s.class("mod-options").i(|i| {
+                                            let comment_id = self.id;
                                             i.class("ion-trash-a").on_click(
-                                                comp.handler(move |state| state.delete_comment()),
+                                                comp.handler_mut(move |state| state.delete_comment(comment_id)),
                                             );
                                         });
                                     })
