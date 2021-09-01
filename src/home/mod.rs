@@ -45,7 +45,7 @@ impl HomePage {
         self.feed = feed;
     }
 
-    pub fn toggle_favorite(&mut self, slug: &types::Slug) {
+    pub fn toggle_favorite(&mut self, slug: &types::Slug) -> spair::Command<Self> {
         todo!()
     }
 

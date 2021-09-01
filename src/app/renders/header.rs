@@ -29,33 +29,46 @@ impl spair::Render<crate::app::App> for LoggedOutHeader {
             u.class("nav")
                 .class("navbar-nav")
                 .class("pull-xs-right")
-                .li(|i| {
-                    i.class("nav-item").a(|a| {
-                        let route = crate::routes::Route::Home;
-                        a.class("nav-link")
-                            .class_if("active", state.route == route)
-                            .href(&route)
-                            .r#static("Home");
-                    });
+                .render(HeaderLink {
+                    title: "Home",
+                    route: crate::routes::Route::Home,
+                    icon: None,
                 })
-                .li(|i| {
-                    i.class("nav-item").a(|a| {
-                        let route = crate::routes::Route::Login;
-                        a.class("nav-link")
-                            .class_if("active", state.route == route)
-                            .href(&route)
-                            .r#static("Sign in");
-                    });
+                .render(HeaderLink {
+                    title: "Sign in",
+                    route: crate::routes::Route::Login,
+                    icon: None,
                 })
-                .li(|i| {
-                    i.class("nav-item").a(|a| {
-                        let route = crate::routes::Route::Register;
-                        a.class("nav-link")
-                            .class_if("active", state.route == route)
-                            .href(&route)
-                            .r#static("Sign up");
-                    });
+                .render(HeaderLink {
+                    title: "Sign up",
+                    route: crate::routes::Route::Register,
+                    icon: None,
                 });
+        });
+    }
+}
+
+struct HeaderLink<'a> {
+    title: &'a str,
+    route: crate::routes::Route,
+    icon: Option<&'static str>,
+}
+impl<'a> spair::Render<crate::app::App> for HeaderLink<'a> {
+    fn render(self, nodes: spair::Nodes<crate::app::App>) {
+        let state = nodes.state();
+        nodes.li(|i| {
+            i.class("nav-item").a(|a| {
+                a.class("nav-link")
+                    .class_if(state.route == self.route, "active")
+                    .href(&self.route)
+                    .match_if(|mi| match self.icon {
+                        None => spair::set_arm!(mi).done(),
+                        Some(c) => spair::set_arm!(mi)
+                            .i(|i| i.class(c).done())
+                            .done(),
+                    })
+                    .r#static(self.title);
+            });
         });
     }
 }
@@ -68,43 +81,25 @@ impl<'a> spair::Render<crate::app::App> for LoggedInHeader<'a> {
             u.class("nav")
                 .class("navbar-nav")
                 .class("pull-xs-right")
-                .li(|i| {
-                    i.class("nav-item").a(|a| {
-                        let route = crate::routes::Route::Home;
-                        a.class("nav-link")
-                            .class_if("active", state.route == route)
-                            .href(&route)
-                            .r#static("Home");
-                    });
+                .render(HeaderLink {
+                    title: "Home",
+                    route: crate::routes::Route::Home,
+                    icon: None,
                 })
-                .li(|i| {
-                    i.class("nav-item").a(|a| {
-                        let route = crate::routes::Route::Editor(None);
-                        a.class("nav-link")
-                            .class_if("active", state.route == route)
-                            .href(&route)
-                            .i(|i| i.class("ion-compose").done())
-                            .r#static("New Post");
-                    });
+                .render(HeaderLink {
+                    title: "New Post",
+                    route: crate::routes::Route::Editor(None),
+                    icon: Some("ion-compose"),
                 })
-                .li(|i| {
-                    i.class("nav-item").a(|a| {
-                        let route = crate::routes::Route::Settings;
-                        a.class("nav-link")
-                            .class_if("active", state.route == route)
-                            .href(&route)
-                            .i(|i| i.class("ion-gear-a").done())
-                            .r#static("Settings");
-                    });
+                .render(HeaderLink {
+                    title: "Settings",
+                    route: crate::routes::Route::Settings,
+                    icon: Some("ion-gear-a"),
                 })
-                .li(|i| {
-                    i.class("nav-item").a(|a| {
-                        let route = crate::routes::Route::Profile(self.0.username.clone());
-                        a.class("nav-link")
-                            .class_if("active", state.route == route)
-                            .href(&route)
-                            .render(&self.0.username);
-                    });
+                .render(HeaderLink {
+                    title: &self.0.username,
+                    route: crate::routes::Route::Profile(self.0.username.clone()),
+                    icon: None,
                 });
         });
     }

@@ -5,7 +5,7 @@ mod renders;
 
 pub struct ArticleViewer {
     //app_comp: spair::Comp<crate::app::App>,
-    user: Option<types::UserInfo>,
+    logged_in_user: Option<types::UserInfo>,
     slug: types::Slug,
     article: Option<types::ArticleInfo>,
     comments: Option<Vec<types::CommentInfo>>,
@@ -25,7 +25,7 @@ impl ArticleViewer {
             ArticleToView::Article(article) => (article.slug.clone(), Some(article)),
         };
         Self {
-            user: props.0,
+            logged_in_user: props.0,
             slug,
             article,
             comments: None,
@@ -35,7 +35,7 @@ impl ArticleViewer {
     }
 
     fn is_logged_in_username(&self, username: &str) -> Option<bool> {
-        self.user.as_ref().map(|u| u.username.as_str() == username)
+        self.logged_in_user.as_ref().map(|u| u.username.as_str() == username)
     }
 
     fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {

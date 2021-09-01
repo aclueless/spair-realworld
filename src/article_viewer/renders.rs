@@ -79,7 +79,7 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
                             d.class("col-xs-12")
                                 .class("col-md-8")
                                 .class("offset-md-2")
-                                .match_if(|mi| match state.user.as_ref() {
+                                .match_if(|mi| match state.logged_in_user.as_ref() {
                                     None => spair::set_arm!(mi).render(LoginRegister).done(),
                                     Some(user) => {
                                         spair::set_arm!(mi).render(CommentForm(user)).done()
@@ -160,7 +160,7 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                             )
                             .on_click(comp.handler(super::ArticleViewer::toggle_follow))
                             .i(|i| i.class("ion-plus-round").done())
-                            .r#static(" Follow")
+                            .r#static(" Follow ")
                             .render(&self.0.author.username);
                     })
                     .r#static("\u{00A0}\u{00A0}")

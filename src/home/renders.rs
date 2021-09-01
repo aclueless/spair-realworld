@@ -70,9 +70,19 @@ impl spair::Render<super::HomePage> for Feeds {
                                         spair::set_arm!(mi).r#static("Loading articles...").done()
                                     }
                                     Some(article_list) => spair::set_arm!(mi)
-                                        .list(
+                                        .list_with_render(
                                             article_list.articles.iter(),
                                             spair::ListElementCreation::Clone,
+                                            "div",
+                                            |article, d| {
+                                                let ap =  crate::renders::ArticlePreview {
+                                                    article,
+                                                    toggle_favorite_fn: super::HomePage::toggle_favorite,
+                                                };
+                                                d
+                                                    .class("article-preview")
+                                                    .render_fn(|nodes| ap.render(nodes));
+                                            }
                                         )
                                         .done(),
                                 })
@@ -132,7 +142,7 @@ impl<'a, F: spair::Click> spair::Render<super::HomePage> for FeedTab<'a, F> {
     fn render(self, nodes: spair::Nodes<super::HomePage>) {
         nodes.li(|i| {
             i.static_attributes().class("nav-item").a(|a| {
-                a.class_if("active", self.active)
+                a.class_if(self.active, "active")
                     //.href_str("")
                     .on_click(self.handler)
                     .static_attributes()
@@ -143,7 +153,7 @@ impl<'a, F: spair::Click> spair::Render<super::HomePage> for FeedTab<'a, F> {
         });
     }
 }
-
+/*
 impl spair::ListItemRender<super::HomePage> for &types::ArticleInfo {
     const ROOT_ELEMENT_TAG: &'static str = "div";
     fn render(self, element: spair::Element<super::HomePage>) {
@@ -213,7 +223,7 @@ impl spair::ListItemRender<super::HomePage> for &types::ArticleInfo {
             });
     }
 }
-
+*/
 struct Pagenation;
 impl spair::Render<super::HomePage> for Pagenation {
     fn render(self, nodes: spair::Nodes<super::HomePage>) {
