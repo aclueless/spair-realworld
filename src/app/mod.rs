@@ -37,7 +37,10 @@ impl Page {
                     crate::article_viewer::ArticleToView::Slug(slug.clone()),
                 ),
             )),
-            Route::Profile(username) => Self::Profile(spair::ChildComp::init(comp, (user.cloned(), username.to_string()))),
+            Route::Profile(username) => Self::Profile(spair::ChildComp::init(
+                comp,
+                (user.cloned(), username.to_string()),
+            )),
             _ => Self::Home(spair::ChildComp::init(comp, ())),
         }
     }

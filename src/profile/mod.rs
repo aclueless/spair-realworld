@@ -1,5 +1,5 @@
-use spair::prelude::*;
 use crate::SetAuthorizationToken;
+use spair::prelude::*;
 
 mod renders;
 
@@ -13,7 +13,11 @@ pub struct Profile {
 }
 
 impl Profile {
-    fn new(comp: &spair::Comp<Self>, logged_in_user: Option<types::UserInfo>, profile_username: String) -> Self {
+    fn new(
+        comp: &spair::Comp<Self>,
+        logged_in_user: Option<types::UserInfo>,
+        profile_username: String,
+    ) -> Self {
         let filter = crate::article_list::ArticleFilter::Author(profile_username.clone());
         let article_list_comp = spair::ChildComp::init(comp, filter);
         Self {
@@ -27,14 +31,19 @@ impl Profile {
     }
 
     fn is_logged_in_username(&self, username: &str) -> Option<bool> {
-        self.logged_in_user.as_ref().map(|u| u.username.as_str() == username)
+        self.logged_in_user
+            .as_ref()
+            .map(|u| u.username.as_str() == username)
     }
 
     fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
         self.error = Some(error.into());
     }
 
-    pub fn set_username_and_favorited(&mut self, (username, favorited): (String, bool)) -> spair::Checklist<Self> {
+    pub fn set_username_and_favorited(
+        &mut self,
+        (username, favorited): (String, bool),
+    ) -> spair::Checklist<Self> {
         let new_user = username != self.profile_username;
         let new_tab = favorited != self.favorited;
 
@@ -44,10 +53,14 @@ impl Profile {
         if new_user || new_tab {
             let filter = match favorited {
                 false => crate::article_list::ArticleFilter::Author(self.profile_username.clone()),
-                true => crate::article_list::ArticleFilter::FavoritedByUser(self.profile_username.clone()),
+                true => crate::article_list::ArticleFilter::FavoritedByUser(
+                    self.profile_username.clone(),
+                ),
             };
             let comp = self.article_list_comp.comp();
-            spair::update_component(move || comp.callback_once_mut(move |state| state.set_filter(filter))());
+            spair::update_component(move || {
+                comp.callback_once_mut(move |state| state.set_filter(filter))()
+            });
         }
 
         let mut cl = Self::default_checklist();
@@ -57,7 +70,9 @@ impl Profile {
     }
 
     fn request_profile_info(&mut self) -> spair::Command<Self> {
-        let url = crate::urls::UrlBuilder::new().profile(&self.profile_username).get();
+        let url = crate::urls::UrlBuilder::new()
+            .profile(&self.profile_username)
+            .get();
         spair::http::Request::get(&url)
             .set_token()
             .text_mode()
@@ -70,12 +85,13 @@ impl Profile {
     }
 
     fn toggle_follow(&self) -> spair::OptionCommand<Self> {
-        self.profile.as_ref()
+        self.profile
+            .as_ref()
             .map(|p| {
                 let url = crate::urls::UrlBuilder::new().profile(&p.username).follow();
                 match p.following {
                     false => spair::http::Request::post(&url),
-                    true =>spair::http::Request::delete(&url),
+                    true => spair::http::Request::delete(&url),
                 }
                 .set_token()
                 .text_mode()

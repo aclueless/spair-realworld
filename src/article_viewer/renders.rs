@@ -53,8 +53,7 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
                                 let parser = pulldown_cmark::Parser::new(&self.body);
                                 let mut html_text = String::new();
                                 pulldown_cmark::html::push_html(&mut html_text, parser);
-                                d.class("col-md-12")
-                                    .set_inner_html_raw(&html_text);
+                                d.class("col-md-12").set_inner_html_raw(&html_text);
                             })
                             .ul(|u| {
                                 u.class("tag-list").list_with_render(
@@ -217,7 +216,9 @@ impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
                             .rows(3)
                             .value(&state.new_comment)
                             .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
-                                if let Some(ta) = event.target_as::<spair::web_sys::HtmlTextAreaElement>() {
+                                if let Some(ta) =
+                                    event.target_as::<spair::web_sys::HtmlTextAreaElement>()
+                                {
                                     state.set_new_comment(ta.value());
                                 }
                             }));
@@ -278,9 +279,9 @@ impl spair::ListItemRender<super::ArticleViewer> for &types::CommentInfo {
                                     .span(|s| {
                                         s.class("mod-options").i(|i| {
                                             let comment_id = self.id;
-                                            i.class("ion-trash-a").on_click(
-                                                comp.handler_mut(move |state| state.delete_comment(comment_id)),
-                                            );
+                                            i.class("ion-trash-a").on_click(comp.handler_mut(
+                                                move |state| state.delete_comment(comment_id),
+                                            ));
                                         });
                                     })
                                     .done(),

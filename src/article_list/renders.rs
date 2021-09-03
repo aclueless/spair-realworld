@@ -11,9 +11,7 @@ impl<P: spair::Component> spair::Component for super::ArticleList<P> {
         element
             .render(crate::error::ErrorView(self.error.as_ref()))
             .match_if(|mi| match self.article_list.as_ref() {
-                None => {
-                    spair::set_arm!(mi).r#static("Loading articles...").done()
-                }
+                None => spair::set_arm!(mi).r#static("Loading articles...").done(),
                 Some(article_list) => spair::set_arm!(mi)
                     .list(
                         article_list.articles.iter(),
@@ -69,9 +67,9 @@ impl<P: spair::Component> spair::ListItemRender<super::ArticleList<P>> for &type
                             });
                     })
                     .button(|b| {
-                        b.on_click(
-                            comp.handler_mut(move |state| state.toggle_favorite(favorited, &article_slug)),
-                        )
+                        b.on_click(comp.handler_mut(move |state| {
+                            state.toggle_favorite(favorited, &article_slug)
+                        }))
                         .static_attributes()
                         .class("btn")
                         .class_or(self.favorited, "btn-primary", "btn-outline-primary")
@@ -184,4 +182,3 @@ impl<P: spair::Component> spair::Render<super::ArticleList<P>> for Pagenation {
         nodes.render("Pagenation");
     }
 }
-

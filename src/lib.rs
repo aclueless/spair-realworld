@@ -1,15 +1,15 @@
 mod app;
 mod article_editor;
+mod article_list;
 mod article_viewer;
 mod error;
 mod home;
 mod login;
-mod register;
-mod settings;
-mod routes;
-mod urls;
 mod profile;
-mod article_list;
+mod register;
+mod routes;
+mod settings;
+mod urls;
 
 use spair::prelude::*;
 

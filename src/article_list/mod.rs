@@ -1,5 +1,5 @@
-use spair::prelude::*;
 use crate::SetAuthorizationToken;
+use spair::prelude::*;
 
 mod renders;
 
@@ -42,18 +42,32 @@ impl<C: spair::Component> ArticleList<C> {
             ArticleFilter::Global => url.articles().page(self.page_number).done(),
             ArticleFilter::Feed => url.articles().feed_in_page(self.page_number),
             ArticleFilter::Tag(tag) => url.articles().page(self.page_number).tag(tag),
-            ArticleFilter::Author(author_name) => url.articles().page(self.page_number).author(author_name),
-            ArticleFilter::FavoritedByUser(username) => url.articles().page(self.page_number).favorited_by(username),
+            ArticleFilter::Author(author_name) => {
+                url.articles().page(self.page_number).author(author_name)
+            }
+            ArticleFilter::FavoritedByUser(username) => {
+                url.articles().page(self.page_number).favorited_by(username)
+            }
         };
         spair::http::Request::get(&url)
             .set_token()
             .text_mode()
             .response()
-            .json(|state, article_list| state.article_list = Some(article_list), Self::responsed_error)
+            .json(
+                |state, article_list| state.article_list = Some(article_list),
+                Self::responsed_error,
+            )
     }
 
-    fn toggle_favorite(&mut self, current_favorited_value: bool, slug: &types::Slug) -> spair::Command<Self> {
-        let url = crate::urls::UrlBuilder::new().articles().slug(slug).favorite();
+    fn toggle_favorite(
+        &mut self,
+        current_favorited_value: bool,
+        slug: &types::Slug,
+    ) -> spair::Command<Self> {
+        let url = crate::urls::UrlBuilder::new()
+            .articles()
+            .slug(slug)
+            .favorite();
         match current_favorited_value {
             true => spair::http::Request::delete(&url),
             false => spair::http::Request::post(&url),
@@ -65,8 +79,13 @@ impl<C: spair::Component> ArticleList<C> {
     }
 
     fn update_article(&mut self, article: types::ArticleInfoWrapper) {
-        self.article_list.as_mut()
-            .and_then(|list| list.articles.iter_mut().find(|a| a.slug == article.article.slug))
+        self.article_list
+            .as_mut()
+            .and_then(|list| {
+                list.articles
+                    .iter_mut()
+                    .find(|a| a.slug == article.article.slug)
+            })
             .map(|a| *a = article.article);
     }
 

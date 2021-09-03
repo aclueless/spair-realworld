@@ -35,7 +35,9 @@ impl ArticleViewer {
     }
 
     fn is_logged_in_username(&self, username: &str) -> Option<bool> {
-        self.logged_in_user.as_ref().map(|u| u.username.as_str() == username)
+        self.logged_in_user
+            .as_ref()
+            .map(|u| u.username.as_str() == username)
     }
 
     fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
@@ -63,25 +65,26 @@ impl ArticleViewer {
     }
 
     fn toggle_follow(&self) -> spair::OptionCommand<Self> {
-        self
-            .article
+        self.article
             .as_ref()
             .map(|a| {
-                let url = crate::urls::UrlBuilder::new().profile(&a.author.username).follow();
+                let url = crate::urls::UrlBuilder::new()
+                    .profile(&a.author.username)
+                    .follow();
                 match a.author.following {
                     false => spair::http::Request::post(&url),
-                    true =>spair::http::Request::delete(&url),
+                    true => spair::http::Request::delete(&url),
                 }
                 .set_token()
                 .text_mode()
                 .response()
                 .json(Self::update_article_author_profile, Self::responsed_error)
-            }).into()
+            })
+            .into()
     }
 
     fn update_article_author_profile(&mut self, new_article_author_profile: types::ProfileInfo) {
-        self
-            .article
+        self.article
             .as_mut()
             .map(|a| a.author = new_article_author_profile);
     }
@@ -101,19 +104,19 @@ impl ArticleViewer {
 
     fn toggle_favorite(&self) -> spair::OptionCommand<Self> {
         let url = self.current_article_url().favorite();
-        self
-            .article
+        self.article
             .as_ref()
             .map(|a| {
                 match a.favorited {
-                    false =>spair::http::Request::post(&url),
+                    false => spair::http::Request::post(&url),
                     true => spair::http::Request::delete(&url),
                 }
                 .set_token()
                 .text_mode()
                 .response()
                 .json(Self::set_article, Self::responsed_error)
-            }).into()
+            })
+            .into()
     }
 
     fn set_new_comment(&mut self, new_comment: String) {
@@ -132,7 +135,7 @@ impl ArticleViewer {
             .json(&types::CommentCreateInfoWrapper {
                 comment: types::CommentCreateInfo {
                     body: self.new_comment.clone(),
-                }
+                },
             })
             .response()
             .json(Self::add_comment, Self::responsed_error)
@@ -154,7 +157,10 @@ impl ArticleViewer {
             .set_token()
             .text_mode()
             .response()
-            .json(move |state, _: types::DeleteWrapper| state.remove_comment(comment_id), Self::responsed_error)
+            .json(
+                move |state, _: types::DeleteWrapper| state.remove_comment(comment_id),
+                Self::responsed_error,
+            )
             .into()
     }
 

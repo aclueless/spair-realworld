@@ -18,28 +18,24 @@ impl spair::Component for super::Profile {
     }
 
     fn render(&self, element: spair::Element<Self>) {
-        element
-            .div(|d| {
-                d.class("profile-page")
-                    .match_if(|mi| match self.profile.as_ref() {
-                        None => spair::set_arm!(mi).done(),
-                        Some(profile) => spair::set_arm!(mi).render(profile).done(),
-                    })
-                    .div(|d| {
-                         d.class("container")
-                        .div(|d| {
-                            d.class("row")
-                                .div(|d| {
-                                    d.class("col-xs-12")
-                                        .class("col-md-10")
-                                        .class("offset-md-1")
-                                        .render(ProfileTabListView(&self.profile_username))
-                                        .div(|d| d.component(&self.article_list_comp));
-                                });
+        element.div(|d| {
+            d.class("profile-page")
+                .match_if(|mi| match self.profile.as_ref() {
+                    None => spair::set_arm!(mi).done(),
+                    Some(profile) => spair::set_arm!(mi).render(profile).done(),
+                })
+                .div(|d| {
+                    d.class("container").div(|d| {
+                        d.class("row").div(|d| {
+                            d.class("col-xs-12")
+                                .class("col-md-10")
+                                .class("offset-md-1")
+                                .render(ProfileTabListView(&self.profile_username))
+                                .div(|d| d.component(&self.article_list_comp));
                         });
                     });
-            })
-            ;
+                });
+        });
     }
 }
 
@@ -58,22 +54,18 @@ impl spair::WithParentComp for super::Profile {
 impl spair::Render<super::Profile> for &types::ProfileInfo {
     fn render(self, nodes: spair::Nodes<super::Profile>) {
         let state = nodes.state();
-        nodes
-            .div(|d| {
-                d.class("user-info")
-                    .div(|d| {
-                        d.class("container")
-                            .div(|d| {
-                                d.class("row")
-                                    .div(|d| {
-                                        d.class("col-xs-12")
-                                        .class("col-md-10")
-                                        .class("offset-md-1")
-                                        .render(ProfileView(self));
-                                    });
-                            });
+        nodes.div(|d| {
+            d.class("user-info").div(|d| {
+                d.class("container").div(|d| {
+                    d.class("row").div(|d| {
+                        d.class("col-xs-12")
+                            .class("col-md-10")
+                            .class("offset-md-1")
+                            .render(ProfileView(self));
                     });
+                });
             });
+        });
     }
 }
 
@@ -84,8 +76,7 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
         let comp = nodes.comp();
         nodes
             .img(|i| {
-                i.class("user-image")
-                    .src(&self.0.image);
+                i.class("user-image").src(&self.0.image);
             })
             .h4(|h| h.render(&self.0.username).done())
             .match_if(|mi| match self.0.bio.as_ref() {
@@ -97,11 +88,11 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
                 Some(false) => spair::set_arm!(mi)
                     .a(|a| {
                         a.class("btn")
-                        .class("btn-sm")
-                        .class("btn-outline-secondary")
-                        .class("action-btn")
-                        .href(&crate::routes::Route::Settings)
-                        .r#static("Edit Profile Settings");
+                            .class("btn-sm")
+                            .class("btn-outline-secondary")
+                            .class("action-btn")
+                            .href(&crate::routes::Route::Settings)
+                            .r#static("Edit Profile Settings");
                     })
                     .done(),
                 Some(true) => spair::set_arm!(mi)
@@ -109,11 +100,7 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
                         let username = self.0.username.clone();
                         b.class("btn")
                             .class("btn-sm")
-                            .class_or(
-                                self.0.following,
-                                "btn-secondary",
-                                "btn-outline-secondary",
-                            )
+                            .class_or(self.0.following, "btn-secondary", "btn-outline-secondary")
                             .class("action-btn")
                             .on_click(comp.handler(super::Profile::toggle_follow))
                             .i(|i| i.class("ion-plus-round").done())
@@ -129,25 +116,23 @@ struct ProfileTabListView<'a>(&'a str);
 impl<'a> spair::Render<super::Profile> for ProfileTabListView<'a> {
     fn render(self, nodes: spair::Nodes<super::Profile>) {
         let state = nodes.state();
-        nodes
-            .div(|d| {
-                d.class("articles-toggle")
-                    .ul(|u| {
-                        u.class("nav")
-                            .class("nav-pills")
-                            .class("outline-active")
-                            .render(ProfileTabView{
-                                title: "Articles",
-                                active: !state.favorited,
-                                route: crate::routes::Route::Profile(self.0.to_string()),
-                            })
-                            .render(ProfileTabView{
-                                title: "Favorite Articles",
-                                active: state.favorited,
-                                route: crate::routes::Route::ProfileFavorites(self.0.to_string()),
-                            });
+        nodes.div(|d| {
+            d.class("articles-toggle").ul(|u| {
+                u.class("nav")
+                    .class("nav-pills")
+                    .class("outline-active")
+                    .render(ProfileTabView {
+                        title: "Articles",
+                        active: !state.favorited,
+                        route: crate::routes::Route::Profile(self.0.to_string()),
+                    })
+                    .render(ProfileTabView {
+                        title: "Favorite Articles",
+                        active: state.favorited,
+                        route: crate::routes::Route::ProfileFavorites(self.0.to_string()),
                     });
             });
+        });
     }
 }
 
@@ -158,16 +143,13 @@ struct ProfileTabView {
 }
 impl spair::Render<super::Profile> for ProfileTabView {
     fn render(self, nodes: spair::Nodes<super::Profile>) {
-        nodes
-            .li(|i| {
-                i.class("nav-item")
-                    .a(|a| {
-                        a.class("nav-link")
-                            .class_if(self.active, "active")
-                            .href(&self.route)
-                            .r#static(self.title);
-                    });
+        nodes.li(|i| {
+            i.class("nav-item").a(|a| {
+                a.class("nav-link")
+                    .class_if(self.active, "active")
+                    .href(&self.route)
+                    .r#static(self.title);
             });
+        });
     }
 }
-

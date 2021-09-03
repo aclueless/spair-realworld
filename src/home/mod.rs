@@ -1,5 +1,5 @@
-use spair::prelude::*;
 use crate::SetAuthorizationToken;
+use spair::prelude::*;
 
 mod renders;
 
@@ -24,7 +24,10 @@ impl HomePage {
     pub fn set_filter(&mut self, filter: crate::article_list::ArticleFilter) {
         if self.filter != filter {
             self.filter = filter.clone();
-            let cb = self.article_list_comp.comp().callback_once_mut(move |state| state.set_filter(filter));
+            let cb = self
+                .article_list_comp
+                .comp()
+                .callback_once_mut(move |state| state.set_filter(filter));
             spair::update_component(|| cb());
         }
     }

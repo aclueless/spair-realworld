@@ -65,8 +65,7 @@ impl spair::Render<super::HomePage> for Feeds {
                             d.static_attributes()
                                 .class("col-md-9")
                                 .render(FeedTabs)
-                                .div(|d| d.component(&state.article_list_comp))
-                                ;
+                                .div(|d| d.component(&state.article_list_comp));
                         })
                         .render(PopularTags);
                 });
@@ -88,12 +87,16 @@ impl spair::Render<super::HomePage> for FeedTabs {
                     .render(FeedTab {
                         title: "Your Feed",
                         active: state.filter == crate::article_list::ArticleFilter::Feed,
-                        handler: comp.handler_mut(|state| state.set_filter(crate::article_list::ArticleFilter::Feed)),
+                        handler: comp.handler_mut(|state| {
+                            state.set_filter(crate::article_list::ArticleFilter::Feed)
+                        }),
                     })
                     .render(FeedTab {
                         title: "Global Feed",
                         active: state.filter == crate::article_list::ArticleFilter::Global,
-                        handler: comp.handler_mut(|state| state.set_filter(crate::article_list::ArticleFilter::Global)),
+                        handler: comp.handler_mut(|state| {
+                            state.set_filter(crate::article_list::ArticleFilter::Global)
+                        }),
                     })
                     .match_if(|mi| match &state.filter {
                         crate::article_list::ArticleFilter::Tag(tag) => {
