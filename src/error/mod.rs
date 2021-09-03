@@ -1,4 +1,5 @@
-//! Error type for error handling
+mod render;
+pub use render::ErrorView;
 
 /// Define all possible errors
 #[derive(thiserror::Error, Clone, Debug)]

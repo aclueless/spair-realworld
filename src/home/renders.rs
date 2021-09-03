@@ -20,7 +20,7 @@ impl spair::Component for super::HomePage {
         element
             .class("home-page")
             .render(Banner)
-            .render(&format!("{:?}", self.feed))
+            .render(&format!("{:?}", self.filter))
             .render(Feeds);
     }
 }
@@ -30,10 +30,10 @@ impl spair::WithParentComp for super::HomePage {
     type Properties = ();
     fn init(
         _parent: &spair::Comp<Self::Parent>,
-        _comp: &spair::Comp<Self>,
+        comp: &spair::Comp<Self>,
         _props: Self::Properties,
     ) -> Self {
-        Self::new()
+        Self::new(comp)
     }
 }
 
@@ -65,28 +65,8 @@ impl spair::Render<super::HomePage> for Feeds {
                             d.static_attributes()
                                 .class("col-md-9")
                                 .render(FeedTabs)
-                                .match_if(|mi| match state.article_list.as_ref() {
-                                    None => {
-                                        spair::set_arm!(mi).r#static("Loading articles...").done()
-                                    }
-                                    Some(article_list) => spair::set_arm!(mi)
-                                        .list_with_render(
-                                            article_list.articles.iter(),
-                                            spair::ListElementCreation::Clone,
-                                            "div",
-                                            |article, d| {
-                                                let ap =  crate::renders::ArticlePreview {
-                                                    article,
-                                                    toggle_favorite_fn: super::HomePage::toggle_favorite,
-                                                };
-                                                d
-                                                    .class("article-preview")
-                                                    .render_fn(|nodes| ap.render(nodes));
-                                            }
-                                        )
-                                        .done(),
-                                })
-                                .render(Pagenation);
+                                .div(|d| d.component(&state.article_list_comp))
+                                ;
                         })
                         .render(PopularTags);
                 });
@@ -107,22 +87,22 @@ impl spair::Render<super::HomePage> for FeedTabs {
                     .class("outline-active")
                     .render(FeedTab {
                         title: "Your Feed",
-                        active: state.feed.is_your(),
-                        handler: comp.handler_mut(|state| state.set_feed(super::Feed::Your)),
+                        active: state.filter == crate::article_list::ArticleFilter::Feed,
+                        handler: comp.handler_mut(|state| state.set_filter(crate::article_list::ArticleFilter::Feed)),
                     })
                     .render(FeedTab {
                         title: "Global Feed",
-                        active: state.feed.is_global(),
-                        handler: comp.handler_mut(|state| state.set_feed(super::Feed::Global)),
+                        active: state.filter == crate::article_list::ArticleFilter::Global,
+                        handler: comp.handler_mut(|state| state.set_filter(crate::article_list::ArticleFilter::Global)),
                     })
-                    .match_if(|mi| match &state.feed {
-                        super::Feed::Tag(tag) => {
+                    .match_if(|mi| match &state.filter {
+                        crate::article_list::ArticleFilter::Tag(tag) => {
                             let tag = tag.to_string();
                             spair::set_arm!(mi).render(FeedTab {
                                 title: &format!("#{}", tag),
-                                active: state.feed.is_tag(),
+                                active: true,
                                 handler: comp.handler_mut(move |state| {
-                                    state.set_feed(super::Feed::Tag(tag.clone()))
+                                    state.set_selected_tag(&tag);
                                 }),
                             });
                         }
@@ -153,77 +133,7 @@ impl<'a, F: spair::Click> spair::Render<super::HomePage> for FeedTab<'a, F> {
         });
     }
 }
-/*
-impl spair::ListItemRender<super::HomePage> for &types::ArticleInfo {
-    const ROOT_ELEMENT_TAG: &'static str = "div";
-    fn render(self, element: spair::Element<super::HomePage>) {
-        let comp = element.comp();
-        let profile = crate::routes::Route::Profile(self.author.username.clone());
-        let article_slug = self.slug.clone();
-        element
-            .static_attributes()
-            .class("article-preview")
-            .div(|d| {
-                d.static_attributes()
-                    .class("article-meta")
-                    .a(|a| {
-                        a.href(&profile).img(|i| i.src(&self.author.image).done());
-                    })
-                    .div(|d| {
-                        d.static_attributes()
-                            .class("info")
-                            .a(|a| {
-                                a.href(&profile)
-                                    .static_attributes()
-                                    .class("author")
-                                    .render(&self.author.username);
-                            })
-                            .span(|s| {
-                                s.static_attributes()
-                                    .class("date")
-                                    .render(&self.created_at.to_string());
-                            });
-                    })
-                    .button(|b| {
-                        b.on_click(
-                            comp.handler_mut(move |state| state.toggle_favorite(&article_slug)),
-                        )
-                        .static_attributes()
-                        .class("btn")
-                        .class_or(self.favorited, "btn-primary", "btn-outline-primary")
-                        .class("btn-sm")
-                        .class("pull-xs-right")
-                        .i(|i| i.static_attributes().class("ion-heart").done())
-                        .r#static(" ")
-                        .render(self.favorites_count);
-                    });
-            })
-            .a(|a| {
-                let route = crate::routes::Route::Article(From::from(self.slug.clone()));
-                a.href(&route)
-                    .static_attributes()
-                    .class("preview-link")
-                    .h1(|h| h.render(&self.title).done())
-                    .p(|p| p.render(&self.description).done())
-                    .static_nodes()
-                    .span(|s| s.r#static("Read more...").done());
-            })
-            .ul(|u| {
-                u.static_attributes().class("tag-list").list_with_render(
-                    self.tag_list.iter(),
-                    spair::ListElementCreation::Clone,
-                    "li",
-                    |tag, li| {
-                        li.class("tag-default")
-                            .class("tag-pill")
-                            .class("tag-outlinepill")
-                            .render(tag);
-                    },
-                );
-            });
-    }
-}
-*/
+
 struct Pagenation;
 impl spair::Render<super::HomePage> for Pagenation {
     fn render(self, nodes: spair::Nodes<super::HomePage>) {

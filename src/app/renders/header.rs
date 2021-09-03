@@ -64,7 +64,7 @@ impl<'a> spair::Render<crate::app::App> for HeaderLink<'a> {
                     .match_if(|mi| match self.icon {
                         None => spair::set_arm!(mi).done(),
                         Some(c) => spair::set_arm!(mi)
-                            .i(|i| i.class(c).done())
+                            .i(|i| i.static_attributes().class(c).done())
                             .done(),
                     })
                     .r#static(self.title);

@@ -5,10 +5,11 @@ mod error;
 mod home;
 mod login;
 mod register;
-mod renders;
+mod settings;
 mod routes;
 mod urls;
 mod profile;
+mod article_list;
 
 use spair::prelude::*;
 

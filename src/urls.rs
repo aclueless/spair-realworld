@@ -103,9 +103,8 @@ impl Articles {
         ArticlesInPage(self.0)
     }
 
-    pub fn feed_in_page(mut self, page_number: u32) -> String {
-        self.path("feed");
-        self.page_with_size(page_number, 10).0
+    pub fn feed_in_page(self, page_number: u32) -> String {
+        self.feed_in_page_with_size(page_number, 10)
     }
 
     pub fn feed_in_page_with_size(mut self, page_number: u32, page_size: u32) -> String {
@@ -138,8 +137,8 @@ impl ArticlesInPage {
         self.0
     }
 
-    pub fn favorited(mut self, favorited: &str) -> String {
-        self.filter("favorited", favorited);
+    pub fn favorited_by(mut self, user: &str) -> String {
+        self.filter("favorited", user);
         self.0
     }
 }

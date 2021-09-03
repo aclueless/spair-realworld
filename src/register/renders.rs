@@ -29,7 +29,7 @@ impl super::Register {
                         .r#static("Have an account?");
                 });
             })
-            .render(crate::renders::Error(self.error.as_ref()))
+            .render(crate::error::ErrorView(self.error.as_ref()))
             .form(|f| {
                 f.fieldset(|f| {
                     f.class("form-group").input(|i| {

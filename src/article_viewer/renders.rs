@@ -40,7 +40,7 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
                     d.class("container")
                         .h1(|h| h.render(&self.title).done())
                         .render(ArticleMeta(self))
-                        .render(crate::renders::Error(state.error.as_ref()));
+                        .render(crate::error::ErrorView(state.error.as_ref()));
                 });
             })
             .div(|d| {

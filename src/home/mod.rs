@@ -1,57 +1,55 @@
-mod fetch;
+use spair::prelude::*;
+use crate::SetAuthorizationToken;
+
 mod renders;
 
 pub struct HomePage {
-    pub feed: Feed,
-    pub page_number: u32,
-    pub article_list: Option<types::ArticleListInfo>,
-    pub tag_list: Option<types::TagListInfo>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Feed {
-    Global,
-    Your,
-    Tag(String),
-}
-
-impl Feed {
-    pub fn is_global(&self) -> bool {
-        matches!(self, Self::Global)
-    }
-
-    pub fn is_your(&self) -> bool {
-        matches!(self, Self::Your)
-    }
-
-    pub fn is_tag(&self) -> bool {
-        matches!(self, Self::Tag(_))
-    }
+    filter: crate::article_list::ArticleFilter,
+    article_list_comp: spair::ChildComp<crate::article_list::ArticleList<Self>>,
+    tag_list: Option<types::TagListInfo>,
 }
 
 impl HomePage {
-    pub fn new() -> Self {
+    pub fn new(comp: &spair::Comp<Self>) -> Self {
+        let filter = crate::article_list::ArticleFilter::Global;
         Self {
-            feed: Feed::Global,
-            page_number: 0,
-            article_list: None,
+            filter: filter.clone(),
+            article_list_comp: spair::ChildComp::init(comp, filter),
             tag_list: Some(types::TagListInfo {
                 tags: vec!["TagToTest".to_string()],
             }),
         }
     }
 
-    pub fn set_feed(&mut self, feed: Feed) {
-        self.feed = feed;
-    }
-
-    pub fn toggle_favorite(&mut self, slug: &types::Slug) -> spair::Command<Self> {
-        todo!()
+    pub fn set_filter(&mut self, filter: crate::article_list::ArticleFilter) {
+        if self.filter != filter {
+            self.filter = filter.clone();
+            let cb = self.article_list_comp.comp().callback_once_mut(move |state| state.set_filter(filter));
+            spair::update_component(|| cb());
+        }
     }
 
     pub fn set_selected_tag(&mut self, tag: &str) {
-        log::info!("{}", tag);
-        self.feed = Feed::Tag(tag.to_string());
-        self.page_number = 0;
+        self.set_filter(crate::article_list::ArticleFilter::Tag(tag.to_string()));
+    }
+
+    fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
+        //self.error = Some(error.into());
+    }
+
+    pub fn request_data_for_home_page(&self) -> spair::Checklist<Self> {
+        let mut cl = Self::default_checklist();
+        cl.set_skip_render();
+        //cl.add_command(self.request_feeds());
+        cl.add_command(self.request_tags());
+        cl
+    }
+
+    fn request_tags(&self) -> spair::Command<Self> {
+        let url = crate::urls::UrlBuilder::new().tags();
+        spair::http::Request::get(&url).text_mode().response().json(
+            |state, tag_list| state.tag_list = Some(tag_list),
+            Self::responsed_error,
+        )
     }
 }
