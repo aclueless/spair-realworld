@@ -23,6 +23,7 @@ impl spair::Component for super::App {
                 super::Page::Editor(child) => d.component(child),
                 super::Page::Viewer(child) => d.component(child),
                 super::Page::Profile(child) => d.component(child),
+                super::Page::Settings(child) => d.component(child),
             })
             .render(footer::Footer);
     }

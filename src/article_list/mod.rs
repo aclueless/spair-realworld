@@ -59,6 +59,11 @@ impl<C: spair::Component> ArticleList<C> {
             )
     }
 
+    fn set_page_number(&mut self, page_number: u32) -> spair::Command<Self> {
+        self.page_number = page_number;
+        self.request_article_list()
+    }
+
     fn toggle_favorite(
         &mut self,
         current_favorited_value: bool,

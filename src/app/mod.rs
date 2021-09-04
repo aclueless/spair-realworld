@@ -17,6 +17,7 @@ pub enum Page {
     Editor(spair::ChildComp<crate::article_editor::ArticleEditor>),
     Viewer(spair::ChildComp<crate::article_viewer::ArticleViewer>),
     Profile(spair::ChildComp<crate::profile::Profile>),
+    Settings(spair::ChildComp<crate::settings::Settings>),
 }
 
 impl Page {
@@ -41,6 +42,7 @@ impl Page {
                 comp,
                 (user.cloned(), username.to_string()),
             )),
+            Route::Settings => Self::Settings(spair::ChildComp::init(comp, user.cloned())),
             _ => Self::Home(spair::ChildComp::init(comp, ())),
         }
     }
@@ -93,5 +95,11 @@ impl App {
                 crate::article_viewer::ArticleToView::Article(article_info),
             ),
         ));
+    }
+
+    pub fn logout(&mut self) {
+        self.user = None;
+        crate::delete_token();
+        crate::routes::Route::Home.execute_routing();
     }
 }

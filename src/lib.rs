@@ -13,12 +13,19 @@ mod urls;
 
 use spair::prelude::*;
 
+const ARTICLES_PER_PAGE: u32 = 10;
 const REALWORLD_TOKEN_KEY: &str = "realworld-token-key";
 
 fn store_token(token: &str) {
     spair::local_storage()
         .set_item(REALWORLD_TOKEN_KEY, token)
         .expect_throw("Unable to store user token to local storage");
+}
+
+fn delete_token() {
+    spair::local_storage()
+        .remove_item(REALWORLD_TOKEN_KEY)
+        .expect_throw("Unable to remove user token from local storage");
 }
 
 fn get_token() -> Option<String> {

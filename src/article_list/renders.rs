@@ -4,7 +4,7 @@ impl<P: spair::Component> spair::Component for super::ArticleList<P> {
     type Routes = crate::routes::Route;
     fn init(comp: &spair::Comp<Self>) {
         let cb = comp.callback_once_mut(Self::request_article_list);
-        spair::update_component(|| cb());
+        spair::update_component(cb);
     }
 
     fn render(&self, element: spair::Element<Self>) {
@@ -17,9 +17,12 @@ impl<P: spair::Component> spair::Component for super::ArticleList<P> {
                         article_list.articles.iter(),
                         spair::ListElementCreation::Clone,
                     )
+                    .render(Pagenation{
+                        current_page: self.page_number,
+                        article_count: article_list.articles_count,
+                    })
                     .done(),
-            })
-            .render(Pagenation);
+            });
     }
 }
 
@@ -176,9 +179,31 @@ impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
     }
 }
 */
-struct Pagenation;
+struct Pagenation {
+    current_page: u32,
+    article_count: u32,
+}
 impl<P: spair::Component> spair::Render<super::ArticleList<P>> for Pagenation {
     fn render(self, nodes: spair::Nodes<super::ArticleList<P>>) {
-        nodes.render("Pagenation");
+        let comp = nodes.comp();
+        let page_count = self.article_count / crate::ARTICLES_PER_PAGE + 1.min(self.article_count % crate::ARTICLES_PER_PAGE);
+        nodes.nav(|n| {n.ul(|u| {
+            u.class("pagination")
+                .list_with_render(
+                    0..page_count,
+                    spair::ListElementCreation::Clone,
+                    "li",
+                    |page_number, l| {
+                        l.class("page-item")
+                            .class_if(self.current_page == page_number, "active")
+                            .on_click(comp.handler_mut(move |state| state.set_page_number(page_number)))
+                            .a(|a| {
+                                a.class("page-link")
+                                    .href_str("")
+                                    .render(page_number+1);
+                            });
+                    }
+                );
+        });});
     }
 }

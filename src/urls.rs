@@ -94,7 +94,7 @@ impl Profile {
 
 impl Articles {
     pub fn page(self, page_number: u32) -> ArticlesInPage {
-        self.page_with_size(page_number, 10)
+        self.page_with_size(page_number, crate::ARTICLES_PER_PAGE)
     }
 
     pub fn page_with_size(mut self, page_number: u32, page_size: u32) -> ArticlesInPage {
@@ -104,7 +104,7 @@ impl Articles {
     }
 
     pub fn feed_in_page(self, page_number: u32) -> String {
-        self.feed_in_page_with_size(page_number, 10)
+        self.feed_in_page_with_size(page_number, crate::ARTICLES_PER_PAGE)
     }
 
     pub fn feed_in_page_with_size(mut self, page_number: u32, page_size: u32) -> String {

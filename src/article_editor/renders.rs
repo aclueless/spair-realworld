@@ -73,12 +73,12 @@ impl super::ArticleEditor {
                     });
                 })
                 .fieldset(|f| {
-                    f.class("form-group").textarea(|i| {
-                        i.value(&self.article.body)
+                    f.class("form-group").textarea(|t| {
+                        t.value(&self.article.body)
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(
                                 move |state, event: spair::InputEvent| {
-                                    if let Some(input) = event.target_as_input_element() {
+                                    if let Some(input) = event.target_as::<spair::web_sys::HtmlTextAreaElement>() {
                                         state.set_body(input.value());
                                     }
                                 },
