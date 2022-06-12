@@ -3,15 +3,15 @@ use spair::prelude::*;
 mod renders;
 
 pub struct Login {
-    app_comp: spair::Comp<crate::app::App>,
+    set_user_callback: spair::CallbackArg<types::UserInfoWrapper>,
     login_info: types::LoginInfo,
     error: Option<crate::error::Error>,
 }
 
 impl Login {
-    fn new(app_comp: spair::Comp<crate::app::App>) -> Self {
+    fn new(set_user_callback: spair::CallbackArg<types::UserInfoWrapper>) -> Self {
         Self {
-            app_comp,
+            set_user_callback,
             login_info: Default::default(),
             error: None,
         }
@@ -39,10 +39,7 @@ impl Login {
     }
 
     fn login_ok(&mut self, user: types::UserInfoWrapper) {
-        spair::update_component(
-            self.app_comp
-                .callback_once_mut(move |state| state.set_user(user)),
-        );
+        self.set_user_callback.queue(user);
     }
 
     fn login_error(&mut self, e: spair::ResponsedError<types::ErrorInfo>) {

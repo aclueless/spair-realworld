@@ -20,4 +20,5 @@ Thumbs.db
 # Added by cargo
 
 /target
+dist*
 Cargo.lock

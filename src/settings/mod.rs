@@ -4,18 +4,23 @@ use spair::prelude::*;
 mod renders;
 
 pub struct Settings {
-    app_comp: spair::Comp<crate::app::App>,
+    logout_callback: spair::Callback,
     user_info: Option<types::UserInfo>,
     user_update_info: types::UserUpdateInfo,
     new_password: String,
     error: Option<crate::error::Error>,
 }
 
+pub struct Props {
+    pub logout_callback: spair::Callback,
+    pub user_info: Option<types::UserInfo>,
+}
+
 impl Settings {
-    fn new(app_comp: spair::Comp<crate::app::App>, user_info: Option<types::UserInfo>) -> Self {
+    fn new(props: Props) -> Self {
         Self {
-            app_comp,
-            user_info,
+            logout_callback: props.logout_callback,
+            user_info: props.user_info,
             user_update_info: Default::default(),
             new_password: String::new(),
             error: None,
@@ -47,8 +52,7 @@ impl Settings {
     }
 
     fn logout(&self) {
-        let cb = self.app_comp.callback_once_mut(crate::app::App::logout);
-        spair::update_component(cb);
+        self.logout_callback.queue()
     }
 
     fn request_update_user_info(&self) -> spair::Command<Self> {

@@ -90,14 +90,9 @@ impl super::Register {
     }
 }
 
-impl spair::WithParentComp for super::Register {
-    type Parent = crate::app::App;
-    type Properties = ();
-    fn init(
-        parent: &spair::Comp<Self::Parent>,
-        _: &spair::Comp<Self>,
-        _: Self::Properties,
-    ) -> Self {
-        Self::new(parent.clone())
+impl spair::AsChildComp for super::Register {
+    type Properties = spair::CallbackArg<types::UserInfoWrapper>;
+    fn init(_: &spair::Comp<Self>, set_user_callback: Self::Properties) -> Self {
+        Self::new(set_user_callback)
     }
 }

@@ -3,15 +3,15 @@ use spair::prelude::*;
 mod renders;
 
 pub struct Register {
-    app_comp: spair::Comp<crate::app::App>,
+    set_user_callback: spair::CallbackArg<types::UserInfoWrapper>,
     register_info: types::RegisterInfo,
     error: Option<crate::error::Error>,
 }
 
 impl Register {
-    fn new(app_comp: spair::Comp<crate::app::App>) -> Self {
+    fn new(set_user_callback: spair::CallbackArg<types::UserInfoWrapper>) -> Self {
         Self {
-            app_comp,
+            set_user_callback,
             register_info: Default::default(),
             error: None,
         }
@@ -43,10 +43,7 @@ impl Register {
     }
 
     fn register_ok(&mut self, user: types::UserInfoWrapper) {
-        spair::update_component(
-            self.app_comp
-                .callback_once_mut(move |state| state.set_user(user)),
-        );
+        self.set_user_callback.queue(user)
     }
 
     fn register_error(&mut self, e: spair::ResponsedError<types::ErrorInfo>) {

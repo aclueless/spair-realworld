@@ -4,7 +4,6 @@ use spair::prelude::*;
 mod renders;
 
 pub struct ArticleViewer {
-    //app_comp: spair::Comp<crate::app::App>,
     logged_in_user: Option<types::UserInfo>,
     slug: types::Slug,
     article: Option<types::ArticleInfo>,
@@ -18,14 +17,19 @@ pub enum ArticleToView {
     Article(types::ArticleInfo),
 }
 
+pub struct Props {
+    pub logged_in_user: Option<types::UserInfo>,
+    pub article: ArticleToView,
+}
+
 impl ArticleViewer {
-    fn new(props: (Option<types::UserInfo>, ArticleToView)) -> Self {
-        let (slug, article) = match props.1 {
+    fn new(props: Props) -> Self {
+        let (slug, article) = match props.article {
             ArticleToView::Slug(slug) => (slug, None),
             ArticleToView::Article(article) => (article.slug.clone(), Some(article)),
         };
         Self {
-            logged_in_user: props.0,
+            logged_in_user: props.logged_in_user,
             slug,
             article,
             comments: None,

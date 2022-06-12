@@ -5,7 +5,7 @@ mod renders;
 
 pub struct HomePage {
     filter: crate::article_list::ArticleFilter,
-    article_list_comp: spair::ChildComp<crate::article_list::ArticleList<Self>>,
+    article_list_comp: spair::ChildComp<crate::article_list::ArticleList>,
     tag_list: Option<types::TagListInfo>,
 }
 
@@ -14,7 +14,7 @@ impl HomePage {
         let filter = crate::article_list::ArticleFilter::Global;
         Self {
             filter: filter.clone(),
-            article_list_comp: spair::ChildComp::init(comp, filter),
+            article_list_comp: spair::ChildComp::with_props(filter),
             tag_list: Some(types::TagListInfo {
                 tags: vec!["TagToTest".to_string()],
             }),
@@ -24,11 +24,10 @@ impl HomePage {
     pub fn set_filter(&mut self, filter: crate::article_list::ArticleFilter) {
         if self.filter != filter {
             self.filter = filter.clone();
-            let cb = self
-                .article_list_comp
+            self.article_list_comp
                 .comp()
-                .callback_once_mut(move |state| state.set_filter(filter));
-            spair::update_component(|| cb());
+                .callback_once_mut(move |state| state.set_filter(filter))
+                .queue();
         }
     }
 

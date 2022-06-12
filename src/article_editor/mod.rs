@@ -4,18 +4,23 @@ use spair::prelude::*;
 mod renders;
 
 pub struct ArticleEditor {
-    app_comp: spair::Comp<crate::app::App>,
+    view_article_callback: spair::CallbackArg<types::ArticleInfo>,
     slug: Option<types::Slug>,
     article: types::ArticleCreateUpdateInfo,
     //tag_string: String,
     error: Option<crate::error::Error>,
 }
 
+pub struct Props {
+    pub view_article_callback: spair::CallbackArg<types::ArticleInfo>,
+    pub slug: Option<types::Slug>,
+}
+
 impl ArticleEditor {
-    fn new(app_comp: spair::Comp<crate::app::App>, slug: Option<types::Slug>) -> Self {
+    fn new(props: Props) -> Self {
         Self {
-            app_comp,
-            slug,
+            view_article_callback: props.view_article_callback,
+            slug: props.slug,
             article: Default::default(),
             //tag_string: String::new(),
             error: None,
@@ -100,9 +105,6 @@ impl ArticleEditor {
     }
 
     fn responsed_article(&mut self, article_info: types::ArticleInfoWrapper) {
-        spair::update_component(
-            self.app_comp
-                .callback_once_mut(move |state| state.view_article(article_info.article)),
-        );
+        self.view_article_callback.queue(article_info.article);
     }
 }

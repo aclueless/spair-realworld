@@ -3,7 +3,7 @@ use spair::prelude::*;
 impl spair::Component for super::HomePage {
     type Routes = crate::routes::Route;
     fn init(comp: &spair::Comp<Self>) {
-        spair::update_component(comp.callback(Self::request_data_for_home_page));
+        comp.callback(Self::request_data_for_home_page).queue();
     }
 
     fn register_routing_callback(router: &mut crate::routes::Router, comp: &spair::Comp<Self>) {
@@ -25,14 +25,9 @@ impl spair::Component for super::HomePage {
     }
 }
 
-impl spair::WithParentComp for super::HomePage {
-    type Parent = crate::app::App;
+impl spair::AsChildComp for super::HomePage {
     type Properties = ();
-    fn init(
-        _parent: &spair::Comp<Self::Parent>,
-        comp: &spair::Comp<Self>,
-        _props: Self::Properties,
-    ) -> Self {
+    fn init(comp: &spair::Comp<Self>, _props: Self::Properties) -> Self {
         Self::new(comp)
     }
 }

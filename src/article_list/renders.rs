@@ -1,10 +1,9 @@
 use spair::prelude::*;
 
-impl<P: spair::Component> spair::Component for super::ArticleList<P> {
+impl spair::Component for super::ArticleList {
     type Routes = crate::routes::Route;
     fn init(comp: &spair::Comp<Self>) {
-        let cb = comp.callback_once_mut(Self::request_article_list);
-        spair::update_component(cb);
+        comp.callback_once_mut(Self::request_article_list).queue();
     }
 
     fn render(&self, element: spair::Element<Self>) {
@@ -17,7 +16,7 @@ impl<P: spair::Component> spair::Component for super::ArticleList<P> {
                         article_list.articles.iter(),
                         spair::ListElementCreation::Clone,
                     )
-                    .render(Pagenation{
+                    .render(Pagenation {
                         current_page: self.page_number,
                         article_count: article_list.articles_count,
                     })
@@ -26,21 +25,16 @@ impl<P: spair::Component> spair::Component for super::ArticleList<P> {
     }
 }
 
-impl<P: spair::Component> spair::WithParentComp for super::ArticleList<P> {
-    type Parent = P;
+impl spair::AsChildComp for super::ArticleList {
     type Properties = super::ArticleFilter;
-    fn init(
-        _parent: &spair::Comp<Self::Parent>,
-        _comp: &spair::Comp<Self>,
-        filter: Self::Properties,
-    ) -> Self {
+    fn init(_comp: &spair::Comp<Self>, filter: Self::Properties) -> Self {
         Self::new(filter)
     }
 }
 
-impl<P: spair::Component> spair::ListItemRender<super::ArticleList<P>> for &types::ArticleInfo {
+impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
     const ROOT_ELEMENT_TAG: &'static str = "div";
-    fn render(self, element: spair::Element<super::ArticleList<P>>) {
+    fn render(self, element: spair::Element<super::ArticleList>) {
         let comp = element.comp();
         let profile = crate::routes::Route::Profile(self.author.username.clone());
         let article_slug = self.slug.clone();
@@ -183,27 +177,29 @@ struct Pagenation {
     current_page: u32,
     article_count: u32,
 }
-impl<P: spair::Component> spair::Render<super::ArticleList<P>> for Pagenation {
-    fn render(self, nodes: spair::Nodes<super::ArticleList<P>>) {
+impl spair::Render<super::ArticleList> for Pagenation {
+    fn render(self, nodes: spair::Nodes<super::ArticleList>) {
         let comp = nodes.comp();
-        let page_count = self.article_count / crate::ARTICLES_PER_PAGE + 1.min(self.article_count % crate::ARTICLES_PER_PAGE);
-        nodes.nav(|n| {n.ul(|u| {
-            u.class("pagination")
-                .list_with_render(
+        let page_count = self.article_count / crate::ARTICLES_PER_PAGE
+            + 1.min(self.article_count % crate::ARTICLES_PER_PAGE);
+        nodes.nav(|n| {
+            n.ul(|u| {
+                u.class("pagination").list_with_render(
                     0..page_count,
                     spair::ListElementCreation::Clone,
                     "li",
                     |page_number, l| {
                         l.class("page-item")
                             .class_if(self.current_page == page_number, "active")
-                            .on_click(comp.handler_mut(move |state| state.set_page_number(page_number)))
+                            .on_click(
+                                comp.handler_mut(move |state| state.set_page_number(page_number)),
+                            )
                             .a(|a| {
-                                a.class("page-link")
-                                    .href_str("")
-                                    .render(page_number+1);
+                                a.class("page-link").href_str("").render(page_number + 1);
                             });
-                    }
+                    },
                 );
-        });});
+            });
+        });
     }
 }

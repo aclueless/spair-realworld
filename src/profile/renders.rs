@@ -3,8 +3,7 @@ use spair::prelude::*;
 impl spair::Component for super::Profile {
     type Routes = crate::routes::Route;
     fn init(comp: &spair::Comp<Self>) {
-        let cb = comp.callback_once_mut(Self::request_profile_info);
-        spair::update_component(cb);
+        comp.callback_once_mut(Self::request_profile_info).queue();
     }
     fn register_routing_callback(
         router: &mut <Self::Routes as spair::Routes>::Router,
@@ -39,15 +38,10 @@ impl spair::Component for super::Profile {
     }
 }
 
-impl spair::WithParentComp for super::Profile {
-    type Parent = crate::app::App;
-    type Properties = (Option<types::UserInfo>, String);
-    fn init(
-        _: &spair::Comp<Self::Parent>,
-        comp: &spair::Comp<Self>,
-        (logged_in_user, username): Self::Properties,
-    ) -> Self {
-        Self::new(comp, logged_in_user, username)
+impl spair::AsChildComp for super::Profile {
+    type Properties = super::Props;
+    fn init(_comp: &spair::Comp<Self>, props: Self::Properties) -> Self {
+        Self::new(props)
     }
 }
 

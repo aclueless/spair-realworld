@@ -4,7 +4,7 @@ impl spair::Component for super::ArticleViewer {
     type Routes = crate::routes::Route;
 
     fn init(comp: &spair::Comp<Self>) {
-        spair::update_component(comp.callback(Self::get_article));
+        comp.callback(Self::get_article).queue();
     }
 
     fn render(&self, element: spair::Element<Self>) {
@@ -18,15 +18,10 @@ impl spair::Component for super::ArticleViewer {
     }
 }
 
-impl spair::WithParentComp for super::ArticleViewer {
-    type Parent = crate::app::App;
-    type Properties = (Option<types::UserInfo>, super::ArticleToView);
+impl spair::AsChildComp for super::ArticleViewer {
+    type Properties = super::Props;
 
-    fn init(
-        _parent: &spair::Comp<Self::Parent>,
-        _comp: &spair::Comp<Self>,
-        props: Self::Properties,
-    ) -> Self {
+    fn init(_comp: &spair::Comp<Self>, props: Self::Properties) -> Self {
         Self::new(props)
     }
 }

@@ -3,7 +3,8 @@ use spair::prelude::*;
 impl spair::Component for super::ArticleEditor {
     type Routes = crate::routes::Route;
     fn init(comp: &spair::Comp<Self>) {
-        spair::update_component(comp.callback_once_mut(super::ArticleEditor::get_article));
+        comp.callback_once_mut(super::ArticleEditor::get_article)
+            .queue();
     }
 
     fn render(&self, element: spair::Element<Self>) {
@@ -22,15 +23,10 @@ impl spair::Component for super::ArticleEditor {
     }
 }
 
-impl spair::WithParentComp for super::ArticleEditor {
-    type Parent = crate::app::App;
-    type Properties = Option<types::Slug>;
-    fn init(
-        parent: &spair::Comp<Self::Parent>,
-        _: &spair::Comp<Self>,
-        slug: Self::Properties,
-    ) -> Self {
-        Self::new(parent.clone(), slug)
+impl spair::AsChildComp for super::ArticleEditor {
+    type Properties = super::Props;
+    fn init(_: &spair::Comp<Self>, props: Self::Properties) -> Self {
+        Self::new(props)
     }
 }
 
@@ -78,7 +74,9 @@ impl super::ArticleEditor {
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(
                                 move |state, event: spair::InputEvent| {
-                                    if let Some(input) = event.target_as::<spair::web_sys::HtmlTextAreaElement>() {
+                                    if let Some(input) =
+                                        event.target_as::<spair::web_sys::HtmlTextAreaElement>()
+                                    {
                                         state.set_body(input.value());
                                     }
                                 },

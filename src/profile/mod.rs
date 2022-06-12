@@ -8,21 +8,22 @@ pub struct Profile {
     profile_username: String,
     profile: Option<types::ProfileInfo>,
     favorited: bool,
-    article_list_comp: spair::ChildComp<crate::article_list::ArticleList<Self>>,
+    article_list_comp: spair::ChildComp<crate::article_list::ArticleList>,
     error: Option<crate::error::Error>,
 }
 
+pub struct Props {
+    pub logged_in_user: Option<types::UserInfo>,
+    pub profile_username: String,
+}
+
 impl Profile {
-    fn new(
-        comp: &spair::Comp<Self>,
-        logged_in_user: Option<types::UserInfo>,
-        profile_username: String,
-    ) -> Self {
-        let filter = crate::article_list::ArticleFilter::Author(profile_username.clone());
-        let article_list_comp = spair::ChildComp::init(comp, filter);
+    fn new(props: Props) -> Self {
+        let filter = crate::article_list::ArticleFilter::Author(props.profile_username.clone());
+        let article_list_comp = spair::ChildComp::with_props(filter);
         Self {
-            logged_in_user,
-            profile_username,
+            logged_in_user: props.logged_in_user,
+            profile_username: props.profile_username,
             profile: None,
             favorited: false,
             article_list_comp,
@@ -57,10 +58,10 @@ impl Profile {
                     self.profile_username.clone(),
                 ),
             };
-            let comp = self.article_list_comp.comp();
-            spair::update_component(move || {
-                comp.callback_once_mut(move |state| state.set_filter(filter))()
-            });
+            self.article_list_comp
+                .comp()
+                .callback_arg_mut(crate::article_list::ArticleList::set_filter)
+                .queue(filter);
         }
 
         let mut cl = Self::default_checklist();

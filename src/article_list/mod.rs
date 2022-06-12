@@ -3,8 +3,7 @@ use spair::prelude::*;
 
 mod renders;
 
-pub struct ArticleList<P> {
-    phantom: std::marker::PhantomData<P>,
+pub struct ArticleList {
     filter: ArticleFilter,
     article_list: Option<types::ArticleListInfo>,
     page_number: u32,
@@ -20,10 +19,9 @@ pub enum ArticleFilter {
     FavoritedByUser(String),
 }
 
-impl<C: spair::Component> ArticleList<C> {
+impl ArticleList {
     fn new(filter: ArticleFilter) -> Self {
         Self {
-            phantom: std::marker::PhantomData as std::marker::PhantomData<C>,
             filter,
             article_list: None,
             page_number: 0,

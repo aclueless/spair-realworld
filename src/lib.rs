@@ -53,3 +53,23 @@ pub fn start() {
     wasm_logger::init(wasm_logger::Config::default());
     app::App::mount_to_body();
 }
+
+/*
+article
+        spair::update_component(
+            self.app_comp
+                .callback_once_mut(move |state| state.view_article(article_info.article)),
+        );
+
+login
+        spair::update_component(
+            self.app_comp
+                .callback_once_mut(move |state| state.set_user(user)),
+        );
+register
+        spair::update_component(
+            self.app_comp
+                .callback_once_mut(move |state| state.set_user(user)),
+        );
+
+*/

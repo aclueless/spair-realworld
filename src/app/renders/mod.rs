@@ -8,7 +8,8 @@ impl spair::Component for super::App {
 
     fn init(comp: &spair::Comp<Self>) {
         if crate::get_token().is_some() {
-            spair::update_component(comp.callback_once_mut(super::App::get_logged_in_user_info));
+            comp.callback_once_mut(super::App::get_logged_in_user_info)
+                .queue();
         }
     }
 

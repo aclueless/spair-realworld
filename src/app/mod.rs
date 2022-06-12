@@ -28,22 +28,37 @@ impl Page {
     ) -> Self {
         use crate::routes::Route;
         match route {
-            Route::Register => Self::Register(spair::ChildComp::init(comp, ())),
-            Route::Login => Self::Login(spair::ChildComp::init(comp, ())),
-            Route::Editor(slug) => Self::Editor(spair::ChildComp::init(comp, slug.clone())),
-            Route::Article(slug) => Self::Viewer(spair::ChildComp::init(
-                comp,
-                (
-                    user.cloned(),
-                    crate::article_viewer::ArticleToView::Slug(slug.clone()),
-                ),
+            Route::Register => Self::Register(spair::ChildComp::with_props(
+                comp.callback_arg_mut(App::set_user),
             )),
-            Route::Profile(username) => Self::Profile(spair::ChildComp::init(
-                comp,
-                (user.cloned(), username.to_string()),
+            Route::Login => Self::Login(spair::ChildComp::with_props(
+                comp.callback_arg_mut(App::set_user),
             )),
-            Route::Settings => Self::Settings(spair::ChildComp::init(comp, user.cloned())),
-            _ => Self::Home(spair::ChildComp::init(comp, ())),
+            Route::Editor(slug) => {
+                Self::Editor(spair::ChildComp::with_props(crate::article_editor::Props {
+                    view_article_callback: comp.callback_arg_mut(App::view_article),
+                    slug: slug.clone(),
+                }))
+            }
+            Route::Article(slug) => {
+                Self::Viewer(spair::ChildComp::with_props(crate::article_viewer::Props {
+                    logged_in_user: user.cloned(),
+                    article: crate::article_viewer::ArticleToView::Slug(slug.clone()),
+                }))
+            }
+            Route::Profile(username) => {
+                Self::Profile(spair::ChildComp::with_props(crate::profile::Props {
+                    logged_in_user: user.cloned(),
+                    profile_username: username.to_string(),
+                }))
+            }
+            Route::Settings => {
+                Self::Settings(spair::ChildComp::with_props(crate::settings::Props {
+                    logout_callback: comp.callback_mut(App::logout),
+                    user_info: user.cloned(),
+                }))
+            }
+            _ => Self::Home(spair::ChildComp::with_props(())),
         }
     }
 }
@@ -88,13 +103,10 @@ impl App {
 
     pub fn view_article(&mut self, article_info: types::ArticleInfo) {
         crate::routes::Route::Article(article_info.slug.clone()).update_address_bar();
-        self.page = Page::Viewer(spair::ChildComp::init(
-            &self.comp,
-            (
-                self.user.clone(),
-                crate::article_viewer::ArticleToView::Article(article_info),
-            ),
-        ));
+        self.page = Page::Viewer(spair::ChildComp::with_props(crate::article_viewer::Props {
+            logged_in_user: self.user.clone(),
+            article: crate::article_viewer::ArticleToView::Article(article_info),
+        }));
     }
 
     pub fn logout(&mut self) {

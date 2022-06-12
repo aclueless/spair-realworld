@@ -65,12 +65,14 @@ impl spair::Router for Router {
                 Route::ProfileFavorites(username) => Some((username.to_string(), true)),
                 _ => None,
             } {
-                profile_comp.callback_arg_mut(crate::profile::Profile::set_username_and_favorited)(
-                    uf,
-                );
+                profile_comp
+                    .callback_once_arg_mut(crate::profile::Profile::set_username_and_favorited)
+                    .call(uf);
                 return;
             }
         }
-        self.app_comp.callback_arg_mut(crate::app::App::set_route)(route);
+        self.app_comp
+            .callback_once_arg_mut(crate::app::App::set_route)
+            .call(route);
     }
 }
