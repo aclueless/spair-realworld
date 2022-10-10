@@ -27,8 +27,8 @@ impl spair::Component for super::HomePage {
 
 impl spair::AsChildComp for super::HomePage {
     type Properties = ();
-    fn init(comp: &spair::Comp<Self>, _props: Self::Properties) -> Self {
-        Self::new(comp)
+    fn init(_comp: &spair::Comp<Self>, _props: Self::Properties) -> Self {
+        Self::new()
     }
 }
 

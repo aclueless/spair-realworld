@@ -10,7 +10,7 @@ pub struct HomePage {
 }
 
 impl HomePage {
-    pub fn new(comp: &spair::Comp<Self>) -> Self {
+    pub fn new() -> Self {
         let filter = crate::article_list::ArticleFilter::Global;
         Self {
             filter: filter.clone(),
