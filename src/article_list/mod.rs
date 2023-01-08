@@ -1,11 +1,12 @@
-use crate::SetAuthorizationToken;
 use spair::prelude::*;
+
+use realworld_shared::types::*;
 
 mod renders;
 
 pub struct ArticleList {
     filter: ArticleFilter,
-    article_list: Option<types::ArticleListInfo>,
+    article_list: Option<ArticleListInfo>,
     page_number: u32,
     error: Option<crate::error::Error>,
 }
@@ -35,26 +36,21 @@ impl ArticleList {
     }
 
     fn request_article_list(&mut self) -> spair::Command<Self> {
-        let url = crate::urls::UrlBuilder::new();
-        let url = match &self.filter {
-            ArticleFilter::Global => url.articles().page(self.page_number).done(),
-            ArticleFilter::Feed => url.articles().feed_in_page(self.page_number),
-            ArticleFilter::Tag(tag) => url.articles().page(self.page_number).tag(tag),
-            ArticleFilter::Author(author_name) => {
-                url.articles().page(self.page_number).author(author_name)
+        let filter = self.filter.clone();
+        spair::Future::new(async move {
+            use realworld_shared::services::articles::*;
+            match filter {
+                ArticleFilter::Global => all(self.page_number).await,
+                ArticleFilter::Feed => feed().await,
+                ArticleFilter::Tag(tag) => by_tag(tag, self.page_number).await,
+                ArticleFilter::Author(author) => by_author(author, self.page_number).await,
+                ArticleFilter::FavoritedByUser(author) => favorited_by(author, self.page_number).await,
             }
-            ArticleFilter::FavoritedByUser(username) => {
-                url.articles().page(self.page_number).favorited_by(username)
-            }
-        };
-        spair::http::Request::get(&url)
-            .set_token()
-            .text_mode()
-            .response()
-            .json(
-                |state, article_list| state.article_list = Some(article_list),
-                Self::responsed_error,
-            )
+        })
+        .with_fn(|state: &mut Self, list| match list {
+            Ok(list) => state.article_list = Some(list),
+            Err(e) => state.error = Some(e.to_string()),
+        })
     }
 
     fn set_page_number(&mut self, page_number: u32) -> spair::Command<Self> {
@@ -65,23 +61,21 @@ impl ArticleList {
     fn toggle_favorite(
         &mut self,
         current_favorited_value: bool,
-        slug: &types::Slug,
+        slug: &str,
     ) -> spair::Command<Self> {
-        let url = crate::urls::UrlBuilder::new()
-            .articles()
-            .slug(slug)
-            .favorite();
-        match current_favorited_value {
-            true => spair::http::Request::delete(&url),
-            false => spair::http::Request::post(&url),
-        }
-        .set_token()
-        .text_mode()
-        .response()
-        .json(Self::update_article, Self::responsed_error)
+        spair::Future::new(async move {
+            use realworld_shared::services::articles::*;
+            match current_favorited_value {
+                false => favorite(slug).await,
+                true => unfavorite(slug).await,
+            }
+        }).with_fn(|state: &mut Self, a| match a {
+            Ok(a) => self.update_article(a),
+            Err(e) => self.error = Some(e.to_string()),
+        })
     }
 
-    fn update_article(&mut self, article: types::ArticleInfoWrapper) {
+    fn update_article(&mut self, article: ArticleInfoWrapper) {
         self.article_list
             .as_mut()
             .and_then(|list| {
@@ -90,9 +84,5 @@ impl ArticleList {
                     .find(|a| a.slug == article.article.slug)
             })
             .map(|a| *a = article.article);
-    }
-
-    fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
-        self.error = Some(error.into());
     }
 }

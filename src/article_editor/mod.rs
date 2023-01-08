@@ -1,19 +1,20 @@
-use crate::SetAuthorizationToken;
 use spair::prelude::*;
+
+use realworld_shared::types::*;
 
 mod renders;
 
 pub struct ArticleEditor {
-    view_article_callback: spair::CallbackArg<types::ArticleInfo>,
-    slug: Option<types::Slug>,
-    article: types::ArticleCreateUpdateInfo,
+    view_article_callback: spair::CallbackArg<ArticleInfo>,
+    slug: Option<String>,
+    article: ArticleCreateUpdateInfo,
     //tag_string: String,
     error: Option<crate::error::Error>,
 }
 
 pub struct Props {
-    pub view_article_callback: spair::CallbackArg<types::ArticleInfo>,
-    pub slug: Option<types::Slug>,
+    pub view_article_callback: spair::CallbackArg<ArticleInfo>,
+    pub slug: Option<String>,
 }
 
 impl ArticleEditor {
@@ -28,25 +29,20 @@ impl ArticleEditor {
     }
 
     fn get_article(&mut self) -> spair::OptionCommand<Self> {
-        self.slug
-            .as_ref()
-            .map(|slug| crate::urls::UrlBuilder::new().articles().slug(slug).get())
-            .map(|url| {
-                spair::http::Request::get(&url)
-                    .set_token()
-                    .text_mode()
-                    .response()
-                    .json(Self::set_article_for_editting, Self::responsed_error)
-            })
-            .into()
+        let Some(slug) = self.slug.as_ref() else {
+            return None.into();
+        };
+        spair::Future::new(async move {
+            realworld_shared::services::articles::get(slug).await
+        }).with_fn(|state: &mut Self, a| match a {
+            Ok(a) => state.set_article_for_editting(a),
+            Err(e) => self.error = Some(e.into()),
+        })
+        .into()
     }
 
-    fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
-        self.error = Some(error.into());
-    }
-
-    fn set_article_for_editting(&mut self, article_info: types::ArticleInfoWrapper) {
-        self.article = types::ArticleCreateUpdateInfo {
+    fn set_article_for_editting(&mut self, article_info: ArticleInfoWrapper) {
+        self.article = ArticleCreateUpdateInfo {
             title: article_info.article.title,
             description: article_info.article.description,
             body: article_info.article.body,
@@ -81,30 +77,23 @@ impl ArticleEditor {
     }
 
     fn publish_article(&self) -> spair::Command<Self> {
-        let data = types::ArticleCreateUpdateInfoWrapper {
+        let data = ArticleCreateUpdateInfoWrapper {
             article: self.article.clone(),
         };
-        let url = crate::urls::UrlBuilder::new().articles();
-        let builder = match self.slug.as_ref() {
-            Some(slug) => {
-                let url = url.slug(slug).update();
-                spair::http::Request::put(&url)
+        let slug = self.slug.clone();
+        spair::Future::new(async move {
+            if let Some(slug) = slug {
+                realworld_shared::services::articles::update(&slug, data).await
+            } else {
+                realworld_shared::services::articles::create(data).await
             }
-            None => {
-                let url = url.create_article();
-                spair::http::Request::post(&url)
-            }
-        };
-        builder
-            .set_token()
-            .text_mode()
-            .body()
-            .json(&data)
-            .response()
-            .json(Self::responsed_article, Self::responsed_error)
+        }).with_fn(|state: &mut Self, a| match a {
+            Ok(a) => state.responsed_article(a),
+            Err(e) => state.error = Some(e.to_string()),
+        })
     }
 
-    fn responsed_article(&mut self, article_info: types::ArticleInfoWrapper) {
+    fn responsed_article(&mut self, article_info: ArticleInfoWrapper) {
         self.view_article_callback.queue(article_info.article);
     }
 }

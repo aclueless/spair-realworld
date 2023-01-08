@@ -5,15 +5,15 @@ mod renders;
 
 pub struct Settings {
     logout_callback: spair::Callback,
-    user_info: Option<types::UserInfo>,
-    user_update_info: types::UserUpdateInfo,
+    user_info: Option<UserInfo>,
+    user_update_info: UserUpdateInfo,
     new_password: String,
     error: Option<crate::error::Error>,
 }
 
 pub struct Props {
     pub logout_callback: spair::Callback,
-    pub user_info: Option<types::UserInfo>,
+    pub user_info: Option<UserInfo>,
 }
 
 impl Settings {
@@ -56,7 +56,7 @@ impl Settings {
     }
 
     fn request_update_user_info(&self) -> spair::Command<Self> {
-        let mut data = types::UserUpdateInfoWrapper {
+        let mut data = UserUpdateInfoWrapper {
             user: self.user_update_info.clone(),
         };
         if !self.new_password.is_empty() {
@@ -72,11 +72,11 @@ impl Settings {
             .json(Self::set_user_info, Self::responsed_error)
     }
 
-    fn set_user_info(&mut self, user_info: types::UserInfoWrapper) {
+    fn set_user_info(&mut self, user_info: UserInfoWrapper) {
         self.user_info = Some(user_info.user);
     }
 
-    fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
+    fn responsed_error(&mut self, error: spair::ResponsedError<ErrorInfo>) {
         self.error = Some(error.into());
     }
 }

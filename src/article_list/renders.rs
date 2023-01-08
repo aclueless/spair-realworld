@@ -8,15 +8,15 @@ impl spair::Component for super::ArticleList {
 
     fn render(&self, element: spair::Element<Self>) {
         element
-            .render(crate::error::ErrorView(self.error.as_ref()))
+            .rupdate(crate::error::ErrorView(self.error.as_ref()))
             .match_if(|mi| match self.article_list.as_ref() {
-                None => spair::set_arm!(mi).r#static("Loading articles...").done(),
+                None => spair::set_arm!(mi).rstatic("Loading articles...").done(),
                 Some(article_list) => spair::set_arm!(mi)
                     .list(
                         article_list.articles.iter(),
                         spair::ListElementCreation::Clone,
                     )
-                    .render(Pagenation {
+                    .rupdate(Pagenation {
                         current_page: self.page_number,
                         article_count: article_list.articles_count,
                     })
@@ -32,7 +32,7 @@ impl spair::AsChildComp for super::ArticleList {
     }
 }
 
-impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
+impl spair::ListItemRender<super::ArticleList> for &ArticleInfo {
     const ROOT_ELEMENT_TAG: &'static str = "div";
     fn render(self, element: spair::Element<super::ArticleList>) {
         let comp = element.comp();
@@ -55,12 +55,12 @@ impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
                                 a.href(&profile)
                                     .static_attributes()
                                     .class("author")
-                                    .render(&self.author.username);
+                                    .rupdate(&self.author.username);
                             })
                             .span(|s| {
                                 s.static_attributes()
                                     .class("date")
-                                    .render(&self.created_at.to_string());
+                                    .rupdate(&self.created_at.to_string());
                             });
                     })
                     .button(|b| {
@@ -73,8 +73,8 @@ impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
                         .class("btn-sm")
                         .class("pull-xs-right")
                         .i(|i| i.static_attributes().class("ion-heart").done())
-                        .r#static(" ")
-                        .render(self.favorites_count);
+                        .rstatic(" ")
+                        .rupdate(self.favorites_count);
                     });
             })
             .a(|a| {
@@ -82,10 +82,10 @@ impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
                 a.href(&route)
                     .static_attributes()
                     .class("preview-link")
-                    .h1(|h| h.render(&self.title).done())
-                    .p(|p| p.render(&self.description).done())
+                    .h1(|h| h.rupdate(&self.title).done())
+                    .p(|p| p.rupdate(&self.description).done())
                     .static_nodes()
-                    .span(|s| s.r#static("Read more...").done());
+                    .span(|s| s.rstatic("Read more...").done());
             })
             .ul(|u| {
                 u.static_attributes().class("tag-list").list_with_render(
@@ -96,14 +96,14 @@ impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
                         li.class("tag-default")
                             .class("tag-pill")
                             .class("tag-outlinepill")
-                            .render(tag);
+                            .rupdate(tag);
                     },
                 );
             });
     }
 }
 /*
-impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
+impl spair::ListItemRender<super::ArticleList> for &ArticleInfo {
     fn render(self, element: spair::Element<super::ArticleList>) {
         let comp = nodes.comp();
         element
@@ -123,12 +123,12 @@ impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
                                 a.href(&profile)
                                     .static_attributes()
                                     .class("author")
-                                    .render(&self.author.username);
+                                    .rupdate(&self.author.username);
                             })
                             .span(|s| {
                                 s.static_attributes()
                                     .class("date")
-                                    .render(&self.created_at.to_string());
+                                    .rupdate(&self.created_at.to_string());
                             });
                     })
                     .button(|b| {
@@ -142,8 +142,8 @@ impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
                         .class("btn-sm")
                         .class("pull-xs-right")
                         .i(|i| i.static_attributes().class("ion-heart").done())
-                        .r#static(" ")
-                        .render(self.favorites_count);
+                        .rstatic(" ")
+                        .rupdate(self.favorites_count);
                     });
             })
             .a(|a| {
@@ -151,10 +151,10 @@ impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
                 a.href(&route)
                     .static_attributes()
                     .class("preview-link")
-                    .h1(|h| h.render(&self.title).done())
-                    .p(|p| p.render(&self.description).done())
+                    .h1(|h| h.rupdate(&self.title).done())
+                    .p(|p| p.rupdate(&self.description).done())
                     .static_nodes()
-                    .span(|s| s.r#static("Read more...").done());
+                    .span(|s| s.rstatic("Read more...").done());
             })
             .ul(|u| {
                 u.static_attributes().class("tag-list").list_with_render(
@@ -166,7 +166,7 @@ impl spair::ListItemRender<super::ArticleList> for &types::ArticleInfo {
                             .class("tag-default")
                             .class("tag-pill")
                             .class("tag-outlinepill")
-                            .render(tag);
+                            .rupdate(tag);
                     },
                 );
             });
@@ -195,7 +195,7 @@ impl spair::Render<super::ArticleList> for Pagenation {
                                 comp.handler_mut(move |state| state.set_page_number(page_number)),
                             )
                             .a(|a| {
-                                a.class("page-link").href_str("").render(page_number + 1);
+                                a.class("page-link").href_str("").rupdate(page_number + 1);
                             });
                     },
                 );

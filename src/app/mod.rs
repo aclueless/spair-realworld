@@ -1,12 +1,13 @@
-use crate::SetAuthorizationToken;
 use spair::prelude::*;
+
+use realworld_shared::types::*;
 
 mod renders;
 
 pub struct App {
     comp: spair::Comp<Self>,
     route: crate::routes::Route,
-    user: Option<types::UserInfo>,
+    user: Option<UserInfo>,
     page: Page,
 }
 
@@ -23,7 +24,7 @@ pub enum Page {
 impl Page {
     pub fn new(
         route: &crate::routes::Route,
-        user: Option<&types::UserInfo>,
+        user: Option<&UserInfo>,
         comp: &spair::Comp<crate::app::App>,
     ) -> Self {
         use crate::routes::Route;
@@ -84,24 +85,26 @@ impl App {
         spair::ShouldRender::Yes
     }
 
-    pub fn set_user(&mut self, user: types::UserInfoWrapper) {
+    pub fn set_user(&mut self, user: UserInfoWrapper) {
         let user = user.user;
-        crate::store_token(&user.token);
+        realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, Some(user.token.as_str()));
         self.user = Some(user);
         //self.set_route(crate::routes::Route::Home);
         crate::routes::Route::Home.execute_routing();
     }
 
     fn get_logged_in_user_info(&mut self) -> spair::Command<Self> {
-        let url = crate::urls::UrlBuilder::new().user();
-        spair::http::Request::get(&url)
-            .set_token()
-            .text_mode()
-            .response()
-            .json(Self::set_user, |_, _: spair::FetchError| {})
+        spair::Future::new(move || async {
+            realworld_shared::services::auth::current().await
+        }).callback(|state, rs| {
+            match rs {
+                Ok(rs) => state.set_user(rs),
+                Err(_) => realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None),
+            }
+        })
     }
 
-    pub fn view_article(&mut self, article_info: types::ArticleInfo) {
+    pub fn view_article(&mut self, article_info: ArticleInfo) {
         crate::routes::Route::Article(article_info.slug.clone()).update_address_bar();
         self.page = Page::Viewer(spair::ChildComp::with_props(crate::article_viewer::Props {
             logged_in_user: self.user.clone(),
@@ -111,7 +114,7 @@ impl App {
 
     pub fn logout(&mut self) {
         self.user = None;
-        crate::delete_token();
+        realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None);
         crate::routes::Route::Home.execute_routing();
     }
 }

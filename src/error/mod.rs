@@ -18,7 +18,7 @@ pub enum Error {
 
     /// 422
     #[error("Unprocessable Entity: {0:?}")]
-    UnprocessableEntity(types::ErrorInfo),
+    UnprocessableEntity(ErrorInfo),
 
     /// 500
     #[error("Internal Server Error")]
@@ -33,8 +33,8 @@ pub enum Error {
     RequestError,
 }
 
-impl From<spair::ResponsedError<types::ErrorInfo>> for Error {
-    fn from(e: spair::ResponsedError<types::ErrorInfo>) -> Self {
+impl From<spair::ResponsedError<ErrorInfo>> for Error {
+    fn from(e: spair::ResponsedError<ErrorInfo>) -> Self {
         match e {
             spair::ResponsedError::FetchError(spair::FetchError::DeserializeJsonError(_)) => {
                 Self::DeserializeError

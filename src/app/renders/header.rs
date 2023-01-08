@@ -10,11 +10,11 @@ impl spair::Render<crate::app::App> for Header {
                     .a(|a| {
                         a.class("navbar-brand")
                             .href(&crate::routes::Route::Home)
-                            .r#static("conduit");
+                            .rstatic("conduit");
                     })
                     .match_if(|mi| match state.user.as_ref() {
-                        None => spair::set_arm!(mi).render(LoggedOutHeader).done(),
-                        Some(user) => spair::set_arm!(mi).render(LoggedInHeader(user)).done(),
+                        None => spair::set_arm!(mi).rupdate(LoggedOutHeader).done(),
+                        Some(user) => spair::set_arm!(mi).rupdate(LoggedInHeader(user)).done(),
                     });
             });
         });
@@ -29,17 +29,17 @@ impl spair::Render<crate::app::App> for LoggedOutHeader {
             u.class("nav")
                 .class("navbar-nav")
                 .class("pull-xs-right")
-                .render(HeaderLink {
+                .rupdate(HeaderLink {
                     title: "Home",
                     route: crate::routes::Route::Home,
                     icon: None,
                 })
-                .render(HeaderLink {
+                .rupdate(HeaderLink {
                     title: "Sign in",
                     route: crate::routes::Route::Login,
                     icon: None,
                 })
-                .render(HeaderLink {
+                .rupdate(HeaderLink {
                     title: "Sign up",
                     route: crate::routes::Route::Register,
                     icon: None,
@@ -67,13 +67,13 @@ impl<'a> spair::Render<crate::app::App> for HeaderLink<'a> {
                             .i(|i| i.static_attributes().class(c).done())
                             .done(),
                     })
-                    .r#static(self.title);
+                    .rstatic(self.title);
             });
         });
     }
 }
 
-pub struct LoggedInHeader<'a>(&'a types::UserInfo);
+pub struct LoggedInHeader<'a>(&'a UserInfo);
 impl<'a> spair::Render<crate::app::App> for LoggedInHeader<'a> {
     fn render(self, nodes: spair::Nodes<crate::app::App>) {
         let state = nodes.state();
@@ -81,22 +81,22 @@ impl<'a> spair::Render<crate::app::App> for LoggedInHeader<'a> {
             u.class("nav")
                 .class("navbar-nav")
                 .class("pull-xs-right")
-                .render(HeaderLink {
+                .rupdate(HeaderLink {
                     title: "Home",
                     route: crate::routes::Route::Home,
                     icon: None,
                 })
-                .render(HeaderLink {
+                .rupdate(HeaderLink {
                     title: "New Post",
                     route: crate::routes::Route::Editor(None),
                     icon: Some("ion-compose"),
                 })
-                .render(HeaderLink {
+                .rupdate(HeaderLink {
                     title: "Settings",
                     route: crate::routes::Route::Settings,
                     icon: Some("ion-gear-a"),
                 })
-                .render(HeaderLink {
+                .rupdate(HeaderLink {
                     title: &self.0.username,
                     route: crate::routes::Route::Profile(self.0.username.clone()),
                     icon: None,

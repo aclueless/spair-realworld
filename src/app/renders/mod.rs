@@ -15,8 +15,8 @@ impl spair::Component for super::App {
 
     fn render(&self, element: spair::Element<Self>) {
         element
-            .render(header::Header)
-            .render(&self.route.url())
+            .rupdate(header::Header)
+            .rupdate(&self.route.url())
             .div(|d| match &self.page {
                 super::Page::Home(child) => d.component(child),
                 super::Page::Register(child) => d.component(child),
@@ -26,7 +26,7 @@ impl spair::Component for super::App {
                 super::Page::Profile(child) => d.component(child),
                 super::Page::Settings(child) => d.component(child),
             })
-            .render(footer::Footer);
+            .rupdate(footer::Footer);
     }
 }
 

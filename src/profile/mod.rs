@@ -4,16 +4,16 @@ use spair::prelude::*;
 mod renders;
 
 pub struct Profile {
-    logged_in_user: Option<types::UserInfo>,
+    logged_in_user: Option<UserInfo>,
     profile_username: String,
-    profile: Option<types::ProfileInfo>,
+    profile: Option<ProfileInfo>,
     favorited: bool,
     article_list_comp: spair::ChildComp<crate::article_list::ArticleList>,
     error: Option<crate::error::Error>,
 }
 
 pub struct Props {
-    pub logged_in_user: Option<types::UserInfo>,
+    pub logged_in_user: Option<UserInfo>,
     pub profile_username: String,
 }
 
@@ -37,7 +37,7 @@ impl Profile {
             .map(|u| u.username.as_str() == username)
     }
 
-    fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
+    fn responsed_error(&mut self, error: spair::ResponsedError<ErrorInfo>) {
         self.error = Some(error.into());
     }
 
@@ -81,7 +81,7 @@ impl Profile {
             .json(Self::set_profile, Self::responsed_error)
     }
 
-    fn set_profile(&mut self, p: types::ProfileInfoWrapper) {
+    fn set_profile(&mut self, p: ProfileInfoWrapper) {
         self.profile = Some(p.profile);
     }
 

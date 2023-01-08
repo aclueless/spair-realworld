@@ -6,7 +6,7 @@ mod renders;
 pub struct HomePage {
     filter: crate::article_list::ArticleFilter,
     article_list_comp: spair::ChildComp<crate::article_list::ArticleList>,
-    tag_list: Option<types::TagListInfo>,
+    tag_list: Option<TagListInfo>,
 }
 
 impl HomePage {
@@ -15,7 +15,7 @@ impl HomePage {
         Self {
             filter: filter.clone(),
             article_list_comp: spair::ChildComp::with_props(filter),
-            tag_list: Some(types::TagListInfo {
+            tag_list: Some(TagListInfo {
                 tags: vec!["TagToTest".to_string()],
             }),
         }
@@ -35,7 +35,7 @@ impl HomePage {
         self.set_filter(crate::article_list::ArticleFilter::Tag(tag.to_string()));
     }
 
-    fn responsed_error(&mut self, error: spair::ResponsedError<types::ErrorInfo>) {
+    fn responsed_error(&mut self, error: spair::ResponsedError<ErrorInfo>) {
         //self.error = Some(error.into());
     }
 

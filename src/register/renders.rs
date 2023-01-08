@@ -22,14 +22,14 @@ impl super::Register {
     fn render_register(&self, nodes: spair::Nodes<Self>) {
         let comp = nodes.comp();
         nodes
-            .h1(|h| h.class("text-xs-center").r#static("Sign up").done())
+            .h1(|h| h.class("text-xs-center").rstatic("Sign up").done())
             .p(|p| {
                 p.class("text-xs-center").a(|a| {
                     a.href(&crate::routes::Route::Login)
-                        .r#static("Have an account?");
+                        .rstatic("Have an account?");
                 });
             })
-            .render(crate::error::ErrorView(self.error.as_ref()))
+            .rupdate(crate::error::ErrorView(self.error.as_ref()))
             .form(|f| {
                 f.fieldset(|f| {
                     f.class("form-group").input(|i| {
@@ -84,14 +84,14 @@ impl super::Register {
                         .class("pull-xs-right")
                         .r#type(spair::ButtonType::Button)
                         .on_click(comp.handler_mut(super::Register::send_register_request))
-                        .r#static("Sign up");
+                        .rstatic("Sign up");
                 });
             });
     }
 }
 
 impl spair::AsChildComp for super::Register {
-    type Properties = spair::CallbackArg<types::UserInfoWrapper>;
+    type Properties = spair::CallbackArg<UserInfoWrapper>;
     fn init(_: &spair::Comp<Self>, set_user_callback: Self::Properties) -> Self {
         Self::new(set_user_callback)
     }

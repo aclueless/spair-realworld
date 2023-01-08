@@ -12,7 +12,7 @@ impl spair::Component for super::ArticleViewer {
             d.class("article-page")
                 .match_if(|mi| match self.article.as_ref() {
                     None => spair::set_arm!(mi).done(),
-                    Some(article) => spair::set_arm!(mi).render(article).done(),
+                    Some(article) => spair::set_arm!(mi).rupdate(article).done(),
                 });
         });
     }
@@ -26,16 +26,16 @@ impl spair::AsChildComp for super::ArticleViewer {
     }
 }
 
-impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
+impl spair::Render<super::ArticleViewer> for &ArticleInfo {
     fn render(self, nodes: spair::Nodes<super::ArticleViewer>) {
         let state = nodes.state();
         nodes
             .div(|d| {
                 d.class("banner").div(|d| {
                     d.class("container")
-                        .h1(|h| h.render(&self.title).done())
-                        .render(ArticleMeta(self))
-                        .render(crate::error::ErrorView(state.error.as_ref()));
+                        .h1(|h| h.rupdate(&self.title).done())
+                        .rupdate(ArticleMeta(self))
+                        .rupdate(crate::error::ErrorView(state.error.as_ref()));
                 });
             })
             .div(|d| {
@@ -59,14 +59,14 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
                                         li.class("tag-default")
                                             .class("tag-pill")
                                             .class("tag-outline")
-                                            .render(tag);
+                                            .rupdate(tag);
                                     },
                                 );
                             });
                     })
                     .horizontal_line()
                     .div(|d| {
-                        d.class("article-actions").render(ArticleMeta(self));
+                        d.class("article-actions").rupdate(ArticleMeta(self));
                     })
                     .div(|d| {
                         d.class("row").div(|d| {
@@ -74,9 +74,9 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
                                 .class("col-md-8")
                                 .class("offset-md-2")
                                 .match_if(|mi| match state.logged_in_user.as_ref() {
-                                    None => spair::set_arm!(mi).render(LoginRegister).done(),
+                                    None => spair::set_arm!(mi).rupdate(LoginRegister).done(),
                                     Some(user) => {
-                                        spair::set_arm!(mi).render(CommentForm(user)).done()
+                                        spair::set_arm!(mi).rupdate(CommentForm(user)).done()
                                     }
                                 })
                                 .list(
@@ -89,7 +89,7 @@ impl spair::Render<super::ArticleViewer> for &types::ArticleInfo {
     }
 }
 
-struct ArticleMeta<'a>(&'a types::ArticleInfo);
+struct ArticleMeta<'a>(&'a ArticleInfo);
 impl<'a> spair::Render<super::ArticleViewer> for ArticleMeta<'a> {
     fn render(self, nodes: spair::Nodes<super::ArticleViewer>) {
         let profile = crate::routes::Route::Profile(self.0.author.username.clone());
@@ -105,18 +105,18 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleMeta<'a> {
                         .a(|a| {
                             a.href(&profile)
                                 .class("author")
-                                .render(&self.0.author.username);
+                                .rupdate(&self.0.author.username);
                         })
                         .span(|s| {
-                            s.class("date").render(&self.0.created_at.to_string());
+                            s.class("date").rupdate(&self.0.created_at.to_string());
                         });
                 })
-                .render(ArticleActions(self.0));
+                .rupdate(ArticleActions(self.0));
         });
     }
 }
 
-struct ArticleActions<'a>(&'a types::ArticleInfo);
+struct ArticleActions<'a>(&'a ArticleInfo);
 impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
     fn render(self, nodes: spair::Nodes<super::ArticleViewer>) {
         let state = nodes.state();
@@ -130,7 +130,7 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                             .class("btn-outline-secondary")
                             .href(&crate::routes::Route::Editor(Some(state.slug.clone())))
                             .i(|i| i.class("ion-edit").done())
-                            .r#static("Edit Article");
+                            .rstatic("Edit Article");
                     })
                     .button(|b| {
                         let username = self.0.author.username.clone();
@@ -139,7 +139,7 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                             .class("btn-outline-danger")
                             .on_click(comp.handler(super::ArticleViewer::delete_article))
                             .i(|i| i.class("ion-trash-a").done())
-                            .r#static("Delete Article");
+                            .rstatic("Delete Article");
                     })
                     .done(),
                 Some(false) => spair::set_arm!(mi)
@@ -154,10 +154,10 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                             )
                             .on_click(comp.handler(super::ArticleViewer::toggle_follow))
                             .i(|i| i.class("ion-plus-round").done())
-                            .r#static(" Follow ")
-                            .render(&self.0.author.username);
+                            .rstatic(" Follow ")
+                            .rupdate(&self.0.author.username);
                     })
-                    .r#static("\u{00A0}\u{00A0}")
+                    .rstatic("\u{00A0}\u{00A0}")
                     .button(|b| {
                         let username = self.0.author.username.clone();
                         b.class("btn")
@@ -165,12 +165,12 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                             .class_or(self.0.favorited, "btn-primary", "btn-outline-primary")
                             .on_click(comp.handler(super::ArticleViewer::toggle_favorite))
                             .i(|i| i.class("ion-heart").done())
-                            .r#static(" Favorite Post ")
+                            .rstatic(" Favorite Post ")
                             .span(|s| {
                                 s.class("counter")
-                                    .r#static("(")
-                                    .render(self.0.favorites_count)
-                                    .r#static(")");
+                                    .rstatic("(")
+                                    .rupdate(self.0.favorites_count)
+                                    .rstatic(")");
                             });
                     })
                     .done(),
@@ -186,17 +186,17 @@ impl spair::Render<super::ArticleViewer> for LoginRegister {
         nodes
             .static_nodes()
             .a(|a| {
-                a.href(&crate::routes::Route::Login).r#static("Sign in");
+                a.href(&crate::routes::Route::Login).rstatic("Sign in");
             })
-            .r#static(" or ")
+            .rstatic(" or ")
             .a(|a| {
-                a.href(&crate::routes::Route::Register).r#static("Sign up");
+                a.href(&crate::routes::Route::Register).rstatic("Sign up");
             })
-            .r#static(" to comment.");
+            .rstatic(" to comment.");
     }
 }
 
-struct CommentForm<'a>(&'a types::UserInfo);
+struct CommentForm<'a>(&'a UserInfo);
 impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
     fn render(self, nodes: spair::Nodes<super::ArticleViewer>) {
         let state = nodes.state();
@@ -235,21 +235,21 @@ impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
                                 .class("btn-primary")
                                 .on_click(comp.handler(super::ArticleViewer::post_comment))
                                 .enabled(state.new_comment.is_empty() == false)
-                                .r#static("Post comment");
+                                .rstatic("Post comment");
                         });
                 });
         });
     }
 }
 
-impl spair::ListItemRender<super::ArticleViewer> for &types::CommentInfo {
+impl spair::ListItemRender<super::ArticleViewer> for &CommentInfo {
     const ROOT_ELEMENT_TAG: &'static str = "div";
     fn render(self, element: spair::Element<super::ArticleViewer>) {
         let comp = element.comp();
         element.div(|d| {
             d.class("card")
                 .div(|d| {
-                    d.class("card-block").render(&self.body);
+                    d.class("card-block").rupdate(&self.body);
                 })
                 .div(|d| {
                     let profile = crate::routes::Route::Profile(self.author.username.clone());
@@ -259,14 +259,14 @@ impl spair::ListItemRender<super::ArticleViewer> for &types::CommentInfo {
                                 i.class("comment-author-img").src(&self.author.image);
                             });
                         })
-                        .r#static(" ")
+                        .rstatic(" ")
                         .a(|a| {
                             a.class("comment-author")
                                 .href(&profile)
-                                .render(&self.author.username);
+                                .rupdate(&self.author.username);
                         })
                         .span(|s| {
-                            s.class("date-posted").render(&self.created_at.to_string());
+                            s.class("date-posted").rupdate(&self.created_at.to_string());
                         })
                         .match_if(|mi| {
                             match mi.state().is_logged_in_username(&self.author.username) {

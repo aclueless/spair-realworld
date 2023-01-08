@@ -17,17 +17,17 @@ impl<'a, C: spair::Component> spair::Render<C> for ErrorView<'a> {
                                 spair::ListElementCreation::Clone,
                                 "li",
                                 |(key, values), li| {
-                                    li.render(key).list_with_render(
+                                    li.rupdate(key).list_with_render(
                                         values.iter(),
                                         spair::ListElementCreation::Clone,
                                         "span",
-                                        |value, s| s.r#static(" ").render(value).done(),
+                                        |value, s| s.rstatic(" ").rupdate(value).done(),
                                     );
                                 },
                             )
                             .done();
                     }
-                    _ => spair::set_arm!(mi).render(&error.to_string()).done(),
+                    _ => spair::set_arm!(mi).rupdate(&error.to_string()).done(),
                 },
             });
         });

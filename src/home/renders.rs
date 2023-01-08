@@ -19,9 +19,9 @@ impl spair::Component for super::HomePage {
     fn render(&self, element: spair::Element<Self>) {
         element
             .class("home-page")
-            .render(Banner)
-            .render(&format!("{:?}", self.filter))
-            .render(Feeds);
+            .rupdate(Banner)
+            .rupdate(&format!("{:?}", self.filter))
+            .rupdate(Feeds);
     }
 }
 
@@ -38,8 +38,8 @@ impl spair::Render<super::HomePage> for Banner {
         nodes.static_nodes().div(|d| {
             d.class("banner").div(|d| {
                 d.class("container")
-                    .h1(|h| h.class("logo-font").r#static("conduit").done())
-                    .p(|p| p.r#static("A place to share your knowledge.").done());
+                    .h1(|h| h.class("logo-font").rstatic("conduit").done())
+                    .p(|p| p.rstatic("A place to share your knowledge.").done());
             });
         });
     }
@@ -59,10 +59,10 @@ impl spair::Render<super::HomePage> for Feeds {
                         .div(|d| {
                             d.static_attributes()
                                 .class("col-md-9")
-                                .render(FeedTabs)
+                                .rupdate(FeedTabs)
                                 .div(|d| d.component(&state.article_list_comp));
                         })
-                        .render(PopularTags);
+                        .rupdate(PopularTags);
                 });
         });
     }
@@ -79,14 +79,14 @@ impl spair::Render<super::HomePage> for FeedTabs {
                     .class("nav")
                     .class("nav-pills")
                     .class("outline-active")
-                    .render(FeedTab {
+                    .rupdate(FeedTab {
                         title: "Your Feed",
                         active: state.filter == crate::article_list::ArticleFilter::Feed,
                         handler: comp.handler_mut(|state| {
                             state.set_filter(crate::article_list::ArticleFilter::Feed)
                         }),
                     })
-                    .render(FeedTab {
+                    .rupdate(FeedTab {
                         title: "Global Feed",
                         active: state.filter == crate::article_list::ArticleFilter::Global,
                         handler: comp.handler_mut(|state| {
@@ -96,7 +96,7 @@ impl spair::Render<super::HomePage> for FeedTabs {
                     .match_if(|mi| match &state.filter {
                         crate::article_list::ArticleFilter::Tag(tag) => {
                             let tag = tag.to_string();
-                            spair::set_arm!(mi).render(FeedTab {
+                            spair::set_arm!(mi).rupdate(FeedTab {
                                 title: &format!("#{}", tag),
                                 active: true,
                                 handler: comp.handler_mut(move |state| {
@@ -125,7 +125,7 @@ impl<'a, F: spair::Click> spair::Render<super::HomePage> for FeedTab<'a, F> {
                     .on_click(self.handler)
                     .static_attributes()
                     .class("nav-link")
-                    .r#static(self.title)
+                    .rstatic(self.title)
                     .done()
             });
         });
@@ -135,7 +135,7 @@ impl<'a, F: spair::Click> spair::Render<super::HomePage> for FeedTab<'a, F> {
 struct Pagenation;
 impl spair::Render<super::HomePage> for Pagenation {
     fn render(self, nodes: spair::Nodes<super::HomePage>) {
-        nodes.render("Pagenation");
+        nodes.rupdate("Pagenation");
     }
 }
 
@@ -149,10 +149,10 @@ impl spair::Render<super::HomePage> for PopularTags {
             .div(|d| {
                 d.static_attributes().class("sidebar")
                     .static_nodes()
-                    .p(|p| p.render("Popular Tags").done())
+                    .p(|p| p.rupdate("Popular Tags").done())
                     .nodes()
                     .match_if(|mi| match state.tag_list.as_ref() {
-                        None => spair::set_arm!(mi).r#static("Loading tags...").done(),
+                        None => spair::set_arm!(mi).rstatic("Loading tags...").done(),
                         Some(tag_list) => spair::set_arm!(mi)
                             .div(|d| {
                                 d.static_attributes().class("tag-list")
@@ -169,7 +169,7 @@ impl spair::Render<super::HomePage> for PopularTags {
                                             .static_attributes()
                                             .class("tag-pill")
                                             .class("tag-default")
-                                            .render(tag);
+                                            .rupdate(tag);
                                         }
                                     );
                             }).done(),

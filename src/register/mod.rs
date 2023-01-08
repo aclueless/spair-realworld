@@ -3,13 +3,13 @@ use spair::prelude::*;
 mod renders;
 
 pub struct Register {
-    set_user_callback: spair::CallbackArg<types::UserInfoWrapper>,
-    register_info: types::RegisterInfo,
+    set_user_callback: spair::CallbackArg<UserInfoWrapper>,
+    register_info: RegisterInfo,
     error: Option<crate::error::Error>,
 }
 
 impl Register {
-    fn new(set_user_callback: spair::CallbackArg<types::UserInfoWrapper>) -> Self {
+    fn new(set_user_callback: spair::CallbackArg<UserInfoWrapper>) -> Self {
         Self {
             set_user_callback,
             register_info: Default::default(),
@@ -35,18 +35,18 @@ impl Register {
         spair::http::Request::post(&url)
             .text_mode()
             .body()
-            .json(&types::RegisterInfoWrapper {
+            .json(&RegisterInfoWrapper {
                 user: self.register_info.clone(),
             })
             .response()
             .json(Self::register_ok, Self::register_error)
     }
 
-    fn register_ok(&mut self, user: types::UserInfoWrapper) {
+    fn register_ok(&mut self, user: UserInfoWrapper) {
         self.set_user_callback.queue(user)
     }
 
-    fn register_error(&mut self, e: spair::ResponsedError<types::ErrorInfo>) {
+    fn register_error(&mut self, e: spair::ResponsedError<ErrorInfo>) {
         self.error = Some(e.into());
     }
 }

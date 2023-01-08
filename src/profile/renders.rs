@@ -21,7 +21,7 @@ impl spair::Component for super::Profile {
             d.class("profile-page")
                 .match_if(|mi| match self.profile.as_ref() {
                     None => spair::set_arm!(mi).done(),
-                    Some(profile) => spair::set_arm!(mi).render(profile).done(),
+                    Some(profile) => spair::set_arm!(mi).rupdate(profile).done(),
                 })
                 .div(|d| {
                     d.class("container").div(|d| {
@@ -29,7 +29,7 @@ impl spair::Component for super::Profile {
                             d.class("col-xs-12")
                                 .class("col-md-10")
                                 .class("offset-md-1")
-                                .render(ProfileTabListView(&self.profile_username))
+                                .rupdate(ProfileTabListView(&self.profile_username))
                                 .div(|d| d.component(&self.article_list_comp));
                         });
                     });
@@ -45,7 +45,7 @@ impl spair::AsChildComp for super::Profile {
     }
 }
 
-impl spair::Render<super::Profile> for &types::ProfileInfo {
+impl spair::Render<super::Profile> for &ProfileInfo {
     fn render(self, nodes: spair::Nodes<super::Profile>) {
         let state = nodes.state();
         nodes.div(|d| {
@@ -55,7 +55,7 @@ impl spair::Render<super::Profile> for &types::ProfileInfo {
                         d.class("col-xs-12")
                             .class("col-md-10")
                             .class("offset-md-1")
-                            .render(ProfileView(self));
+                            .rupdate(ProfileView(self));
                     });
                 });
             });
@@ -63,7 +63,7 @@ impl spair::Render<super::Profile> for &types::ProfileInfo {
     }
 }
 
-struct ProfileView<'a>(&'a types::ProfileInfo);
+struct ProfileView<'a>(&'a ProfileInfo);
 impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
     fn render(self, nodes: spair::Nodes<super::Profile>) {
         let state = nodes.state();
@@ -72,10 +72,10 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
             .img(|i| {
                 i.class("user-image").src(&self.0.image);
             })
-            .h4(|h| h.render(&self.0.username).done())
+            .h4(|h| h.rupdate(&self.0.username).done())
             .match_if(|mi| match self.0.bio.as_ref() {
                 None => spair::set_arm!(mi).done(),
-                Some(bio) => spair::set_arm!(mi).p(|p| p.render(bio).done()).done(),
+                Some(bio) => spair::set_arm!(mi).p(|p| p.rupdate(bio).done()).done(),
             })
             .match_if(|mi| match state.is_logged_in_username(&self.0.username) {
                 None => spair::set_arm!(mi).done(),
@@ -86,7 +86,7 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
                             .class("btn-outline-secondary")
                             .class("action-btn")
                             .href(&crate::routes::Route::Settings)
-                            .r#static("Edit Profile Settings");
+                            .rstatic("Edit Profile Settings");
                     })
                     .done(),
                 Some(true) => spair::set_arm!(mi)
@@ -98,8 +98,8 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
                             .class("action-btn")
                             .on_click(comp.handler(super::Profile::toggle_follow))
                             .i(|i| i.class("ion-plus-round").done())
-                            .r#static(" Follow ")
-                            .render(&self.0.username);
+                            .rstatic(" Follow ")
+                            .rupdate(&self.0.username);
                     })
                     .done(),
             });
@@ -115,12 +115,12 @@ impl<'a> spair::Render<super::Profile> for ProfileTabListView<'a> {
                 u.class("nav")
                     .class("nav-pills")
                     .class("outline-active")
-                    .render(ProfileTabView {
+                    .rupdate(ProfileTabView {
                         title: "Articles",
                         active: !state.favorited,
                         route: crate::routes::Route::Profile(self.0.to_string()),
                     })
-                    .render(ProfileTabView {
+                    .rupdate(ProfileTabView {
                         title: "Favorite Articles",
                         active: state.favorited,
                         route: crate::routes::Route::ProfileFavorites(self.0.to_string()),
@@ -142,7 +142,7 @@ impl spair::Render<super::Profile> for ProfileTabView {
                 a.class("nav-link")
                     .class_if(self.active, "active")
                     .href(&self.route)
-                    .r#static(self.title);
+                    .rstatic(self.title);
             });
         });
     }

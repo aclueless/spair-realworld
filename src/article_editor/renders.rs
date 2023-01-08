@@ -128,7 +128,7 @@ impl super::ArticleEditor {
                                             .static_attributes()
                                             .class("ion-close-round");
                                         })
-                                        .render(tag);
+                                        .rupdate(tag);
                                 },
                             );
                         });
@@ -142,7 +142,7 @@ impl super::ArticleEditor {
                         .class("btn-primary")
                         .r#type(spair::ButtonType::Button)
                         .on_click(comp.handler(super::ArticleEditor::publish_article))
-                        .render("Publish Article");
+                        .rupdate("Publish Article");
                 });
             });
         });

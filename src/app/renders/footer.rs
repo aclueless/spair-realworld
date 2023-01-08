@@ -9,15 +9,15 @@ impl spair::Render<crate::app::App> for Footer {
                     .a(|a| {
                         a.class("logo-font")
                             .href(&crate::routes::Route::Home)
-                            .r#static("conduit");
+                            .rstatic("conduit");
                     })
                     .span(|s| {
                         s.class("attribution")
-                            .r#static("An interactive learning project from ")
+                            .rstatic("An interactive learning project from ")
                             .a(|a| {
-                                a.href_str("https://thinkster.io").r#static("Thinkster");
+                                a.href_str("https://thinkster.io").rstatic("Thinkster");
                             })
-                            .r#static(". Code &amp; design licensed under MIT.");
+                            .rstatic(". Code &amp; design licensed under MIT.");
                     });
             });
         });

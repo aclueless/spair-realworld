@@ -1,16 +1,12 @@
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
-use derive_more as dmore;
 
 use super::ProfileInfo;
 
-#[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq, dmore::AsRef, dmore::Deref, dmore::From)]
-pub struct Slug(String);
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ArticleInfo {
-    pub slug: Slug,
+    pub slug: String,
     pub title: String,
     pub description: String,
     pub body: String,
@@ -22,7 +18,7 @@ pub struct ArticleInfo {
     pub author: ProfileInfo,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ArticleInfoWrapper {
     pub article: ArticleInfo,

@@ -3,13 +3,13 @@ use spair::prelude::*;
 mod renders;
 
 pub struct Login {
-    set_user_callback: spair::CallbackArg<types::UserInfoWrapper>,
-    login_info: types::LoginInfo,
+    set_user_callback: spair::CallbackArg<UserInfoWrapper>,
+    login_info: LoginInfo,
     error: Option<crate::error::Error>,
 }
 
 impl Login {
-    fn new(set_user_callback: spair::CallbackArg<types::UserInfoWrapper>) -> Self {
+    fn new(set_user_callback: spair::CallbackArg<UserInfoWrapper>) -> Self {
         Self {
             set_user_callback,
             login_info: Default::default(),
@@ -31,18 +31,18 @@ impl Login {
         spair::http::Request::post(&url)
             .text_mode()
             .body()
-            .json(&types::LoginInfoWrapper {
+            .json(&LoginInfoWrapper {
                 user: self.login_info.clone(),
             })
             .response()
             .json(Self::login_ok, Self::login_error)
     }
 
-    fn login_ok(&mut self, user: types::UserInfoWrapper) {
+    fn login_ok(&mut self, user: UserInfoWrapper) {
         self.set_user_callback.queue(user);
     }
 
-    fn login_error(&mut self, e: spair::ResponsedError<types::ErrorInfo>) {
+    fn login_error(&mut self, e: spair::ResponsedError<ErrorInfo>) {
         self.error = Some(e.into());
     }
 }

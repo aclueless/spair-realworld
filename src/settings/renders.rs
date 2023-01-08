@@ -8,7 +8,7 @@ impl spair::Component for super::Settings {
             d.class("settings-page")
                 .match_if(|mi| match self.user_info.as_ref() {
                     None => spair::set_arm!(mi)
-                        .r#static("Sign in to view your settings.")
+                        .rstatic("Sign in to view your settings.")
                         .done(),
                     Some(_) => spair::set_arm!(mi)
                         .div(|d| {
@@ -18,10 +18,10 @@ impl spair::Component for super::Settings {
                                         .class("offset-md-3")
                                         .class("col-xs-12")
                                         .h1(|h| {
-                                            h.class("text-xs-center").r#static("Your Settings");
+                                            h.class("text-xs-center").rstatic("Your Settings");
                                         })
-                                        .render(crate::error::ErrorView(self.error.as_ref()))
-                                        .render(&self.user_update_info);
+                                        .rupdate(crate::error::ErrorView(self.error.as_ref()))
+                                        .rupdate(&self.user_update_info);
                                 });
                             });
                         })
@@ -38,7 +38,7 @@ impl spair::AsChildComp for super::Settings {
     }
 }
 
-impl spair::Render<super::Settings> for &types::UserUpdateInfo {
+impl spair::Render<super::Settings> for &UserUpdateInfo {
     fn render(self, nodes: spair::Nodes<super::Settings>) {
         let state = nodes.state();
         let comp = nodes.comp();
@@ -133,7 +133,7 @@ impl spair::Render<super::Settings> for &types::UserUpdateInfo {
                             .r#type(spair::ButtonType::Button)
                             .enabled(state.is_valid())
                             .on_click(comp.handler(super::Settings::request_update_user_info))
-                            .r#static("Update settings");
+                            .rstatic("Update settings");
                     });
                 });
             })
@@ -142,7 +142,7 @@ impl spair::Render<super::Settings> for &types::UserUpdateInfo {
                 b.class("btn btn-lg")
                     .class("btn-outline-danger")
                     .on_click(comp.handler(super::Settings::logout))
-                    .r#static("Or click here to logout.");
+                    .rstatic("Or click here to logout.");
             });
     }
 }
