@@ -1,4 +1,3 @@
-use crate::SetAuthorizationToken;
 use spair::prelude::*;
 
 mod renders;
@@ -6,7 +5,8 @@ mod renders;
 pub struct HomePage {
     filter: crate::article_list::ArticleFilter,
     article_list_comp: spair::ChildComp<crate::article_list::ArticleList>,
-    tag_list: Option<TagListInfo>,
+    tag_list: Option<realworld_shared::types::TagListInfo>,
+    error: Option<realworld_shared::error::Error>,
 }
 
 impl HomePage {
@@ -15,9 +15,10 @@ impl HomePage {
         Self {
             filter: filter.clone(),
             article_list_comp: spair::ChildComp::with_props(filter),
-            tag_list: Some(TagListInfo {
+            tag_list: Some(realworld_shared::types::TagListInfo {
                 tags: vec!["TagToTest".to_string()],
             }),
+            error: None,
         }
     }
 
@@ -35,10 +36,6 @@ impl HomePage {
         self.set_filter(crate::article_list::ArticleFilter::Tag(tag.to_string()));
     }
 
-    fn responsed_error(&mut self, error: spair::ResponsedError<ErrorInfo>) {
-        //self.error = Some(error.into());
-    }
-
     pub fn request_data_for_home_page(&self) -> spair::Checklist<Self> {
         let mut cl = Self::default_checklist();
         cl.set_skip_render();
@@ -48,10 +45,10 @@ impl HomePage {
     }
 
     fn request_tags(&self) -> spair::Command<Self> {
-        let url = crate::urls::UrlBuilder::new().tags();
-        spair::http::Request::get(&url).text_mode().response().json(
-            |state, tag_list| state.tag_list = Some(tag_list),
-            Self::responsed_error,
-        )
+        spair::Future::new(async move { realworld_shared::services::tags::get_all().await })
+            .with_fn(|state, tag_list| match tag_list {
+                Ok(tag_list) => state.tag_list = Some(tag_list),
+                Err(e) => self.error = Some(e),
+            })
     }
 }

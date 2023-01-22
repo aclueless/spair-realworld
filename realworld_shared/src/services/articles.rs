@@ -23,12 +23,12 @@ pub async fn del(slug: String) -> Result<DeleteWrapper, Error> {
 }
 
 /// Favorite an article
-pub async fn favorite(slug: &str) -> Result<ArticleInfoWrapper, Error> {
+pub async fn favorite(slug: String) -> Result<ArticleInfoWrapper, Error> {
     request_post::<(), ArticleInfoWrapper>(format!("/articles/{}/favorite", slug), ()).await
 }
 
 /// Unfavorite an article
-pub async fn unfavorite(slug: &str) -> Result<ArticleInfoWrapper, Error> {
+pub async fn unfavorite(slug: String) -> Result<ArticleInfoWrapper, Error> {
     request_delete::<ArticleInfoWrapper>(format!("/articles/{}/favorite", slug)).await
 }
 
@@ -48,13 +48,13 @@ pub async fn feed() -> Result<ArticleListInfo, Error> {
 }
 
 /// Get an article
-pub async fn get(slug: &str) -> Result<ArticleInfoWrapper, Error> {
+pub async fn get(slug: String) -> Result<ArticleInfoWrapper, Error> {
     request_get::<ArticleInfoWrapper>(format!("/articles/{}", slug)).await
 }
 
 /// Update an article
 pub async fn update(
-    slug: &str,
+    slug: String,
     article: ArticleCreateUpdateInfoWrapper,
 ) -> Result<ArticleInfoWrapper, Error> {
     request_put::<ArticleCreateUpdateInfoWrapper, ArticleInfoWrapper>(

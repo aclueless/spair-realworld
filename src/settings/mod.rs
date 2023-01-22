@@ -1,19 +1,18 @@
-use crate::SetAuthorizationToken;
 use spair::prelude::*;
 
 mod renders;
 
 pub struct Settings {
     logout_callback: spair::Callback,
-    user_info: Option<UserInfo>,
-    user_update_info: UserUpdateInfo,
+    user_info: Option<realworld_shared::types::UserInfo>,
+    user_update_info: realworld_shared::types::UserUpdateInfo,
     new_password: String,
-    error: Option<crate::error::Error>,
+    error: Option<realworld_shared::error::Error>,
 }
 
 pub struct Props {
     pub logout_callback: spair::Callback,
-    pub user_info: Option<UserInfo>,
+    pub user_info: Option<realworld_shared::types::UserInfo>,
 }
 
 impl Settings {
@@ -56,27 +55,25 @@ impl Settings {
     }
 
     fn request_update_user_info(&self) -> spair::Command<Self> {
-        let mut data = UserUpdateInfoWrapper {
+        let mut data = realworld_shared::types::UserUpdateInfoWrapper {
             user: self.user_update_info.clone(),
         };
         if !self.new_password.is_empty() {
             data.user.password = Some(self.new_password.clone());
         }
-        let url = crate::urls::UrlBuilder::new().user();
-        spair::http::Request::put(&url)
-            .set_token()
-            .text_mode()
-            .body()
-            .json(&data)
-            .response()
-            .json(Self::set_user_info, Self::responsed_error)
+
+        spair::Future::new(async move { realworld_shared::services::auth::save(data).await })
+            .with_fn(|state, u| match u {
+                Ok(u) => state.set_user_info(u),
+                Err(e) => state.responsed_error(e),
+            })
     }
 
-    fn set_user_info(&mut self, user_info: UserInfoWrapper) {
+    fn set_user_info(&mut self, user_info: realworld_shared::types::UserInfoWrapper) {
         self.user_info = Some(user_info.user);
     }
 
-    fn responsed_error(&mut self, error: spair::ResponsedError<ErrorInfo>) {
-        self.error = Some(error.into());
+    fn responsed_error(&mut self, error: realworld_shared::error::Error) {
+        self.error = Some(error);
     }
 }

@@ -7,7 +7,7 @@ impl spair::Component for super::App {
     type Routes = crate::routes::Route;
 
     fn init(comp: &spair::Comp<Self>) {
-        if crate::get_token().is_some() {
+        if realworld_shared::services::get_token().is_some() {
             comp.callback_once_mut(super::App::get_logged_in_user_info)
                 .queue();
         }

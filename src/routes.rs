@@ -4,8 +4,8 @@ pub enum Route {
     Login,
     Register,
     Settings,
-    Editor(Option<Slug>),
-    Article(Slug),
+    Editor(Option<String>),
+    Article(String),
     Profile(String),
     ProfileFavorites(String),
 }
@@ -42,9 +42,9 @@ impl spair::Router for Router {
             "#/editor" => Route::Editor(None),
             hash => {
                 if hash.starts_with("#/article/") {
-                    Route::Article(Slug::from(hash.replace("#/article/", "")))
+                    Route::Article(hash.replace("#/article/", ""))
                 } else if hash.starts_with("#/editor/") {
-                    Route::Editor(Some(Slug::from(hash.replace("#/editor/", ""))))
+                    Route::Editor(Some(hash.replace("#/editor/", "")))
                 } else if hash.starts_with("#/profile/") {
                     let tail = hash.replace("#/profile/", "");
                     if tail.ends_with("/favorites") {

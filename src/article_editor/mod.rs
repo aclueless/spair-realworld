@@ -1,19 +1,17 @@
 use spair::prelude::*;
 
-use realworld_shared::types::*;
-
 mod renders;
 
 pub struct ArticleEditor {
-    view_article_callback: spair::CallbackArg<ArticleInfo>,
+    view_article_callback: spair::CallbackArg<realworld_shared::types::ArticleInfo>,
     slug: Option<String>,
-    article: ArticleCreateUpdateInfo,
+    article: realworld_shared::types::ArticleCreateUpdateInfo,
     //tag_string: String,
-    error: Option<crate::error::Error>,
+    error: Option<realworld_shared::error::Error>,
 }
 
 pub struct Props {
-    pub view_article_callback: spair::CallbackArg<ArticleInfo>,
+    pub view_article_callback: spair::CallbackArg<realworld_shared::types::ArticleInfo>,
     pub slug: Option<String>,
 }
 
@@ -32,17 +30,19 @@ impl ArticleEditor {
         let Some(slug) = self.slug.as_ref() else {
             return None.into();
         };
-        spair::Future::new(async move {
-            realworld_shared::services::articles::get(slug).await
-        }).with_fn(|state: &mut Self, a| match a {
-            Ok(a) => state.set_article_for_editting(a),
-            Err(e) => self.error = Some(e.into()),
-        })
-        .into()
+        spair::Future::new(async move { realworld_shared::services::articles::get(slug).await })
+            .with_fn(|state: &mut Self, a| match a {
+                Ok(a) => state.set_article_for_editting(a),
+                Err(e) => self.error = Some(e.into()),
+            })
+            .into()
     }
 
-    fn set_article_for_editting(&mut self, article_info: ArticleInfoWrapper) {
-        self.article = ArticleCreateUpdateInfo {
+    fn set_article_for_editting(
+        &mut self,
+        article_info: realworld_shared::types::ArticleInfoWrapper,
+    ) {
+        self.article = realworld_shared::types::ArticleCreateUpdateInfo {
             title: article_info.article.title,
             description: article_info.article.description,
             body: article_info.article.body,
@@ -77,23 +77,24 @@ impl ArticleEditor {
     }
 
     fn publish_article(&self) -> spair::Command<Self> {
-        let data = ArticleCreateUpdateInfoWrapper {
+        let data = realworld_shared::types::ArticleCreateUpdateInfoWrapper {
             article: self.article.clone(),
         };
         let slug = self.slug.clone();
         spair::Future::new(async move {
             if let Some(slug) = slug {
-                realworld_shared::services::articles::update(&slug, data).await
+                realworld_shared::services::articles::update(slug, data).await
             } else {
                 realworld_shared::services::articles::create(data).await
             }
-        }).with_fn(|state: &mut Self, a| match a {
+        })
+        .with_fn(|state: &mut Self, a| match a {
             Ok(a) => state.responsed_article(a),
             Err(e) => state.error = Some(e.to_string()),
         })
     }
 
-    fn responsed_article(&mut self, article_info: ArticleInfoWrapper) {
+    fn responsed_article(&mut self, article_info: realworld_shared::types::ArticleInfoWrapper) {
         self.view_article_callback.queue(article_info.article);
     }
 }

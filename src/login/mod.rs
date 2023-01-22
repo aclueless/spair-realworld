@@ -3,13 +3,15 @@ use spair::prelude::*;
 mod renders;
 
 pub struct Login {
-    set_user_callback: spair::CallbackArg<UserInfoWrapper>,
-    login_info: LoginInfo,
-    error: Option<crate::error::Error>,
+    set_user_callback: spair::CallbackArg<realworld_shared::types::UserInfoWrapper>,
+    login_info: realworld_shared::types::LoginInfo,
+    error: Option<realworld_shared::error::Error>,
 }
 
 impl Login {
-    fn new(set_user_callback: spair::CallbackArg<UserInfoWrapper>) -> Self {
+    fn new(
+        set_user_callback: spair::CallbackArg<realworld_shared::types::UserInfoWrapper>,
+    ) -> Self {
         Self {
             set_user_callback,
             login_info: Default::default(),
@@ -27,22 +29,23 @@ impl Login {
 
     fn send_login_request(&mut self) -> spair::Command<Self> {
         self.error = None;
-        let url = crate::urls::UrlBuilder::new().login();
-        spair::http::Request::post(&url)
-            .text_mode()
-            .body()
-            .json(&LoginInfoWrapper {
+        spair::Future::new(async move {
+            realworld_shared::services::auth::login(realworld_shared::types::LoginInfoWrapper {
                 user: self.login_info.clone(),
             })
-            .response()
-            .json(Self::login_ok, Self::login_error)
+            .await
+        })
+        .with_fn(|state, lr| match lr {
+            Ok(lr) => state.login_ok(lr),
+            Err(e) => state.login_error(e),
+        })
     }
 
-    fn login_ok(&mut self, user: UserInfoWrapper) {
+    fn login_ok(&mut self, user: realworld_shared::types::UserInfoWrapper) {
         self.set_user_callback.queue(user);
     }
 
-    fn login_error(&mut self, e: spair::ResponsedError<ErrorInfo>) {
-        self.error = Some(e.into());
+    fn login_error(&mut self, e: realworld_shared::error::Error) {
+        self.error = Some(e);
     }
 }

@@ -49,9 +49,10 @@ impl ArticleViewer {
         if self.article.is_some() {
             return None.into();
         }
-        spair::Future::new(async move {
-            realworld_shared::services::articles::get(&self.slug).await
-        }).with_fn(|state: &mut Self, a| match a {
+        spair::Future::new(
+            async move { realworld_shared::services::articles::get(&self.slug).await },
+        )
+        .with_fn(|state: &mut Self, a| match a {
             Ok(a) => state.set_article(a),
             Err(e) => state.error = Some(e.to_string()),
         })
@@ -83,9 +84,9 @@ impl ArticleViewer {
     }
 
     fn delete_article(&self) -> spair::Command<Self> {
-        spair::Future::new(async move {
-            realworld_shared::services::articles::del(&self.slug).await
-        })
+        spair::Future::new(
+            async move { realworld_shared::services::articles::del(&self.slug).await },
+        )
         .with_fn(|state, d| match d {
             Ok(d) => state.delete_article_completed(d),
             Err(e) => state.error = Some(e.to_string()),
@@ -124,16 +125,21 @@ impl ArticleViewer {
             return None.into();
         }
         spair::Future::new(async move {
-            realworld_shared::services::comments::create(&self.slug, CommentCreateInfoWrapper {
-                comment: CommentCreateInfo {
-                    body: self.new_comment.clone(),
+            realworld_shared::services::comments::create(
+                &self.slug,
+                CommentCreateInfoWrapper {
+                    comment: CommentCreateInfo {
+                        body: self.new_comment.clone(),
+                    },
                 },
-            }).await
+            )
+            .await
         })
         .with_fn(|state, c| match c {
             Ok(c) => state.add_comment(c),
             Err(e) => state.error = Some(e.to_string()),
-        }).into()
+        })
+        .into()
     }
 
     fn add_comment(&mut self, comment: CommentInfoWrapper) {
@@ -148,7 +154,8 @@ impl ArticleViewer {
         }
         spair::Future::new(async move {
             realworld_shared::services::comments::delete(&self.slug, comment_id).await
-        }).with_fn(|state, d| match d {
+        })
+        .with_fn(|state, d| match d {
             Ok(_) => state.remove_comment(comment_id),
             Err(e) => state.error = Some(e.to_string()),
         })

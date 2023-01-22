@@ -1,54 +1,35 @@
-mod render;
-pub use render::ErrorView;
+use spair::prelude::*;
 
-/// Define all possible errors
-#[derive(thiserror::Error, Clone, Debug)]
-pub enum Error {
-    /// 401
-    #[error("Unauthorized")]
-    Unauthorized,
+pub struct ErrorView<'a>(pub Option<&'a realworld_shared::error::Error>);
 
-    /// 403
-    #[error("Forbidden")]
-    Forbidden,
-
-    /// 404
-    #[error("Not Found")]
-    NotFound,
-
-    /// 422
-    #[error("Unprocessable Entity: {0:?}")]
-    UnprocessableEntity(ErrorInfo),
-
-    /// 500
-    #[error("Internal Server Error")]
-    InternalServerError,
-
-    /// serde deserialize error
-    #[error("Deserialize Error")]
-    DeserializeError,
-
-    /// request error
-    #[error("Http Request Error")]
-    RequestError,
-}
-
-impl From<spair::ResponsedError<ErrorInfo>> for Error {
-    fn from(e: spair::ResponsedError<ErrorInfo>) -> Self {
-        match e {
-            spair::ResponsedError::FetchError(spair::FetchError::DeserializeJsonError(_)) => {
-                Self::DeserializeError
-            }
-            spair::ResponsedError::ApiError(e) => match (e.data, e.status) {
-                (_, spair::http::StatusCode::UNAUTHORIZED) => Self::Unauthorized,
-                (_, spair::http::StatusCode::FORBIDDEN) => Self::Forbidden,
-                (_, spair::http::StatusCode::NOT_FOUND) => Self::NotFound,
-                (_, spair::http::StatusCode::INTERNAL_SERVER_ERROR) => Self::InternalServerError,
-                (Ok(e), _) => Self::UnprocessableEntity(e),
-                (Err(spair::FetchError::DeserializeJsonError(_)), _) => Self::DeserializeError,
-                _ => Self::RequestError,
-            },
-            _ => Self::RequestError,
-        }
+impl<'a, C: spair::Component> spair::Render<C> for ErrorView<'a> {
+    fn render(self, nodes: spair::Nodes<C>) {
+        log::info!("render error: {}", self.0.is_some());
+        nodes.ul(|u| {
+            u.class("error-messages").match_if(|mi| match self.0 {
+                None => spair::set_arm!(mi).done(),
+                Some(error) => match error {
+                    realworld_shared::error::Error::UnprocessableEntity(error_info) => {
+                        log::info!("error: {}", error_info.errors.len());
+                        spair::set_arm!(mi)
+                            .list_with_render(
+                                error_info.errors.iter(),
+                                spair::ListElementCreation::Clone,
+                                "li",
+                                |(key, values), li| {
+                                    li.rupdate(key).list_with_render(
+                                        values.iter(),
+                                        spair::ListElementCreation::Clone,
+                                        "span",
+                                        |value, s| s.rstatic(" ").rupdate(value).done(),
+                                    );
+                                },
+                            )
+                            .done();
+                    }
+                    _ => spair::set_arm!(mi).rupdate(&error.to_string()).done(),
+                },
+            });
+        });
     }
 }

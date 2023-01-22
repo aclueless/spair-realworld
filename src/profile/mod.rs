@@ -1,19 +1,18 @@
-use crate::SetAuthorizationToken;
 use spair::prelude::*;
 
 mod renders;
 
 pub struct Profile {
-    logged_in_user: Option<UserInfo>,
+    logged_in_user: Option<realworld_shared::types::UserInfo>,
     profile_username: String,
-    profile: Option<ProfileInfo>,
+    profile: Option<realworld_shared::types::ProfileInfo>,
     favorited: bool,
     article_list_comp: spair::ChildComp<crate::article_list::ArticleList>,
-    error: Option<crate::error::Error>,
+    error: Option<realworld_shared::error::Error>,
 }
 
 pub struct Props {
-    pub logged_in_user: Option<UserInfo>,
+    pub logged_in_user: Option<realworld_shared::types::UserInfo>,
     pub profile_username: String,
 }
 
@@ -37,8 +36,8 @@ impl Profile {
             .map(|u| u.username.as_str() == username)
     }
 
-    fn responsed_error(&mut self, error: spair::ResponsedError<ErrorInfo>) {
-        self.error = Some(error.into());
+    fn responsed_error(&mut self, error: realworld_shared::error::Error) {
+        self.error = Some(error);
     }
 
     pub fn set_username_and_favorited(
@@ -71,34 +70,33 @@ impl Profile {
     }
 
     fn request_profile_info(&mut self) -> spair::Command<Self> {
-        let url = crate::urls::UrlBuilder::new()
-            .profile(&self.profile_username)
-            .get();
-        spair::http::Request::get(&url)
-            .set_token()
-            .text_mode()
-            .response()
-            .json(Self::set_profile, Self::responsed_error)
+        spair::Future::new(async move {
+            realworld_shared::services::profiles::get(self.profile_username.clone()).await
+        })
+        .with_fn(|state, p| match p {
+            Ok(p) => state.set_profile(p),
+            Err(e) => state.responsed_error(e),
+        })
     }
 
-    fn set_profile(&mut self, p: ProfileInfoWrapper) {
+    fn set_profile(&mut self, p: realworld_shared::types::ProfileInfoWrapper) {
         self.profile = Some(p.profile);
     }
 
     fn toggle_follow(&self) -> spair::OptionCommand<Self> {
-        self.profile
-            .as_ref()
-            .map(|p| {
-                let url = crate::urls::UrlBuilder::new().profile(&p.username).follow();
-                match p.following {
-                    false => spair::http::Request::post(&url),
-                    true => spair::http::Request::delete(&url),
-                }
-                .set_token()
-                .text_mode()
-                .response()
-                .json(Self::set_profile, Self::responsed_error)
-            })
-            .into()
+        let Some(p) = self.profile.as_ref() else {
+            return None.into();
+        };
+        spair::Future::new(async move {
+            match p.following {
+                true => realworld_shared::services::profiles::unfollow(p.username).await,
+                false => realworld_shared::services::profiles::follow(p.username).await,
+            }
+        })
+        .with_fn(|state, p| match p {
+            Ok(p) => state.set_profile(p),
+            Err(e) => state.response_error(e),
+        })
+        .into()
     }
 }

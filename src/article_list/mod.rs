@@ -44,7 +44,9 @@ impl ArticleList {
                 ArticleFilter::Feed => feed().await,
                 ArticleFilter::Tag(tag) => by_tag(tag, self.page_number).await,
                 ArticleFilter::Author(author) => by_author(author, self.page_number).await,
-                ArticleFilter::FavoritedByUser(author) => favorited_by(author, self.page_number).await,
+                ArticleFilter::FavoritedByUser(author) => {
+                    favorited_by(author, self.page_number).await
+                }
             }
         })
         .with_fn(|state: &mut Self, list| match list {
@@ -69,7 +71,8 @@ impl ArticleList {
                 false => favorite(slug).await,
                 true => unfavorite(slug).await,
             }
-        }).with_fn(|state: &mut Self, a| match a {
+        })
+        .with_fn(|state: &mut Self, a| match a {
             Ok(a) => self.update_article(a),
             Err(e) => self.error = Some(e.to_string()),
         })

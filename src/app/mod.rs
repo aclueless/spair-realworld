@@ -1,13 +1,11 @@
 use spair::prelude::*;
 
-use realworld_shared::types::*;
-
 mod renders;
 
 pub struct App {
     comp: spair::Comp<Self>,
     route: crate::routes::Route,
-    user: Option<UserInfo>,
+    user: Option<realworld_shared::types::UserInfo>,
     page: Page,
 }
 
@@ -24,7 +22,7 @@ pub enum Page {
 impl Page {
     pub fn new(
         route: &crate::routes::Route,
-        user: Option<&UserInfo>,
+        user: Option<&realworld_shared::types::UserInfo>,
         comp: &spair::Comp<crate::app::App>,
     ) -> Self {
         use crate::routes::Route;
@@ -85,26 +83,28 @@ impl App {
         spair::ShouldRender::Yes
     }
 
-    pub fn set_user(&mut self, user: UserInfoWrapper) {
+    pub fn set_user(&mut self, user: realworld_shared::types::UserInfoWrapper) {
         let user = user.user;
-        realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, Some(user.token.as_str()));
+        realworld_shared::services::set_token(
+            crate::LOCAL_STORAGE_TOKEN_KEY,
+            Some(user.token.as_str()),
+        );
         self.user = Some(user);
         //self.set_route(crate::routes::Route::Home);
         crate::routes::Route::Home.execute_routing();
     }
 
     fn get_logged_in_user_info(&mut self) -> spair::Command<Self> {
-        spair::Future::new(move || async {
-            realworld_shared::services::auth::current().await
-        }).callback(|state, rs| {
-            match rs {
+        spair::Future::new(move || async { realworld_shared::services::auth::current().await })
+            .callback(|state, rs| match rs {
                 Ok(rs) => state.set_user(rs),
-                Err(_) => realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None),
-            }
-        })
+                Err(_) => {
+                    realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None)
+                }
+            })
     }
 
-    pub fn view_article(&mut self, article_info: ArticleInfo) {
+    pub fn view_article(&mut self, article_info: realworld_shared::types::ArticleInfo) {
         crate::routes::Route::Article(article_info.slug.clone()).update_address_bar();
         self.page = Page::Viewer(spair::ChildComp::with_props(crate::article_viewer::Props {
             logged_in_user: self.user.clone(),
