@@ -24,7 +24,6 @@ impl spair::Render<crate::app::App> for Header {
 pub struct LoggedOutHeader;
 impl spair::Render<crate::app::App> for LoggedOutHeader {
     fn render(self, nodes: spair::Nodes<crate::app::App>) {
-        let state = nodes.state();
         nodes.static_nodes().ul(|u| {
             u.class("nav")
                 .class("navbar-nav")
@@ -76,7 +75,6 @@ impl<'a> spair::Render<crate::app::App> for HeaderLink<'a> {
 pub struct LoggedInHeader<'a>(&'a realworld_shared::types::UserInfo);
 impl<'a> spair::Render<crate::app::App> for LoggedInHeader<'a> {
     fn render(self, nodes: spair::Nodes<crate::app::App>) {
-        let state = nodes.state();
         nodes.static_nodes().ul(|u| {
             u.class("nav")
                 .class("navbar-nav")

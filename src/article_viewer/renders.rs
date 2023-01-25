@@ -19,6 +19,7 @@ impl spair::Component for super::ArticleViewer {
 }
 
 impl spair::AsChildComp for super::ArticleViewer {
+    const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
     type Properties = super::Props;
 
     fn init(_comp: &spair::Comp<Self>, props: Self::Properties) -> Self {
@@ -26,7 +27,7 @@ impl spair::AsChildComp for super::ArticleViewer {
     }
 }
 
-impl spair::Render<super::ArticleViewer> for &ArticleInfo {
+impl spair::Render<super::ArticleViewer> for &realworld_shared::types::ArticleInfo {
     fn render(self, nodes: spair::Nodes<super::ArticleViewer>) {
         let state = nodes.state();
         nodes
@@ -48,7 +49,7 @@ impl spair::Render<super::ArticleViewer> for &ArticleInfo {
                                 let parser = pulldown_cmark::Parser::new(&self.body);
                                 let mut html_text = String::new();
                                 pulldown_cmark::html::push_html(&mut html_text, parser);
-                                d.class("col-md-12").set_inner_html_raw(&html_text);
+                                d.class("col-md-12").dangerously_set_inner_html(&html_text);
                             })
                             .ul(|u| {
                                 u.class("tag-list").list_with_render(
@@ -89,7 +90,7 @@ impl spair::Render<super::ArticleViewer> for &ArticleInfo {
     }
 }
 
-struct ArticleMeta<'a>(&'a ArticleInfo);
+struct ArticleMeta<'a>(&'a realworld_shared::types::ArticleInfo);
 impl<'a> spair::Render<super::ArticleViewer> for ArticleMeta<'a> {
     fn render(self, nodes: spair::Nodes<super::ArticleViewer>) {
         let profile = crate::routes::Route::Profile(self.0.author.username.clone());
@@ -116,7 +117,7 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleMeta<'a> {
     }
 }
 
-struct ArticleActions<'a>(&'a ArticleInfo);
+struct ArticleActions<'a>(&'a realworld_shared::types::ArticleInfo);
 impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
     fn render(self, nodes: spair::Nodes<super::ArticleViewer>) {
         let state = nodes.state();
@@ -133,7 +134,6 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                             .rstatic("Edit Article");
                     })
                     .button(|b| {
-                        let username = self.0.author.username.clone();
                         b.class("btn")
                             .class("btn-sm")
                             .class("btn-outline-danger")
@@ -144,7 +144,6 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                     .done(),
                 Some(false) => spair::set_arm!(mi)
                     .button(|b| {
-                        let username = self.0.author.username.clone();
                         b.class("btn")
                             .class("btn-sm")
                             .class_or(
@@ -159,7 +158,6 @@ impl<'a> spair::Render<super::ArticleViewer> for ArticleActions<'a> {
                     })
                     .rstatic("\u{00A0}\u{00A0}")
                     .button(|b| {
-                        let username = self.0.author.username.clone();
                         b.class("btn")
                             .class("btn-sm")
                             .class_or(self.0.favorited, "btn-primary", "btn-outline-primary")
@@ -196,7 +194,7 @@ impl spair::Render<super::ArticleViewer> for LoginRegister {
     }
 }
 
-struct CommentForm<'a>(&'a UserInfo);
+struct CommentForm<'a>(&'a realworld_shared::types::UserInfo);
 impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
     fn render(self, nodes: spair::Nodes<super::ArticleViewer>) {
         let state = nodes.state();
@@ -234,7 +232,7 @@ impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
                                 .class("btn-sm")
                                 .class("btn-primary")
                                 .on_click(comp.handler(super::ArticleViewer::post_comment))
-                                .enabled(state.new_comment.is_empty() == false)
+                                .enabled(!state.new_comment.is_empty())
                                 .rstatic("Post comment");
                         });
                 });
@@ -242,8 +240,8 @@ impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
     }
 }
 
-impl spair::ListItemRender<super::ArticleViewer> for &CommentInfo {
-    const ROOT_ELEMENT_TAG: &'static str = "div";
+impl spair::ElementRender<super::ArticleViewer> for &realworld_shared::types::CommentInfo {
+    const ELEMENT_TAG: &'static str = "div";
     fn render(self, element: spair::Element<super::ArticleViewer>) {
         let comp = element.comp();
         element.div(|d| {

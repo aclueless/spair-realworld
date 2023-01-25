@@ -1,5 +1,3 @@
-use spair::prelude::*;
-
 mod renders;
 
 pub struct Login {
@@ -29,13 +27,14 @@ impl Login {
 
     fn send_login_request(&mut self) -> spair::Command<Self> {
         self.error = None;
+        let login_info = self.login_info.clone();
         spair::Future::new(async move {
             realworld_shared::services::auth::login(realworld_shared::types::LoginInfoWrapper {
-                user: self.login_info.clone(),
+                user: login_info,
             })
             .await
         })
-        .with_fn(|state, lr| match lr {
+        .with_fn(|state: &mut Self, lr| match lr {
             Ok(lr) => state.login_ok(lr),
             Err(e) => state.login_error(e),
         })

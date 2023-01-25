@@ -32,13 +32,14 @@ impl spair::Component for super::Settings {
 }
 
 impl spair::AsChildComp for super::Settings {
+    const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
     type Properties = super::Props;
     fn init(_comp: &spair::Comp<Self>, props: Self::Properties) -> Self {
         Self::new(props)
     }
 }
 
-impl spair::Render<super::Settings> for &UserUpdateInfo {
+impl spair::Render<super::Settings> for &realworld_shared::types::UserUpdateInfo {
     fn render(self, nodes: spair::Nodes<super::Settings>) {
         let state = nodes.state();
         let comp = nodes.comp();
@@ -49,11 +50,11 @@ impl spair::Render<super::Settings> for &UserUpdateInfo {
                         f.class("form-group").input(|i| {
                             i.value(&self.image)
                                 .class("form-control")
-                                .r#type(spair::InputType::Text)
+                                .input_type(spair::InputType::Text)
                                 .placeholder("URL of profile picture")
                                 .on_input(comp.handler_arg_mut(
                                     |state, event: spair::InputEvent| {
-                                        if let Some(input) = event.target_as_input_element() {
+                                        if let Some(input) = event.current_target_as_input_element() {
                                             state.set_image(input.value());
                                         }
                                     },
@@ -65,11 +66,11 @@ impl spair::Render<super::Settings> for &UserUpdateInfo {
                             i.value(&self.username)
                                 .class("form-control")
                                 .class("form-control-lg")
-                                .r#type(spair::InputType::Text)
+                                .input_type(spair::InputType::Text)
                                 .placeholder("Your Name")
                                 .on_input(comp.handler_arg_mut(
                                     |state, event: spair::InputEvent| {
-                                        if let Some(input) = event.target_as_input_element() {
+                                        if let Some(input) = event.current_target_as_input_element() {
                                             state.set_username(input.value());
                                         }
                                     },
@@ -99,11 +100,11 @@ impl spair::Render<super::Settings> for &UserUpdateInfo {
                             i.value(&self.email)
                                 .class("form-control")
                                 .class("form-control-lg")
-                                .r#type(spair::InputType::Email)
+                                .input_type(spair::InputType::Email)
                                 .placeholder("Email")
                                 .on_input(comp.handler_arg_mut(
                                     |state, event: spair::InputEvent| {
-                                        if let Some(input) = event.target_as_input_element() {
+                                        if let Some(input) = event.current_target_as_input_element() {
                                             state.set_email(input.value());
                                         }
                                     },
@@ -115,11 +116,11 @@ impl spair::Render<super::Settings> for &UserUpdateInfo {
                             i.value(&state.new_password)
                                 .class("form-control")
                                 .class("form-control-lg")
-                                .r#type(spair::InputType::Password)
+                                .input_type(spair::InputType::Password)
                                 .placeholder("Password")
                                 .on_input(comp.handler_arg_mut(
                                     |state, event: spair::InputEvent| {
-                                        if let Some(input) = event.target_as_input_element() {
+                                        if let Some(input) = event.current_target_as_input_element() {
                                             state.set_password(input.value());
                                         }
                                     },
@@ -130,7 +131,7 @@ impl spair::Render<super::Settings> for &UserUpdateInfo {
                         b.class("btn btn-lg")
                             .class("btn-primary")
                             .class("pull-xs-right")
-                            .r#type(spair::ButtonType::Button)
+                            .button_type(spair::ButtonType::Button)
                             .enabled(state.is_valid())
                             .on_click(comp.handler(super::Settings::request_update_user_info))
                             .rstatic("Update settings");

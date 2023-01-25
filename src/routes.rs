@@ -24,8 +24,8 @@ impl spair::Routes for Route {
             Self::Register => "/#/register".to_string(),
             Self::Settings => "/#/settings".to_string(),
             Self::Editor(None) => "/#/editor".to_string(),
-            Self::Editor(Some(slug)) => format!("/#/editor/{}", slug.as_ref()),
-            Self::Article(slug) => format!("/#/article/{}", slug.as_ref()),
+            Self::Editor(Some(slug)) => format!("/#/editor/{}", &slug),
+            Self::Article(slug) => format!("/#/article/{}", &slug),
             Self::Profile(username) => format!("/#/profile/{}", username),
             Self::ProfileFavorites(username) => format!("/#/profile/{}/favorites", username),
         }

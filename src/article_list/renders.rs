@@ -26,14 +26,15 @@ impl spair::Component for super::ArticleList {
 }
 
 impl spair::AsChildComp for super::ArticleList {
+    const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
     type Properties = super::ArticleFilter;
     fn init(_comp: &spair::Comp<Self>, filter: Self::Properties) -> Self {
         Self::new(filter)
     }
 }
 
-impl spair::ListItemRender<super::ArticleList> for &ArticleInfo {
-    const ROOT_ELEMENT_TAG: &'static str = "div";
+impl spair::ElementRender<super::ArticleList> for &realworld_shared::types::ArticleInfo {
+    const ELEMENT_TAG: &'static str = "div";
     fn render(self, element: spair::Element<super::ArticleList>) {
         let comp = element.comp();
         let profile = crate::routes::Route::Profile(self.author.username.clone());

@@ -36,10 +36,6 @@ impl Profile {
             .map(|u| u.username.as_str() == username)
     }
 
-    fn responsed_error(&mut self, error: realworld_shared::error::Error) {
-        self.error = Some(error);
-    }
-
     pub fn set_username_and_favorited(
         &mut self,
         (username, favorited): (String, bool),
@@ -70,12 +66,13 @@ impl Profile {
     }
 
     fn request_profile_info(&mut self) -> spair::Command<Self> {
+        let profile_username = self.profile_username.clone();
         spair::Future::new(async move {
-            realworld_shared::services::profiles::get(self.profile_username.clone()).await
+            realworld_shared::services::profiles::get(profile_username).await
         })
-        .with_fn(|state, p| match p {
+        .with_fn(|state: &mut Self, p| match p {
             Ok(p) => state.set_profile(p),
-            Err(e) => state.responsed_error(e),
+            Err(e) => state.error = Some(e),
         })
     }
 
@@ -87,15 +84,17 @@ impl Profile {
         let Some(p) = self.profile.as_ref() else {
             return None.into();
         };
+        let following = p.following;
+        let username = p.username.clone();
         spair::Future::new(async move {
-            match p.following {
-                true => realworld_shared::services::profiles::unfollow(p.username).await,
-                false => realworld_shared::services::profiles::follow(p.username).await,
+            match following {
+                true => realworld_shared::services::profiles::unfollow(username).await,
+                false => realworld_shared::services::profiles::follow(username).await,
             }
         })
-        .with_fn(|state, p| match p {
+        .with_fn(|state: &mut Self, p| match p {
             Ok(p) => state.set_profile(p),
-            Err(e) => state.response_error(e),
+            Err(e) => state.error = Some(e),
         })
         .into()
     }

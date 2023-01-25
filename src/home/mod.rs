@@ -46,9 +46,9 @@ impl HomePage {
 
     fn request_tags(&self) -> spair::Command<Self> {
         spair::Future::new(async move { realworld_shared::services::tags::get_all().await })
-            .with_fn(|state, tag_list| match tag_list {
+            .with_fn(|state: &mut Self, tag_list| match tag_list {
                 Ok(tag_list) => state.tag_list = Some(tag_list),
-                Err(e) => self.error = Some(e),
+                Err(e) => state.error = Some(e),
             })
     }
 }

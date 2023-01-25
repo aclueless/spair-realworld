@@ -6,12 +6,12 @@ impl spair::Component for super::HomePage {
         comp.callback(Self::request_data_for_home_page).queue();
     }
 
-    fn register_routing_callback(router: &mut crate::routes::Router, comp: &spair::Comp<Self>) {
+    fn register_routing_callback(_router: &mut crate::routes::Router, _comp: &spair::Comp<Self>) {
         //log::debug!("register_routing_callback for home page");
         //router.home = Some(comp.clone());
     }
 
-    fn remove_routing_callback(router: &mut crate::routes::Router) {
+    fn remove_routing_callback(_router: &mut crate::routes::Router) {
         //log::debug!("remove_routing_callback  for home page");
         //router.home = None;
     }
@@ -26,6 +26,7 @@ impl spair::Component for super::HomePage {
 }
 
 impl spair::AsChildComp for super::HomePage {
+    const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
     type Properties = ();
     fn init(_comp: &spair::Comp<Self>, _props: Self::Properties) -> Self {
         Self::new()
@@ -60,7 +61,7 @@ impl spair::Render<super::HomePage> for Feeds {
                             d.static_attributes()
                                 .class("col-md-9")
                                 .rupdate(FeedTabs)
-                                .div(|d| d.component(&state.article_list_comp));
+                                .component_ref2(state.article_list_comp.component_ref());
                         })
                         .rupdate(PopularTags);
                 });
@@ -150,7 +151,7 @@ impl spair::Render<super::HomePage> for PopularTags {
                 d.static_attributes().class("sidebar")
                     .static_nodes()
                     .p(|p| p.rupdate("Popular Tags").done())
-                    .nodes()
+                    .update_nodes()
                     .match_if(|mi| match state.tag_list.as_ref() {
                         None => spair::set_arm!(mi).rstatic("Loading tags...").done(),
                         Some(tag_list) => spair::set_arm!(mi)

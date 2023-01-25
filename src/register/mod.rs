@@ -1,5 +1,3 @@
-use spair::prelude::*;
-
 mod renders;
 
 pub struct Register {
@@ -33,14 +31,13 @@ impl Register {
 
     fn send_register_request(&mut self) -> spair::Command<Self> {
         self.error = None;
+        let data = realworld_shared::types::RegisterInfoWrapper {
+            user: self.register_info.clone(),
+        };
         spair::Future::new(async move {
-            realworld_shared::services::auth::register(
-                realworld_shared::types::RegisterInfoWrapper {
-                    user: self.register_info.clone(),
-                },
-            )
+            realworld_shared::services::auth::register(data).await
         })
-        .with_fn(|state, r| match r {
+        .with_fn(|state: &mut Self, r| match r {
             Ok(r) => state.register_ok(r),
             Err(e) => state.register_error(e),
         })

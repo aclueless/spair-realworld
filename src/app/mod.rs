@@ -95,8 +95,8 @@ impl App {
     }
 
     fn get_logged_in_user_info(&mut self) -> spair::Command<Self> {
-        spair::Future::new(move || async { realworld_shared::services::auth::current().await })
-            .callback(|state, rs| match rs {
+        spair::Future::new(async move { realworld_shared::services::auth::current().await })
+            .with_fn(|state: &mut Self, rs| match rs {
                 Ok(rs) => state.set_user(rs),
                 Err(_) => {
                     realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None)

@@ -1,5 +1,3 @@
-use spair::prelude::*;
-
 use realworld_shared::types::*;
 
 mod renders;
@@ -8,7 +6,7 @@ pub struct ArticleList {
     filter: ArticleFilter,
     article_list: Option<ArticleListInfo>,
     page_number: u32,
-    error: Option<crate::error::Error>,
+    error: Option<realworld_shared::error::Error>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -37,21 +35,22 @@ impl ArticleList {
 
     fn request_article_list(&mut self) -> spair::Command<Self> {
         let filter = self.filter.clone();
+        let page_number = self.page_number;
         spair::Future::new(async move {
             use realworld_shared::services::articles::*;
             match filter {
-                ArticleFilter::Global => all(self.page_number).await,
+                ArticleFilter::Global => all(page_number).await,
                 ArticleFilter::Feed => feed().await,
-                ArticleFilter::Tag(tag) => by_tag(tag, self.page_number).await,
-                ArticleFilter::Author(author) => by_author(author, self.page_number).await,
+                ArticleFilter::Tag(tag) => by_tag(tag, page_number).await,
+                ArticleFilter::Author(author) => by_author(author, page_number).await,
                 ArticleFilter::FavoritedByUser(author) => {
-                    favorited_by(author, self.page_number).await
+                    favorited_by(author, page_number).await
                 }
             }
         })
         .with_fn(|state: &mut Self, list| match list {
             Ok(list) => state.article_list = Some(list),
-            Err(e) => state.error = Some(e.to_string()),
+            Err(e) => state.error = Some(e),
         })
     }
 
@@ -65,6 +64,7 @@ impl ArticleList {
         current_favorited_value: bool,
         slug: &str,
     ) -> spair::Command<Self> {
+        let slug = slug.to_string();
         spair::Future::new(async move {
             use realworld_shared::services::articles::*;
             match current_favorited_value {
@@ -73,8 +73,8 @@ impl ArticleList {
             }
         })
         .with_fn(|state: &mut Self, a| match a {
-            Ok(a) => self.update_article(a),
-            Err(e) => self.error = Some(e.to_string()),
+            Ok(a) => state.update_article(a),
+            Err(e) => state.error = Some(e),
         })
     }
 

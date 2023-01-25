@@ -1,5 +1,3 @@
-use spair::prelude::*;
-
 mod renders;
 
 pub struct ArticleEditor {
@@ -30,10 +28,11 @@ impl ArticleEditor {
         let Some(slug) = self.slug.as_ref() else {
             return None.into();
         };
+        let slug = slug.to_string();
         spair::Future::new(async move { realworld_shared::services::articles::get(slug).await })
             .with_fn(|state: &mut Self, a| match a {
                 Ok(a) => state.set_article_for_editting(a),
-                Err(e) => self.error = Some(e.into()),
+                Err(e) => state.error = Some(e),
             })
             .into()
     }
@@ -90,7 +89,7 @@ impl ArticleEditor {
         })
         .with_fn(|state: &mut Self, a| match a {
             Ok(a) => state.responsed_article(a),
-            Err(e) => state.error = Some(e.to_string()),
+            Err(e) => state.error = Some(e),
         })
     }
 

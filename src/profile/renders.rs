@@ -30,7 +30,7 @@ impl spair::Component for super::Profile {
                                 .class("col-md-10")
                                 .class("offset-md-1")
                                 .rupdate(ProfileTabListView(&self.profile_username))
-                                .div(|d| d.component(&self.article_list_comp));
+                                .component_ref2(self.article_list_comp.component_ref());
                         });
                     });
                 });
@@ -39,15 +39,15 @@ impl spair::Component for super::Profile {
 }
 
 impl spair::AsChildComp for super::Profile {
+    const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
     type Properties = super::Props;
     fn init(_comp: &spair::Comp<Self>, props: Self::Properties) -> Self {
         Self::new(props)
     }
 }
 
-impl spair::Render<super::Profile> for &ProfileInfo {
+impl spair::Render<super::Profile> for &realworld_shared::types::ProfileInfo {
     fn render(self, nodes: spair::Nodes<super::Profile>) {
-        let state = nodes.state();
         nodes.div(|d| {
             d.class("user-info").div(|d| {
                 d.class("container").div(|d| {
@@ -63,7 +63,7 @@ impl spair::Render<super::Profile> for &ProfileInfo {
     }
 }
 
-struct ProfileView<'a>(&'a ProfileInfo);
+struct ProfileView<'a>(&'a realworld_shared::types::ProfileInfo);
 impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
     fn render(self, nodes: spair::Nodes<super::Profile>) {
         let state = nodes.state();
@@ -91,7 +91,6 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
                     .done(),
                 Some(true) => spair::set_arm!(mi)
                     .button(|b| {
-                        let username = self.0.username.clone();
                         b.class("btn")
                             .class("btn-sm")
                             .class_or(self.0.following, "btn-secondary", "btn-outline-secondary")

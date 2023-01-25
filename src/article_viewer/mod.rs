@@ -10,7 +10,7 @@ pub struct ArticleViewer {
     article: Option<ArticleInfo>,
     comments: Option<Vec<CommentInfo>>,
     new_comment: String,
-    error: Option<crate::error::Error>,
+    error: Option<realworld_shared::error::Error>,
 }
 
 pub enum ArticleToView {
@@ -49,13 +49,14 @@ impl ArticleViewer {
         if self.article.is_some() {
             return None.into();
         }
+        let slug = self.slug.clone();
         spair::Future::new(
-            async move { realworld_shared::services::articles::get(&self.slug).await },
+            async move { realworld_shared::services::articles::get(slug).await },
         )
         .with_fn(|state: &mut Self, a| match a {
             Ok(a) => state.set_article(a),
-            Err(e) => state.error = Some(e.to_string()),
-        })
+            Err(e) => state.error = Some(e),
+        }).into()
     }
 
     fn set_article(&mut self, article: ArticleInfoWrapper) {
@@ -63,18 +64,20 @@ impl ArticleViewer {
     }
 
     fn toggle_follow(&self) -> spair::OptionCommand<Self> {
-        self.article
-            .as_ref()
-            .map(|a| {
-                spair::Future::new(async move {
-                    use realworld_shared::services::profiles::*;
-                    match a {
-                        false => follow(&a.author.username).await,
-                        true => unfollow(&a.author.username).await,
-                    }
-                })
-            })
-            .into()
+        let Some((following, username)) = self.article.as_ref().map(|a| (a.author.following, a.author.username.clone())) else {
+            return None.into();
+        };
+        spair::Future::new(async move {
+            use realworld_shared::services::profiles::*;
+            match following {
+                false => follow(username).await,
+                true => unfollow(username).await,
+            }
+        })
+        .with_fn(|state: &mut Self, p| match p {
+            Ok(p) => state.update_article_author_profile(p.profile),
+            Err(e) => state.error = Some(e),
+        }).into()
     }
 
     fn update_article_author_profile(&mut self, new_article_author_profile: ProfileInfo) {
@@ -84,12 +87,13 @@ impl ArticleViewer {
     }
 
     fn delete_article(&self) -> spair::Command<Self> {
+        let slug = self.slug.clone();
         spair::Future::new(
-            async move { realworld_shared::services::articles::del(&self.slug).await },
+            async move { realworld_shared::services::articles::del(slug).await },
         )
-        .with_fn(|state, d| match d {
+        .with_fn(|state: &mut Self, d| match d {
             Ok(d) => state.delete_article_completed(d),
-            Err(e) => state.error = Some(e.to_string()),
+            Err(e) => state.error = Some(e),
         })
     }
 
@@ -98,22 +102,21 @@ impl ArticleViewer {
     }
 
     fn toggle_favorite(&self) -> spair::OptionCommand<Self> {
-        self.article
-            .as_ref()
-            .map(|a| {
-                spair::Future::new(async move {
-                    use realworld_shared::services::articles::*;
-                    match a.favorited {
-                        true => unfavorite(&self.slug),
-                        false => favorite(&self.slug),
-                    }
-                })
-                .with_fn(|state, a| match a {
-                    Ok(a) => state.set_article(a),
-                    Err(e) => state.error = Some(e.to_string()),
-                })
-            })
-            .into()
+        let Some(favorited) = self.article.as_ref().map(|a| a.favorited) else {
+            return None.into();
+        };
+        let slug = self.slug.clone();
+        spair::Future::new(async move {
+            use realworld_shared::services::articles::*;
+            match favorited {
+                true => unfavorite(slug).await,
+                false => favorite(slug).await,
+            }
+        })
+        .with_fn(|state: &mut Self, a| match a {
+            Ok(a) => state.set_article(a),
+            Err(e) => state.error = Some(e),
+        }).into()
     }
 
     fn set_new_comment(&mut self, new_comment: String) {
@@ -124,20 +127,22 @@ impl ArticleViewer {
         if self.article.is_none() {
             return None.into();
         }
+        let slug = self.slug.clone();
+        let new_comment = self.new_comment.clone();
         spair::Future::new(async move {
             realworld_shared::services::comments::create(
-                &self.slug,
+                slug,
                 CommentCreateInfoWrapper {
                     comment: CommentCreateInfo {
-                        body: self.new_comment.clone(),
+                        body: new_comment,
                     },
                 },
             )
             .await
         })
-        .with_fn(|state, c| match c {
+        .with_fn(|state: &mut Self, c| match c {
             Ok(c) => state.add_comment(c),
-            Err(e) => state.error = Some(e.to_string()),
+            Err(e) => state.error = Some(e),
         })
         .into()
     }
@@ -152,13 +157,14 @@ impl ArticleViewer {
         if self.article.is_none() {
             return None.into();
         }
+        let slug = self.slug.clone();
         spair::Future::new(async move {
-            realworld_shared::services::comments::delete(&self.slug, comment_id).await
+            realworld_shared::services::comments::delete(slug, comment_id).await
         })
-        .with_fn(|state, d| match d {
+        .with_fn(move |state: &mut Self, d| match d {
             Ok(_) => state.remove_comment(comment_id),
-            Err(e) => state.error = Some(e.to_string()),
-        })
+            Err(e) => state.error = Some(e),
+        }).into()
     }
 
     fn remove_comment(&mut self, comment_id: u32) {

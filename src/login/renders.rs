@@ -10,7 +10,7 @@ impl spair::Component for super::Login {
                         d.class("col-md-6")
                             .class("offset-md-3")
                             .class("col-xs-12")
-                            .render_fn(|nodes| self.render_login(nodes));
+                            .rfn(|nodes| self.render_login(nodes));
                     });
                 });
             });
@@ -36,13 +36,13 @@ impl super::Login {
                         i.value(&self.login_info.email)
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
-                                if let Some(input) = event.target_as_input_element() {
+                                if let Some(input) = event.current_target_as_input_element() {
                                     state.set_email(input.value());
                                 }
                             }))
                             .class("form-control")
                             .class("form-control-lg")
-                            .r#type(spair::InputType::Text)
+                            .input_type(spair::InputType::Text)
                             .placeholder("Email");
                     });
                 })
@@ -51,13 +51,13 @@ impl super::Login {
                         i.value(&self.login_info.password)
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(|state, event: spair::InputEvent| {
-                                if let Some(input) = event.target_as_input_element() {
+                                if let Some(input) = event.current_target_as_input_element() {
                                     state.set_password(input.value());
                                 }
                             }))
                             .class("form-control")
                             .class("form-control-lg")
-                            .r#type(spair::InputType::Password)
+                            .input_type(spair::InputType::Password)
                             .placeholder("Password");
                     });
                 })
@@ -67,7 +67,7 @@ impl super::Login {
                         .class("btn-lg")
                         .class("btn-primary")
                         .class("pull-xs-right")
-                        .r#type(spair::ButtonType::Button)
+                        .button_type(spair::ButtonType::Button)
                         .on_click(comp.handler_mut(super::Login::send_login_request))
                         .rstatic("Sign in");
                 });
@@ -76,7 +76,8 @@ impl super::Login {
 }
 
 impl spair::AsChildComp for super::Login {
-    type Properties = spair::CallbackArg<UserInfoWrapper>;
+    const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
+    type Properties = spair::CallbackArg<realworld_shared::types::UserInfoWrapper>;
     fn init(_: &spair::Comp<Self>, set_user_callback: Self::Properties) -> Self {
         Self::new(set_user_callback)
     }

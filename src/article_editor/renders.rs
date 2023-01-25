@@ -15,7 +15,7 @@ impl spair::Component for super::ArticleEditor {
                         d.class("col-md-10")
                             .class("offset-md-1")
                             .class("col-xs-12")
-                            .render_fn(|nodes| self.render_form(nodes));
+                            .rfn(|nodes| self.render_form(nodes));
                     });
                 });
             });
@@ -24,6 +24,7 @@ impl spair::Component for super::ArticleEditor {
 }
 
 impl spair::AsChildComp for super::ArticleEditor {
+    const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
     type Properties = super::Props;
     fn init(_: &spair::Comp<Self>, props: Self::Properties) -> Self {
         Self::new(props)
@@ -41,12 +42,12 @@ impl super::ArticleEditor {
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(
                                 move |state, event: spair::InputEvent| {
-                                    if let Some(input) = event.target_as_input_element() {
+                                    if let Some(input) = event.current_target_as_input_element() {
                                         state.set_title(input.value());
                                     }
                                 },
                             ))
-                            .r#type(spair::InputType::Text)
+                            .input_type(spair::InputType::Text)
                             .class("form-control")
                             .class("form-control-lg")
                             .placeholder("Article Title");
@@ -58,12 +59,12 @@ impl super::ArticleEditor {
                             .static_attributes()
                             .on_input(comp.handler_arg_mut(
                                 move |state, event: spair::InputEvent| {
-                                    if let Some(input) = event.target_as_input_element() {
+                                    if let Some(input) = event.current_target_as_input_element() {
                                         state.set_description(input.value());
                                     }
                                 },
                             ))
-                            .r#type(spair::InputType::Text)
+                            .input_type(spair::InputType::Text)
                             .class("form-control")
                             .placeholder("What's this article about?");
                     });
@@ -81,7 +82,7 @@ impl super::ArticleEditor {
                                     }
                                 },
                             ))
-                            .r#type(spair::InputType::Text)
+                            .input_type(spair::InputType::Text)
                             .rows(8)
                             .class("form-control")
                             .placeholder("Write your article (in markdown)");
@@ -105,7 +106,7 @@ impl super::ArticleEditor {
                                         }
                                     },
                                 ))
-                                .r#type(spair::InputType::Text)
+                                .input_type(spair::InputType::Text)
                                 .class("form-control")
                                 .placeholder("Enter tags");
                         })
@@ -140,7 +141,7 @@ impl super::ArticleEditor {
                         .class("btn-lg")
                         .class("pull-xs-right")
                         .class("btn-primary")
-                        .r#type(spair::ButtonType::Button)
+                        .button_type(spair::ButtonType::Button)
                         .on_click(comp.handler(super::ArticleEditor::publish_article))
                         .rupdate("Publish Article");
                 });

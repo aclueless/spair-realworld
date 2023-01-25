@@ -17,14 +17,14 @@ impl spair::Component for super::App {
         element
             .rupdate(header::Header)
             .rupdate(&self.route.url())
-            .div(|d| match &self.page {
-                super::Page::Home(child) => d.component(child),
-                super::Page::Register(child) => d.component(child),
-                super::Page::Login(child) => d.component(child),
-                super::Page::Editor(child) => d.component(child),
-                super::Page::Viewer(child) => d.component(child),
-                super::Page::Profile(child) => d.component(child),
-                super::Page::Settings(child) => d.component(child),
+            .component_ref2(match &self.page {
+                super::Page::Home(child) => child.component_ref(),
+                super::Page::Register(child) => child.component_ref(),
+                super::Page::Login(child) => child.component_ref(),
+                super::Page::Editor(child) => child.component_ref(),
+                super::Page::Viewer(child) => child.component_ref(),
+                super::Page::Profile(child) => child.component_ref(),
+                super::Page::Settings(child) => child.component_ref(),
             })
             .rupdate(footer::Footer);
     }

@@ -1,5 +1,3 @@
-use spair::prelude::*;
-
 mod renders;
 
 pub struct Settings {
@@ -63,7 +61,7 @@ impl Settings {
         }
 
         spair::Future::new(async move { realworld_shared::services::auth::save(data).await })
-            .with_fn(|state, u| match u {
+            .with_fn(|state: &mut Self, u| match u {
                 Ok(u) => state.set_user_info(u),
                 Err(e) => state.responsed_error(e),
             })
