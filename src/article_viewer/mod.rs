@@ -50,13 +50,12 @@ impl ArticleViewer {
             return None.into();
         }
         let slug = self.slug.clone();
-        spair::Future::new(
-            async move { realworld_shared::services::articles::get(slug).await },
-        )
-        .with_fn(|state: &mut Self, a| match a {
-            Ok(a) => state.set_article(a),
-            Err(e) => state.error = Some(e),
-        }).into()
+        spair::Future::new(async move { realworld_shared::services::articles::get(slug).await })
+            .with_fn(|state: &mut Self, a| match a {
+                Ok(a) => state.set_article(a),
+                Err(e) => state.error = Some(e),
+            })
+            .into()
     }
 
     fn set_article(&mut self, article: ArticleInfoWrapper) {
@@ -77,7 +76,8 @@ impl ArticleViewer {
         .with_fn(|state: &mut Self, p| match p {
             Ok(p) => state.update_article_author_profile(p.profile),
             Err(e) => state.error = Some(e),
-        }).into()
+        })
+        .into()
     }
 
     fn update_article_author_profile(&mut self, new_article_author_profile: ProfileInfo) {
@@ -88,13 +88,11 @@ impl ArticleViewer {
 
     fn delete_article(&self) -> spair::Command<Self> {
         let slug = self.slug.clone();
-        spair::Future::new(
-            async move { realworld_shared::services::articles::del(slug).await },
-        )
-        .with_fn(|state: &mut Self, d| match d {
-            Ok(d) => state.delete_article_completed(d),
-            Err(e) => state.error = Some(e),
-        })
+        spair::Future::new(async move { realworld_shared::services::articles::del(slug).await })
+            .with_fn(|state: &mut Self, d| match d {
+                Ok(d) => state.delete_article_completed(d),
+                Err(e) => state.error = Some(e),
+            })
     }
 
     fn delete_article_completed(&mut self, _: DeleteWrapper) {
@@ -116,7 +114,8 @@ impl ArticleViewer {
         .with_fn(|state: &mut Self, a| match a {
             Ok(a) => state.set_article(a),
             Err(e) => state.error = Some(e),
-        }).into()
+        })
+        .into()
     }
 
     fn set_new_comment(&mut self, new_comment: String) {
@@ -133,9 +132,7 @@ impl ArticleViewer {
             realworld_shared::services::comments::create(
                 slug,
                 CommentCreateInfoWrapper {
-                    comment: CommentCreateInfo {
-                        body: new_comment,
-                    },
+                    comment: CommentCreateInfo { body: new_comment },
                 },
             )
             .await
@@ -164,7 +161,8 @@ impl ArticleViewer {
         .with_fn(move |state: &mut Self, d| match d {
             Ok(_) => state.remove_comment(comment_id),
             Err(e) => state.error = Some(e),
-        }).into()
+        })
+        .into()
     }
 
     fn remove_comment(&mut self, comment_id: u32) {

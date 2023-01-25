@@ -34,13 +34,11 @@ impl Register {
         let data = realworld_shared::types::RegisterInfoWrapper {
             user: self.register_info.clone(),
         };
-        spair::Future::new(async move {
-            realworld_shared::services::auth::register(data).await
-        })
-        .with_fn(|state: &mut Self, r| match r {
-            Ok(r) => state.register_ok(r),
-            Err(e) => state.register_error(e),
-        })
+        spair::Future::new(async move { realworld_shared::services::auth::register(data).await })
+            .with_fn(|state: &mut Self, r| match r {
+                Ok(r) => state.register_ok(r),
+                Err(e) => state.register_error(e),
+            })
     }
 
     fn register_ok(&mut self, user: realworld_shared::types::UserInfoWrapper) {

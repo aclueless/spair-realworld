@@ -54,7 +54,8 @@ impl spair::Render<super::Settings> for &realworld_shared::types::UserUpdateInfo
                                 .placeholder("URL of profile picture")
                                 .on_input(comp.handler_arg_mut(
                                     |state, event: spair::InputEvent| {
-                                        if let Some(input) = event.current_target_as_input_element() {
+                                        if let Some(input) = event.current_target_as_input_element()
+                                        {
                                             state.set_image(input.value());
                                         }
                                     },
@@ -70,7 +71,8 @@ impl spair::Render<super::Settings> for &realworld_shared::types::UserUpdateInfo
                                 .placeholder("Your Name")
                                 .on_input(comp.handler_arg_mut(
                                     |state, event: spair::InputEvent| {
-                                        if let Some(input) = event.current_target_as_input_element() {
+                                        if let Some(input) = event.current_target_as_input_element()
+                                        {
                                             state.set_username(input.value());
                                         }
                                     },
@@ -104,7 +106,8 @@ impl spair::Render<super::Settings> for &realworld_shared::types::UserUpdateInfo
                                 .placeholder("Email")
                                 .on_input(comp.handler_arg_mut(
                                     |state, event: spair::InputEvent| {
-                                        if let Some(input) = event.current_target_as_input_element() {
+                                        if let Some(input) = event.current_target_as_input_element()
+                                        {
                                             state.set_email(input.value());
                                         }
                                     },
@@ -120,7 +123,8 @@ impl spair::Render<super::Settings> for &realworld_shared::types::UserUpdateInfo
                                 .placeholder("Password")
                                 .on_input(comp.handler_arg_mut(
                                     |state, event: spair::InputEvent| {
-                                        if let Some(input) = event.current_target_as_input_element() {
+                                        if let Some(input) = event.current_target_as_input_element()
+                                        {
                                             state.set_password(input.value());
                                         }
                                     },

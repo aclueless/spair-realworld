@@ -43,9 +43,7 @@ impl ArticleList {
                 ArticleFilter::Feed => feed().await,
                 ArticleFilter::Tag(tag) => by_tag(tag, page_number).await,
                 ArticleFilter::Author(author) => by_author(author, page_number).await,
-                ArticleFilter::FavoritedByUser(author) => {
-                    favorited_by(author, page_number).await
-                }
+                ArticleFilter::FavoritedByUser(author) => favorited_by(author, page_number).await,
             }
         })
         .with_fn(|state: &mut Self, list| match list {
