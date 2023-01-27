@@ -43,49 +43,31 @@ impl spair::Render<super::ArticleViewer> for &realworld_shared::types::ArticleIn
                 d.class("container")
                     .class("page")
                     .div(|d| {
-                        d.class("row")
-                            .class("article-content")
-                            .div(|d| {
-                                let parser = pulldown_cmark::Parser::new(&self.body);
-                                let mut html_text = String::new();
-                                pulldown_cmark::html::push_html(&mut html_text, parser);
-                                d.class("col-md-12").dangerously_set_inner_html(&html_text);
-                            })
-                            .ul(|u| {
-                                u.class("tag-list").list_with_render(
-                                    self.tag_list.iter(),
-                                    spair::ListElementCreation::Clone,
-                                    "li",
-                                    |tag, li| {
-                                        li.class("tag-default")
-                                            .class("tag-pill")
-                                            .class("tag-outline")
-                                            .rupdate(tag);
-                                    },
-                                );
-                            });
+                        d.class("row").class("article-content").div(|d| {
+                            let parser = pulldown_cmark::Parser::new(&self.body);
+                            let mut html_text = String::new();
+                            pulldown_cmark::html::push_html(&mut html_text, parser);
+                            d.class("col-md-12")
+                                .div(|d| d.dangerously_set_inner_html(&html_text))
+                                .ul(|u| {
+                                    u.class("tag-list").lwr_clone(
+                                        self.tag_list.iter(),
+                                        "li",
+                                        |tag, li| {
+                                            li.class("tag-default")
+                                                .class("tag-pill")
+                                                .class("tag-outline")
+                                                .rupdate(tag);
+                                        },
+                                    );
+                                });
+                        });
                     })
                     .horizontal_line()
                     .div(|d| {
                         d.class("article-actions").rupdate(ArticleMeta(self));
                     })
-                    .div(|d| {
-                        d.class("row").div(|d| {
-                            d.class("col-xs-12")
-                                .class("col-md-8")
-                                .class("offset-md-2")
-                                .match_if(|mi| match state.logged_in_user.as_ref() {
-                                    None => spair::set_arm!(mi).rupdate(LoginRegister).done(),
-                                    Some(user) => {
-                                        spair::set_arm!(mi).rupdate(CommentForm(user)).done()
-                                    }
-                                })
-                                .list(
-                                    state.comments.iter().flat_map(|v| v.iter()),
-                                    spair::ListElementCreation::Clone,
-                                );
-                        });
-                    });
+                    .relement(CommentList);
             });
     }
 }
@@ -223,7 +205,9 @@ impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
                             None => spair::set_arm!(mi).done(),
                             Some(image) => spair::set_arm!(mi)
                                 .img(|i| {
-                                    i.class("comment-author-img").src(image);
+                                    i.class("comment-author-img")
+                                        .src(image)
+                                        .alt(&self.0.username);
                                 })
                                 .done(),
                         })
@@ -231,11 +215,29 @@ impl<'a> spair::Render<super::ArticleViewer> for CommentForm<'a> {
                             b.class("btn")
                                 .class("btn-sm")
                                 .class("btn-primary")
-                                .on_click(comp.handler(super::ArticleViewer::post_comment))
-                                .enabled(!state.new_comment.is_empty())
+                                .on_click(comp.handler_mut(super::ArticleViewer::post_comment))
+                                .disabled(state.new_comment.is_empty())
                                 .rstatic("Post comment");
                         });
                 });
+        });
+    }
+}
+
+struct CommentList;
+impl spair::ElementRender<super::ArticleViewer> for CommentList {
+    const ELEMENT_TAG: &'static str = "div";
+    fn render(self, element: spair::Element<super::ArticleViewer>) {
+        let state = element.state();
+        element.class("row").div(|d| {
+            d.class("col-xs-12")
+                .class("col-md-8")
+                .class("offset-md-2")
+                .match_if(|mi| match state.logged_in_user.as_ref() {
+                    None => spair::set_arm!(mi).rupdate(LoginRegister).done(),
+                    Some(user) => spair::set_arm!(mi).rupdate(CommentForm(user)).done(),
+                })
+                .list_clone(state.comments.iter().flat_map(|v| v.iter()));
         });
     }
 }
@@ -244,44 +246,46 @@ impl spair::ElementRender<super::ArticleViewer> for &realworld_shared::types::Co
     const ELEMENT_TAG: &'static str = "div";
     fn render(self, element: spair::Element<super::ArticleViewer>) {
         let comp = element.comp();
-        element.div(|d| {
-            d.class("card")
-                .div(|d| {
-                    d.class("card-block").rupdate(&self.body);
-                })
-                .div(|d| {
-                    let profile = crate::routes::Route::Profile(self.author.username.clone());
-                    d.class("card-footer")
-                        .a(|a| {
-                            a.class("comment-author").href(&profile).img(|i| {
-                                i.class("comment-author-img").src(&self.author.image);
-                            });
-                        })
-                        .rstatic(" ")
-                        .a(|a| {
-                            a.class("comment-author")
-                                .href(&profile)
-                                .rupdate(&self.author.username);
-                        })
-                        .span(|s| {
-                            s.class("date-posted").rupdate(&self.created_at.to_string());
-                        })
-                        .match_if(|mi| {
-                            match mi.state().is_logged_in_username(&self.author.username) {
-                                Some(true) => spair::set_arm!(mi)
-                                    .span(|s| {
-                                        s.class("mod-options").i(|i| {
-                                            let comment_id = self.id;
-                                            i.class("ion-trash-a").on_click(comp.handler_mut(
-                                                move |state| state.delete_comment(comment_id),
-                                            ));
-                                        });
-                                    })
-                                    .done(),
-                                _ => spair::set_arm!(mi).done(),
-                            }
+        element
+            .class("card")
+            .div(|d| {
+                d.class("card-block")
+                    .p(|p| p.class("card-text").rupdate(&self.body).done());
+            })
+            .div(|d| {
+                let profile = crate::routes::Route::Profile(self.author.username.clone());
+                d.class("card-footer")
+                    .a(|a| {
+                        a.class("comment-author").href(&profile).img(|i| {
+                            i.class("comment-author-img")
+                                .src(&self.author.image)
+                                .alt(&self.author.username);
                         });
-                });
-        });
+                    })
+                    .rstatic(" ")
+                    .a(|a| {
+                        a.class("comment-author")
+                            .href(&profile)
+                            .rupdate(&self.author.username);
+                    })
+                    .span(|s| {
+                        s.class("date-posted").rupdate(&self.created_at.to_string());
+                    })
+                    .match_if(
+                        |mi| match mi.state().is_logged_in_username(&self.author.username) {
+                            Some(true) => spair::set_arm!(mi)
+                                .span(|s| {
+                                    s.class("mod-options").i(|i| {
+                                        let comment_id = self.id;
+                                        i.class("ion-trash-a").on_click(comp.handler_mut(
+                                            move |state| state.delete_comment(comment_id),
+                                        ));
+                                    });
+                                })
+                                .done(),
+                            _ => spair::set_arm!(mi).done(),
+                        },
+                    );
+            });
     }
 }

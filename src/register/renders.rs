@@ -43,7 +43,7 @@ impl super::Register {
                             .class("form-control")
                             .class("form-control-lg")
                             .input_type(spair::InputType::Text)
-                            .placeholder("Your Name");
+                            .placeholder("Username");
                     });
                 })
                 .fieldset(|f| {
@@ -57,7 +57,7 @@ impl super::Register {
                             }))
                             .class("form-control")
                             .class("form-control-lg")
-                            .input_type(spair::InputType::Text)
+                            .input_type(spair::InputType::Email)
                             .placeholder("Email");
                     });
                 })

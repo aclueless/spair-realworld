@@ -1,8 +1,7 @@
 mod renders;
 
 pub struct Settings {
-    logout_callback: spair::Callback,
-    user_info: Option<realworld_shared::types::UserInfo>,
+    props: Props,
     user_update_info: realworld_shared::types::UserUpdateInfo,
     new_password: String,
     error: Option<realworld_shared::error::Error>,
@@ -10,14 +9,14 @@ pub struct Settings {
 
 pub struct Props {
     pub logout_callback: spair::Callback,
+    pub set_user_callback: spair::CallbackArg<realworld_shared::types::UserInfoWrapper>,
     pub user_info: Option<realworld_shared::types::UserInfo>,
 }
 
 impl Settings {
     fn new(props: Props) -> Self {
         Self {
-            logout_callback: props.logout_callback,
-            user_info: props.user_info,
+            props,
             user_update_info: Default::default(),
             new_password: String::new(),
             error: None,
@@ -49,7 +48,7 @@ impl Settings {
     }
 
     fn logout(&self) {
-        self.logout_callback.queue()
+        self.props.logout_callback.queue()
     }
 
     fn request_update_user_info(&self) -> spair::Command<Self> {
@@ -68,7 +67,8 @@ impl Settings {
     }
 
     fn set_user_info(&mut self, user_info: realworld_shared::types::UserInfoWrapper) {
-        self.user_info = Some(user_info.user);
+        self.props.user_info = Some(user_info.user.clone());
+        self.props.set_user_callback.queue(user_info);
     }
 
     fn responsed_error(&mut self, error: realworld_shared::error::Error) {

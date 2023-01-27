@@ -28,10 +28,10 @@ impl Page {
         use crate::routes::Route;
         match route {
             Route::Register => Self::Register(spair::ChildComp::with_props(
-                comp.callback_arg_mut(App::set_user),
+                comp.callback_arg_mut(App::set_user_and_navigate_to_home),
             )),
             Route::Login => Self::Login(spair::ChildComp::with_props(
-                comp.callback_arg_mut(App::set_user),
+                comp.callback_arg_mut(App::set_user_and_navigate_to_home),
             )),
             Route::Editor(slug) => {
                 Self::Editor(spair::ChildComp::with_props(crate::article_editor::Props {
@@ -54,10 +54,11 @@ impl Page {
             Route::Settings => {
                 Self::Settings(spair::ChildComp::with_props(crate::settings::Props {
                     logout_callback: comp.callback_mut(App::logout),
+                    set_user_callback: comp.callback_arg_mut(App::set_user_info),
                     user_info: user.cloned(),
                 }))
             }
-            _ => Self::Home(spair::ChildComp::with_props(())),
+            _ => Self::Home(spair::ChildComp::with_props(user.cloned())),
         }
     }
 }
@@ -83,21 +84,27 @@ impl App {
         spair::ShouldRender::Yes
     }
 
-    pub fn set_user(&mut self, user: realworld_shared::types::UserInfoWrapper) {
+    pub fn set_user_info(&mut self, user: realworld_shared::types::UserInfoWrapper) {
         let user = user.user;
         realworld_shared::services::set_token(
             crate::LOCAL_STORAGE_TOKEN_KEY,
             Some(user.token.as_str()),
         );
         self.user = Some(user);
-        //self.set_route(crate::routes::Route::Home);
+    }
+
+    pub fn set_user_and_navigate_to_home(
+        &mut self,
+        user: realworld_shared::types::UserInfoWrapper,
+    ) {
+        self.set_user_info(user);
         crate::routes::Route::Home.execute_routing();
     }
 
     fn get_logged_in_user_info(&mut self) -> spair::Command<Self> {
         spair::Future::new(async move { realworld_shared::services::auth::current().await })
             .with_fn(|state: &mut Self, rs| match rs {
-                Ok(rs) => state.set_user(rs),
+                Ok(rs) => state.set_user_info(rs),
                 Err(_) => {
                     realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None)
                 }

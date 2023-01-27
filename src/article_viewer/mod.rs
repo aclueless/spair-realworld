@@ -1,25 +1,23 @@
 use spair::prelude::*;
 
-use realworld_shared::types::*;
-
 mod renders;
 
 pub struct ArticleViewer {
-    logged_in_user: Option<UserInfo>,
+    logged_in_user: Option<realworld_shared::types::UserInfo>,
     slug: String,
-    article: Option<ArticleInfo>,
-    comments: Option<Vec<CommentInfo>>,
+    article: Option<realworld_shared::types::ArticleInfo>,
+    comments: Option<Vec<realworld_shared::types::CommentInfo>>,
     new_comment: String,
     error: Option<realworld_shared::error::Error>,
 }
 
 pub enum ArticleToView {
     Slug(String),
-    Article(ArticleInfo),
+    Article(realworld_shared::types::ArticleInfo),
 }
 
 pub struct Props {
-    pub logged_in_user: Option<UserInfo>,
+    pub logged_in_user: Option<realworld_shared::types::UserInfo>,
     pub article: ArticleToView,
 }
 
@@ -51,14 +49,33 @@ impl ArticleViewer {
         }
         let slug = self.slug.clone();
         spair::Future::new(async move { realworld_shared::services::articles::get(slug).await })
-            .with_fn(|state: &mut Self, a| match a {
-                Ok(a) => state.set_article(a),
-                Err(e) => state.error = Some(e),
+            .with_fn(|state: &mut Self, a| -> spair::OptionCommand<Self> {
+                match a {
+                    Ok(a) => {
+                        let slug = a.article.slug.clone();
+                        state.set_article(a);
+                        state.get_comments(slug).into()
+                    }
+                    Err(e) => {
+                        state.error = Some(e);
+                        None.into()
+                    }
+                }
             })
             .into()
     }
 
-    fn set_article(&mut self, article: ArticleInfoWrapper) {
+    fn get_comments(&self, slug: String) -> spair::Command<Self> {
+        spair::Future::new(
+            async move { realworld_shared::services::comments::for_article(slug).await },
+        )
+        .with_fn(|state: &mut Self, comments| match comments {
+            Ok(comments) => state.comments = Some(comments.comments),
+            Err(e) => state.error = Some(e),
+        })
+    }
+
+    fn set_article(&mut self, article: realworld_shared::types::ArticleInfoWrapper) {
         self.article = Some(article.article);
     }
 
@@ -80,7 +97,10 @@ impl ArticleViewer {
         .into()
     }
 
-    fn update_article_author_profile(&mut self, new_article_author_profile: ProfileInfo) {
+    fn update_article_author_profile(
+        &mut self,
+        new_article_author_profile: realworld_shared::types::ProfileInfo,
+    ) {
         self.article
             .as_mut()
             .map(|a| a.author = new_article_author_profile);
@@ -95,7 +115,7 @@ impl ArticleViewer {
             })
     }
 
-    fn delete_article_completed(&mut self, _: DeleteWrapper) {
+    fn delete_article_completed(&mut self, _: realworld_shared::types::DeleteWrapper) {
         crate::routes::Route::Home.execute_routing();
     }
 
@@ -122,17 +142,18 @@ impl ArticleViewer {
         self.new_comment = new_comment;
     }
 
-    fn post_comment(&self) -> spair::OptionCommand<Self> {
+    fn post_comment(&mut self) -> spair::OptionCommand<Self> {
         if self.article.is_none() {
             return None.into();
         }
         let slug = self.slug.clone();
-        let new_comment = self.new_comment.clone();
+        let mut new_comment = String::new();
+        std::mem::swap(&mut self.new_comment, &mut new_comment);
         spair::Future::new(async move {
             realworld_shared::services::comments::create(
                 slug,
-                CommentCreateInfoWrapper {
-                    comment: CommentCreateInfo { body: new_comment },
+                realworld_shared::types::CommentCreateInfoWrapper {
+                    comment: realworld_shared::types::CommentCreateInfo { body: new_comment },
                 },
             )
             .await
@@ -144,7 +165,7 @@ impl ArticleViewer {
         .into()
     }
 
-    fn add_comment(&mut self, comment: CommentInfoWrapper) {
+    fn add_comment(&mut self, comment: realworld_shared::types::CommentInfoWrapper) {
         self.comments
             .as_mut()
             .map(|comments| comments.insert(0, comment.comment));

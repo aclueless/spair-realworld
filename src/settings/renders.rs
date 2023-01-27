@@ -6,7 +6,7 @@ impl spair::Component for super::Settings {
     fn render(&self, element: spair::Element<Self>) {
         element.div(|d| {
             d.class("settings-page")
-                .match_if(|mi| match self.user_info.as_ref() {
+                .match_if(|mi| match self.props.user_info.as_ref() {
                     None => spair::set_arm!(mi)
                         .rstatic("Sign in to view your settings.")
                         .done(),

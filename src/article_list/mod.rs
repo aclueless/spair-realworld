@@ -1,11 +1,9 @@
-use realworld_shared::types::*;
-
 mod renders;
 
 pub struct ArticleList {
     filter: ArticleFilter,
-    article_list: Option<ArticleListInfo>,
-    page_number: u32,
+    article_list: Option<realworld_shared::types::ArticleListInfo>,
+    current_page: u32,
     error: Option<realworld_shared::error::Error>,
 }
 
@@ -23,27 +21,28 @@ impl ArticleList {
         Self {
             filter,
             article_list: None,
-            page_number: 0,
+            current_page: 0,
             error: None,
         }
     }
 
-    pub fn set_filter(&mut self, filter: ArticleFilter) {
+    pub fn set_filter(&mut self, filter: ArticleFilter) -> spair::Command<Self> {
         self.filter = filter;
-        self.page_number = 0;
+        self.current_page = 0;
+        self.request_article_list()
     }
 
     fn request_article_list(&mut self) -> spair::Command<Self> {
         let filter = self.filter.clone();
-        let page_number = self.page_number;
+        let current_page = self.current_page;
         spair::Future::new(async move {
             use realworld_shared::services::articles::*;
             match filter {
-                ArticleFilter::Global => all(page_number).await,
+                ArticleFilter::Global => all(current_page).await,
                 ArticleFilter::Feed => feed().await,
-                ArticleFilter::Tag(tag) => by_tag(tag, page_number).await,
-                ArticleFilter::Author(author) => by_author(author, page_number).await,
-                ArticleFilter::FavoritedByUser(author) => favorited_by(author, page_number).await,
+                ArticleFilter::Tag(tag) => by_tag(tag, current_page).await,
+                ArticleFilter::Author(author) => by_author(author, current_page).await,
+                ArticleFilter::FavoritedByUser(author) => favorited_by(author, current_page).await,
             }
         })
         .with_fn(|state: &mut Self, list| match list {
@@ -52,8 +51,8 @@ impl ArticleList {
         })
     }
 
-    fn set_page_number(&mut self, page_number: u32) -> spair::Command<Self> {
-        self.page_number = page_number;
+    fn set_current_page(&mut self, current_page: u32) -> spair::Command<Self> {
+        self.current_page = current_page;
         self.request_article_list()
     }
 
@@ -76,7 +75,7 @@ impl ArticleList {
         })
     }
 
-    fn update_article(&mut self, article: ArticleInfoWrapper) {
+    fn update_article(&mut self, article: realworld_shared::types::ArticleInfoWrapper) {
         self.article_list
             .as_mut()
             .and_then(|list| {

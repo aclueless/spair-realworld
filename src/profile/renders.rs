@@ -30,7 +30,7 @@ impl spair::Component for super::Profile {
                                 .class("col-md-10")
                                 .class("offset-md-1")
                                 .rupdate(ProfileTabListView(&self.profile_username))
-                                .component_ref2(self.article_list_comp.component_ref());
+                                .component_ref(self.article_list_comp.component_ref());
                         });
                     });
                 });
@@ -79,7 +79,7 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
             })
             .match_if(|mi| match state.is_logged_in_username(&self.0.username) {
                 None => spair::set_arm!(mi).done(),
-                Some(false) => spair::set_arm!(mi)
+                Some(true) => spair::set_arm!(mi)
                     .a(|a| {
                         a.class("btn")
                             .class("btn-sm")
@@ -89,7 +89,7 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
                             .rstatic("Edit Profile Settings");
                     })
                     .done(),
-                Some(true) => spair::set_arm!(mi)
+                Some(false) => spair::set_arm!(mi)
                     .button(|b| {
                         b.class("btn")
                             .class("btn-sm")
@@ -97,7 +97,11 @@ impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
                             .class("action-btn")
                             .on_click(comp.handler(super::Profile::toggle_follow))
                             .i(|i| i.class("ion-plus-round").done())
-                            .rstatic(" Follow ")
+                            .rupdate(if self.0.following {
+                                "Unfollow"
+                            } else {
+                                " Follow "
+                            })
                             .rupdate(&self.0.username);
                     })
                     .done(),

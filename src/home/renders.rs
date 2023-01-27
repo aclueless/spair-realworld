@@ -27,21 +27,28 @@ impl spair::Component for super::HomePage {
 
 impl spair::AsChildComp for super::HomePage {
     const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
-    type Properties = ();
-    fn init(_comp: &spair::Comp<Self>, _props: Self::Properties) -> Self {
-        Self::new()
+    type Properties = Option<realworld_shared::types::UserInfo>;
+    fn init(_comp: &spair::Comp<Self>, logged_in_user: Self::Properties) -> Self {
+        Self::new(logged_in_user)
     }
 }
 
 struct Banner;
 impl spair::Render<super::HomePage> for Banner {
     fn render(self, nodes: spair::Nodes<super::HomePage>) {
-        nodes.static_nodes().div(|d| {
-            d.class("banner").div(|d| {
-                d.class("container")
-                    .h1(|h| h.class("logo-font").rstatic("conduit").done())
-                    .p(|p| p.rstatic("A place to share your knowledge.").done());
-            });
+        let state = nodes.state();
+        nodes.match_if(|mi| match state.logged_in_user.as_ref() {
+            None => spair::set_arm!(mi)
+                .static_nodes()
+                .div(|d| {
+                    d.class("banner").div(|d| {
+                        d.class("container")
+                            .h1(|h| h.class("logo-font").rstatic("conduit").done())
+                            .p(|p| p.rstatic("A place to share your knowledge.").done());
+                    });
+                })
+                .done(),
+            Some(_) => spair::set_arm!(mi).done(),
         });
     }
 }
@@ -61,7 +68,7 @@ impl spair::Render<super::HomePage> for Feeds {
                             d.static_attributes()
                                 .class("col-md-9")
                                 .rupdate(FeedTabs)
-                                .component_ref2(state.article_list_comp.component_ref());
+                                .component_ref(state.article_list_comp.component_ref());
                         })
                         .rupdate(PopularTags);
                 });
@@ -80,12 +87,17 @@ impl spair::Render<super::HomePage> for FeedTabs {
                     .class("nav")
                     .class("nav-pills")
                     .class("outline-active")
-                    .rupdate(FeedTab {
-                        title: "Your Feed",
-                        active: state.filter == crate::article_list::ArticleFilter::Feed,
-                        handler: comp.handler_mut(|state| {
-                            state.set_filter(crate::article_list::ArticleFilter::Feed)
-                        }),
+                    .match_if(|mi| match state.logged_in_user.as_ref() {
+                        None => spair::set_arm!(mi).done(),
+                        Some(_) => spair::set_arm!(mi)
+                            .rupdate(FeedTab {
+                                title: "Your Feed",
+                                active: state.filter == crate::article_list::ArticleFilter::Feed,
+                                handler: comp.handler_mut(|state| {
+                                    state.set_filter(crate::article_list::ArticleFilter::Feed)
+                                }),
+                            })
+                            .done(),
                     })
                     .rupdate(FeedTab {
                         title: "Global Feed",
@@ -119,8 +131,8 @@ struct FeedTab<'a, F> {
 }
 impl<'a, F: spair::Click> spair::Render<super::HomePage> for FeedTab<'a, F> {
     fn render(self, nodes: spair::Nodes<super::HomePage>) {
-        nodes.li(|i| {
-            i.static_attributes().class("nav-item").a(|a| {
+        nodes.li(|li| {
+            li.static_attributes().class("nav-item").a(|a| {
                 a.class_if(self.active, "active")
                     //.href_str("")
                     .on_click(self.handler)
@@ -130,13 +142,6 @@ impl<'a, F: spair::Click> spair::Render<super::HomePage> for FeedTab<'a, F> {
                     .done()
             });
         });
-    }
-}
-
-struct Pagenation;
-impl spair::Render<super::HomePage> for Pagenation {
-    fn render(self, nodes: spair::Nodes<super::HomePage>) {
-        nodes.rupdate("Pagenation");
     }
 }
 
@@ -157,9 +162,8 @@ impl spair::Render<super::HomePage> for PopularTags {
                         Some(tag_list) => spair::set_arm!(mi)
                             .div(|d| {
                                 d.static_attributes().class("tag-list")
-                                    .list_with_render(
+                                    .lwr_clone(
                                         tag_list.tags.iter(),
-                                        spair::ListElementCreation::Clone,
                                         "a",
                                         |tag, a| {
                                             let route = crate::routes::Route::Home;

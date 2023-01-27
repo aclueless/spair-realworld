@@ -3,6 +3,7 @@ use spair::prelude::*;
 mod renders;
 
 pub struct HomePage {
+    logged_in_user: Option<realworld_shared::types::UserInfo>,
     filter: crate::article_list::ArticleFilter,
     article_list_comp: spair::ChildComp<crate::article_list::ArticleList>,
     tag_list: Option<realworld_shared::types::TagListInfo>,
@@ -10,9 +11,10 @@ pub struct HomePage {
 }
 
 impl HomePage {
-    pub fn new() -> Self {
+    pub fn new(logged_in_user: Option<realworld_shared::types::UserInfo>) -> Self {
         let filter = crate::article_list::ArticleFilter::Global;
         Self {
+            logged_in_user,
             filter: filter.clone(),
             article_list_comp: spair::ChildComp::with_props(filter),
             tag_list: Some(realworld_shared::types::TagListInfo {

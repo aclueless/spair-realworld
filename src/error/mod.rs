@@ -12,22 +12,17 @@ impl<'a, C: spair::Component> spair::Render<C> for ErrorView<'a> {
                     realworld_shared::error::Error::UnprocessableEntity(error_info) => {
                         log::info!("error: {}", error_info.errors.len());
                         spair::set_arm!(mi)
-                            .list_with_render(
-                                error_info.errors.iter(),
-                                spair::ListElementCreation::Clone,
-                                "li",
-                                |(key, values), li| {
-                                    li.rupdate(key).list_with_render(
-                                        values.iter(),
-                                        spair::ListElementCreation::Clone,
-                                        "span",
-                                        |value, s| s.rstatic(" ").rupdate(value).done(),
-                                    );
-                                },
-                            )
+                            .lwr_clone(error_info.errors.iter(), "li", |(key, values), li| {
+                                li.rupdate(key)
+                                    .lwr_clone(values.iter(), "span", |value, s| {
+                                        s.rstatic(" ").rupdate(value).done()
+                                    });
+                            })
                             .done();
                     }
-                    _ => spair::set_arm!(mi).rupdate(&error.to_string()).done(),
+                    _ => spair::set_arm!(mi)
+                        .li(|li| li.rupdate(&error.to_string()).done())
+                        .done(),
                 },
             });
         });

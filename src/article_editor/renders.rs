@@ -111,9 +111,8 @@ impl super::ArticleEditor {
                                 .placeholder("Enter tags");
                         })
                         .div(|d| {
-                            d.class("tag-list").list_with_render(
+                            d.class("tag-list").lwr_clone(
                                 self.article.tag_list.iter().flat_map(|tags| tags.iter()),
-                                spair::ListElementCreation::Clone,
                                 "span",
                                 |tag, s| {
                                     s.static_attributes()
@@ -137,7 +136,6 @@ impl super::ArticleEditor {
                 .static_nodes()
                 .button(|b| {
                     b.class("btn")
-                        .class("btn")
                         .class("btn-lg")
                         .class("pull-xs-right")
                         .class("btn-primary")
