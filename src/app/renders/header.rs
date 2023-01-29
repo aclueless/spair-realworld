@@ -24,7 +24,7 @@ impl spair::Render<crate::app::App> for Header {
 pub struct LoggedOutHeader;
 impl spair::Render<crate::app::App> for LoggedOutHeader {
     fn render(self, nodes: spair::Nodes<crate::app::App>) {
-        nodes.static_nodes().ul(|u| {
+        nodes.ul(|u| {
             u.class("nav")
                 .class("navbar-nav")
                 .class("pull-xs-right")

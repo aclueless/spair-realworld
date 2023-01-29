@@ -15,6 +15,7 @@ impl spair::Component for super::ArticleEditor {
                         d.class("col-md-10")
                             .class("offset-md-1")
                             .class("col-xs-12")
+                            .rupdate(crate::error::ErrorView(self.error.as_ref()))
                             .rfn(|nodes| self.render_form(nodes));
                     });
                 });

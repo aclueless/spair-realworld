@@ -8,7 +8,6 @@ impl spair::Component for super::ArticleList {
 
     fn render(&self, element: spair::Element<Self>) {
         element
-            .rupdate(crate::error::ErrorView(self.error.as_ref()))
             .match_if(|mi| match self.article_list.as_ref() {
                 None => spair::set_arm!(mi).rstatic("Loading articles...").done(),
                 Some(article_list) => spair::set_arm!(mi)
@@ -119,11 +118,14 @@ impl spair::Render<super::ArticleList> for Pagination {
                             .lwr_clone(0..page_count, "li", |current_page, l| {
                                 l.class("page-item")
                                     .class_if(self.current_page == current_page, "active")
-                                    .on_click(comp.handler_mut(move |state| {
+                                    .on_click(comp.handler_arg_mut(move |state, arg: spair::MouseEvent| {
+                                        arg.raw().prevent_default();
                                         state.set_current_page(current_page)
                                     }))
                                     .a(|a| {
-                                        a.class("page-link").href_str("").rupdate(current_page + 1);
+                                        a.class("page-link")
+                                            .href_str("")
+                                            .rupdate(current_page + 1);
                                     });
                             });
                     });

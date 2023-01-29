@@ -52,6 +52,7 @@ impl ArticleList {
     }
 
     fn set_current_page(&mut self, current_page: u32) -> spair::Command<Self> {
+        log::info!("current page {}", current_page);
         self.current_page = current_page;
         self.request_article_list()
     }
@@ -76,13 +77,14 @@ impl ArticleList {
     }
 
     fn update_article(&mut self, article: realworld_shared::types::ArticleInfoWrapper) {
-        self.article_list
+        if let Some(a) = self.article_list
             .as_mut()
             .and_then(|list| {
                 list.articles
                     .iter_mut()
                     .find(|a| a.slug == article.article.slug)
-            })
-            .map(|a| *a = article.article);
+            }) {
+            *a = article.article;
+        }
     }
 }

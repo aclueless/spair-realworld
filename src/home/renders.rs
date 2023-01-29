@@ -20,7 +20,6 @@ impl spair::Component for super::HomePage {
         element
             .class("home-page")
             .rupdate(Banner)
-            .rupdate(&format!("{:?}", self.filter))
             .rupdate(Feeds);
     }
 }
@@ -82,8 +81,8 @@ impl spair::Render<super::HomePage> for FeedTabs {
         let state = nodes.state();
         let comp = nodes.comp();
         nodes.div(|d| {
-            d.static_attributes().class("feed-toggle").ul(|u| {
-                u.static_attributes()
+            d.static_attributes().class("feed-toggle").ul(|ul| {
+                ul.static_attributes()
                     .class("nav")
                     .class("nav-pills")
                     .class("outline-active")
@@ -135,8 +134,8 @@ impl<'a, F: spair::Click> spair::Render<super::HomePage> for FeedTab<'a, F> {
             li.static_attributes().class("nav-item").a(|a| {
                 a.class_if(self.active, "active")
                     //.href_str("")
-                    .on_click(self.handler)
                     .static_attributes()
+                    .on_click(self.handler)
                     .class("nav-link")
                     .rstatic(self.title)
                     .done()

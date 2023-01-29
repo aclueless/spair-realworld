@@ -16,7 +16,6 @@ impl spair::Component for super::App {
     fn render(&self, element: spair::Element<Self>) {
         element
             .rupdate(header::Header)
-            .rupdate(&self.route.url())
             .component_ref(match &self.page {
                 super::Page::Home(child) => child.component_ref(),
                 super::Page::Register(child) => child.component_ref(),

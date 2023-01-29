@@ -5,6 +5,7 @@ impl spair::Component for super::Profile {
     fn init(comp: &spair::Comp<Self>) {
         comp.callback_once_mut(Self::request_profile_info).queue();
     }
+
     fn register_routing_callback(
         router: &mut <Self::Routes as spair::Routes>::Router,
         comp: &spair::Comp<Self>,

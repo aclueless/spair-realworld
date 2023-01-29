@@ -46,10 +46,14 @@ impl spair::Router for Router {
                 } else if hash.starts_with("#/editor/") {
                     Route::Editor(Some(hash.replace("#/editor/", "")))
                 } else if hash.starts_with("#/profile/") {
+                    log::info!("hash: {}", hash);
                     let tail = hash.replace("#/profile/", "");
+                    log::info!("tail: {}", tail);
                     if tail.ends_with("/favorites") {
-                        Route::ProfileFavorites(tail.replace("/favorites", ""))
-                    } else if tail.contains("/") {
+                        let pf = Route::ProfileFavorites(tail.replace("/favorites", ""));
+                        log::info!("pf: {:?}", &pf);
+                        pf
+                    } else if tail == "/" {
                         Route::Home
                     } else {
                         Route::Profile(tail)
@@ -60,6 +64,7 @@ impl spair::Router for Router {
             }
         };
         if let Some(profile_comp) = self.profile_comp.as_ref() {
+            log::info!("On profile page");
             if let Some(uf) = match &route {
                 Route::Profile(username) => Some((username.to_string(), false)),
                 Route::ProfileFavorites(username) => Some((username.to_string(), true)),
@@ -67,12 +72,12 @@ impl spair::Router for Router {
             } {
                 profile_comp
                     .callback_once_arg_mut(crate::profile::Profile::set_username_and_favorited)
-                    .call(uf);
+                    .queue(uf);
                 return;
             }
         }
         self.app_comp
             .callback_once_arg_mut(crate::app::App::set_route)
-            .call(route);
+            .queue(route);
     }
 }
