@@ -17,18 +17,15 @@ impl spair::Component for super::HomePage {
     }
 
     fn render(&self, element: spair::Element<Self>) {
-        element
-            .class("home-page")
-            .rupdate(Banner)
-            .rupdate(Feeds);
+        element.class("home-page").rupdate(Banner).rupdate(Feeds);
     }
 }
 
 impl spair::AsChildComp for super::HomePage {
     const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
     type Properties = Option<realworld_shared::types::UserInfo>;
-    fn init(_comp: &spair::Comp<Self>, logged_in_user: Self::Properties) -> Self {
-        Self::new(logged_in_user)
+    fn init(comp: &spair::Comp<Self>, logged_in_user: Self::Properties) -> Self {
+        Self::new(comp.clone(), logged_in_user)
     }
 }
 

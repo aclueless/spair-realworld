@@ -34,8 +34,8 @@ impl spair::Component for super::Settings {
 impl spair::AsChildComp for super::Settings {
     const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
     type Properties = super::Props;
-    fn init(_comp: &spair::Comp<Self>, props: Self::Properties) -> Self {
-        Self::new(props)
+    fn init(comp: &spair::Comp<Self>, props: Self::Properties) -> Self {
+        Self::new(comp.clone(), props)
     }
 }
 

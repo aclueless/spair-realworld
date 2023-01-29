@@ -101,14 +101,12 @@ impl App {
         crate::routes::Route::Home.execute_routing();
     }
 
-    fn get_logged_in_user_info(&mut self) -> spair::Command<Self> {
-        spair::Future::new(async move { realworld_shared::services::auth::current().await })
-            .with_fn(|state: &mut Self, rs| match rs {
-                Ok(rs) => state.set_user_info(rs),
-                Err(_) => {
-                    realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None)
-                }
-            })
+    fn get_logged_in_user_info(&mut self) {
+        let cb = self.comp.callback_arg_mut(|state: &mut Self, rs| match rs {
+            Ok(rs) => state.set_user_info(rs),
+            Err(_) => realworld_shared::services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None),
+        });
+        realworld_shared::services::auth::current().spawn_local_with(cb);
     }
 
     pub fn view_article(&mut self, article_info: realworld_shared::types::ArticleInfo) {

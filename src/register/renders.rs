@@ -93,7 +93,7 @@ impl super::Register {
 impl spair::AsChildComp for super::Register {
     const ROOT_ELEMENT_TAG: spair::TagName = spair::TagName::Html(spair::HtmlTag("div"));
     type Properties = spair::CallbackArg<realworld_shared::types::UserInfoWrapper>;
-    fn init(_: &spair::Comp<Self>, set_user_callback: Self::Properties) -> Self {
-        Self::new(set_user_callback)
+    fn init(comp: &spair::Comp<Self>, set_user_callback: Self::Properties) -> Self {
+        Self::new(comp.clone(), set_user_callback)
     }
 }

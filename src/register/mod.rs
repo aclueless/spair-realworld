@@ -1,6 +1,9 @@
+use spair::prelude::*;
+
 mod renders;
 
 pub struct Register {
+    comp: spair::Comp<Self>,
     set_user_callback: spair::CallbackArg<realworld_shared::types::UserInfoWrapper>,
     register_info: realworld_shared::types::RegisterInfo,
     error: Option<realworld_shared::error::Error>,
@@ -8,9 +11,11 @@ pub struct Register {
 
 impl Register {
     fn new(
+        comp: spair::Comp<Self>,
         set_user_callback: spair::CallbackArg<realworld_shared::types::UserInfoWrapper>,
     ) -> Self {
         Self {
+            comp,
             set_user_callback,
             register_info: Default::default(),
             error: None,
@@ -29,16 +34,16 @@ impl Register {
         self.register_info.password = password;
     }
 
-    fn send_register_request(&mut self) -> spair::Command<Self> {
+    fn send_register_request(&mut self) {
         self.error = None;
         let data = realworld_shared::types::RegisterInfoWrapper {
             user: self.register_info.clone(),
         };
-        spair::Future::new(async move { realworld_shared::services::auth::register(data).await })
-            .with_fn(|state: &mut Self, r| match r {
-                Ok(r) => state.register_ok(r),
-                Err(e) => state.register_error(e),
-            })
+        let cb = self.comp.callback_arg_mut(|state: &mut Self, r| match r {
+            Ok(r) => state.register_ok(r),
+            Err(e) => state.register_error(e),
+        });
+        realworld_shared::services::auth::register(data).spawn_local_with(cb);
     }
 
     fn register_ok(&mut self, user: realworld_shared::types::UserInfoWrapper) {

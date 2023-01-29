@@ -1,6 +1,9 @@
+use spair::prelude::*;
+
 mod renders;
 
 pub struct ArticleEditor {
+    comp: spair::Comp<Self>,
     view_article_callback: spair::CallbackArg<realworld_shared::types::ArticleInfo>,
     slug: Option<String>,
     article: realworld_shared::types::ArticleCreateUpdateInfo,
@@ -14,8 +17,9 @@ pub struct Props {
 }
 
 impl ArticleEditor {
-    fn new(props: Props) -> Self {
+    fn new(comp: spair::Comp<Self>, props: Props) -> Self {
         Self {
+            comp,
             view_article_callback: props.view_article_callback,
             slug: props.slug,
             article: Default::default(),
@@ -24,17 +28,16 @@ impl ArticleEditor {
         }
     }
 
-    fn get_article(&mut self) -> spair::OptionCommand<Self> {
+    fn get_article(&mut self) {
         let Some(slug) = self.slug.as_ref() else {
-            return None.into();
+            return;
         };
         let slug = slug.to_string();
-        spair::Future::new(async move { realworld_shared::services::articles::get(slug).await })
-            .with_fn(|state: &mut Self, a| match a {
-                Ok(a) => state.set_article_for_editting(a),
-                Err(e) => state.error = Some(e),
-            })
-            .into()
+        let cb = self.comp.callback_arg_mut(|state: &mut Self, a| match a {
+            Ok(a) => state.set_article_for_editting(a),
+            Err(e) => state.error = Some(e),
+        });
+        realworld_shared::services::articles::get(slug).spawn_local_with(cb);
     }
 
     fn set_article_for_editting(
@@ -75,22 +78,23 @@ impl ArticleEditor {
         }
     }
 
-    fn publish_article(&self) -> spair::Command<Self> {
+    fn publish_article(&self) {
         let data = realworld_shared::types::ArticleCreateUpdateInfoWrapper {
             article: self.article.clone(),
         };
         let slug = self.slug.clone();
-        spair::Future::new(async move {
+        let cb = self.comp.callback_arg_mut(|state: &mut Self, a| match a {
+            Ok(a) => state.responsed_article(a),
+            Err(e) => state.error = Some(e),
+        });
+        async move {
             if let Some(slug) = slug {
                 realworld_shared::services::articles::update(slug, data).await
             } else {
                 realworld_shared::services::articles::create(data).await
             }
-        })
-        .with_fn(|state: &mut Self, a| match a {
-            Ok(a) => state.responsed_article(a),
-            Err(e) => state.error = Some(e),
-        })
+        }
+        .spawn_local_with(cb);
     }
 
     fn responsed_article(&mut self, article_info: realworld_shared::types::ArticleInfoWrapper) {

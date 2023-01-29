@@ -3,6 +3,7 @@ use spair::prelude::*;
 mod renders;
 
 pub struct Profile {
+    comp: spair::Comp<Self>,
     logged_in_user: Option<realworld_shared::types::UserInfo>,
     profile_username: String,
     profile: Option<realworld_shared::types::ProfileInfo>,
@@ -17,10 +18,11 @@ pub struct Props {
 }
 
 impl Profile {
-    fn new(props: Props) -> Self {
+    fn new(comp: spair::Comp<Self>, props: Props) -> Self {
         let filter = crate::article_list::ArticleFilter::Author(props.profile_username.clone());
         let article_list_comp = spair::ChildComp::with_props(filter);
         Self {
+            comp,
             logged_in_user: props.logged_in_user,
             profile_username: props.profile_username,
             profile: None,
@@ -39,7 +41,7 @@ impl Profile {
     pub fn set_username_and_favorited(
         &mut self,
         (username, favorited): (String, bool),
-    ) -> spair::Checklist<Self> {
+    ) -> spair::ShouldRender {
         let new_user = username != self.profile_username;
         let new_tab = favorited != self.favorited;
 
@@ -59,43 +61,39 @@ impl Profile {
                 .queue(filter);
         }
 
-        let mut cl = Self::default_checklist();
-        cl.set_skip_render();
-        cl.add_command(self.request_profile_info());
-        cl
+        self.request_profile_info();
+        spair::ShouldRender::No
     }
 
-    fn request_profile_info(&mut self) -> spair::Command<Self> {
+    fn request_profile_info(&mut self) {
         let profile_username = self.profile_username.clone();
-        spair::Future::new(async move {
-            realworld_shared::services::profiles::get(profile_username).await
-        })
-        .with_fn(|state: &mut Self, p| match p {
+        let cb = self.comp.callback_arg_mut(|state: &mut Self, p| match p {
             Ok(p) => state.set_profile(p),
             Err(e) => state.error = Some(e),
-        })
+        });
+        realworld_shared::services::profiles::get(profile_username).spawn_local_with(cb);
     }
 
     fn set_profile(&mut self, p: realworld_shared::types::ProfileInfoWrapper) {
         self.profile = Some(p.profile);
     }
 
-    fn toggle_follow(&self) -> spair::OptionCommand<Self> {
+    fn toggle_follow(&self) {
         let Some(p) = self.profile.as_ref() else {
-            return None.into();
+            return;
         };
         let following = p.following;
         let username = p.username.clone();
-        spair::Future::new(async move {
+        let cb = self.comp.callback_arg_mut(|state: &mut Self, p| match p {
+            Ok(p) => state.set_profile(p),
+            Err(e) => state.error = Some(e),
+        });
+        async move {
             match following {
                 true => realworld_shared::services::profiles::unfollow(username).await,
                 false => realworld_shared::services::profiles::follow(username).await,
             }
-        })
-        .with_fn(|state: &mut Self, p| match p {
-            Ok(p) => state.set_profile(p),
-            Err(e) => state.error = Some(e),
-        })
-        .into()
+        }
+        .spawn_local_with(cb);
     }
 }
