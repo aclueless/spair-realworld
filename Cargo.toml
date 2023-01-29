@@ -23,7 +23,7 @@ wasm-logger = "0.2"
 #wee_alloc = "0.4.5"
 derive_more = "0.99"
 spair = { path = "../../spair" }
-realworld_shared = { path = "./realworld_shared" }
+realworld_shared = { path = "./realworld_shared", features = ["gloo-net"] }
 gloo = "0.8"
 
 # [dependencies.web-sys]

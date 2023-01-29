@@ -34,3 +34,16 @@ pub enum Error {
     #[error("Http Request Error")]
     RequestError,
 }
+
+impl Error {
+    pub fn from_status_code(status: u16, reported_error: Error) -> Self {
+        match status {
+            401 => Error::Unauthorized,
+            403 => Error::Forbidden,
+            404 => Error::NotFound,
+            500 => Error::InternalServerError,
+            422 => reported_error,
+            _ => Error::RequestError,
+        }
+    }
+}

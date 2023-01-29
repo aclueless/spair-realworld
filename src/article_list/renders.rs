@@ -9,6 +9,8 @@ impl spair::Component for super::ArticleList {
     fn render(&self, element: spair::Element<Self>) {
         element.match_if(|mi| match self.article_list.as_ref() {
             None => spair::set_arm!(mi).rstatic("Loading articles...").done(),
+            Some(article_list) if article_list.articles.is_empty() => spair::set_arm!(mi)
+                .rstatic("No articles found").done(),
             Some(article_list) => spair::set_arm!(mi)
                 .list_clone(article_list.articles.iter())
                 .rupdate(Pagination {
@@ -73,7 +75,7 @@ impl spair::ElementRender<super::ArticleList> for &realworld_shared::types::Arti
                     });
             })
             .a(|a| {
-                let route = crate::routes::Route::Article(From::from(self.slug.clone()));
+                let route = crate::routes::Route::Article(self.slug.clone());
                 a.href(&route)
                     .static_attributes()
                     .class("preview-link")
