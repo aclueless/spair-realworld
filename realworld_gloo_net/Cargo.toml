@@ -8,5 +8,5 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-realworld_lib = { path = "../realworld_lib", features = ["gloo-net"] }
+lib = { path = "../lib", features = ["gloo-net"] }
 spair = { path = "../../../spair" }
