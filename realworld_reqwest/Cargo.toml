@@ -9,4 +9,4 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 lib = { path = "../lib", features = ["reqwest"] }
-spair = { path = "../../../spair" }
+spair = { git = "https://github.com/aclueless/spair" }
