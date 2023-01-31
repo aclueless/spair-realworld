@@ -1,86 +1,75 @@
-use gloo_net::http::Method;
-use serde::{de::DeserializeOwned, Serialize};
-
 use crate::error::Error;
-use types::ErrorInfo;
+use gloo_net::http::{Method, Request as GlooRequest};
 
-// consts and token-management were move to the super module.
+pub struct Request(Option<GlooRequest>);
 
-/// build all kinds of http request: post/get/delete etc.
-pub async fn request<B, T>(method: Method, url: String, body: B) -> Result<T, Error>
-where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-    B: Serialize + std::fmt::Debug,
-{
-    let allow_body = matches!(method, Method::POST) || matches!(method, Method::PUT);
+fn request<B: serde::Serialize>(method: gloo_net::http::Method, url: &str, body: &B) -> Request {
     let url = format!("{}{}", super::API_ROOT, url);
-
-    let mut req = gloo_net::http::Request::new(&url)
+    let builder = GlooRequest::new(&url)
         .method(method)
         .header("Content-Type", "application/json");
-    if let Some(token) = super::get_token() {
-        req = req.header("Authorization", &format!("Token {}", token));
+    let req = Request(Some(builder)).set_token();
+    Request(req.0.and_then(|r| r.json(body).ok()))
+}
+
+impl Request {
+    fn set_token(self) -> Self {
+        let Some(r) = self.0 else {
+            return Self(None);
+        };
+        let builder = match super::get_token() {
+            Some(token) => r.header("Authorization", &format!("Token {}", token)),
+            None => r,
+        };
+        Self(Some(builder))
     }
 
-    if allow_body {
-        req = req.json(&body).map_err(|_| Error::RequestError)?;
-    }
+    pub async fn send<T: serde::de::DeserializeOwned>(self) -> Result<T, Error> {
+        let Some(r) = self.0 else {
+            return Err(Error::RequestError);
+        };
+        let response = r.send().await;
 
-    let response = req.send().await;
-
-    if let Ok(data) = response {
-        if data.status() == 200 {
-            let data: Result<T, _> = data.json::<T>().await;
-            if let Ok(data) = data {
-                // log::debug!("Response: {:?}", data);
-                Ok(data)
+        if let Ok(data) = response {
+            if data.status() == 200 {
+                let data: Result<T, _> = data.json::<T>().await;
+                if let Ok(data) = data {
+                    Ok(data)
+                } else {
+                    Err(Error::DeserializeError)
+                }
             } else {
-                Err(Error::DeserializeError)
+                let status = data.status();
+                let error = match data.json::<types::ErrorInfo>().await {
+                    Ok(data) => Error::UnprocessableEntity(data),
+                    Err(_) => Error::DeserializeError,
+                };
+                Err(Error::from_status_code(status, error))
             }
         } else {
-            let status = data.status();
-            let error = match data.json::<ErrorInfo>().await {
-                Ok(data) => Error::UnprocessableEntity(data),
-                Err(_) => Error::DeserializeError,
-            };
-            Err(Error::from_status_code(status, error))
+            Err(Error::RequestError)
         }
-    } else {
-        Err(Error::RequestError)
     }
 }
 
-/// Delete request
-pub async fn request_delete<T>(url: String) -> Result<T, Error>
-where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-{
-    request(Method::DELETE, url, ()).await
+pub fn request_delete(url: &str) -> Request {
+    Request(Some(GlooRequest::new(url).method(Method::DELETE))).set_token()
 }
 
-/// Get request
-pub async fn request_get<T>(url: String) -> Result<T, Error>
-where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-{
-    request(Method::GET, url, ()).await
+pub fn request_get(url: &str) -> Request {
+    Request(Some(GlooRequest::new(url).method(Method::GET))).set_token()
 }
 
-/// Post request with a body
-pub async fn request_post<B, T>(url: String, body: B) -> Result<T, Error>
+pub fn request_post<B>(url: &str, body: &B) -> Request
 where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-    B: Serialize + std::fmt::Debug,
+    B: serde::Serialize,
 {
-    request(Method::POST, url, body).await
+    request(Method::POST, url, body)
 }
 
-/// Put request with a body
-pub async fn request_put<B, T>(url: String, body: B) -> Result<T, Error>
+pub fn request_put<B>(url: &str, body: &B) -> Request
 where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-    B: Serialize + std::fmt::Debug,
+    B: serde::Serialize,
 {
-    request(Method::PUT, url, body).await
+    request(Method::PUT, url, body)
 }
-

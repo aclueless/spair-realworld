@@ -1,7 +1,7 @@
 //! Error type for error handling
 
-use types::ErrorInfo;
 use thiserror::Error as ThisError;
+use types::ErrorInfo;
 
 /// Define all possible errors
 #[derive(ThisError, Clone, Debug, PartialEq, Eq)]

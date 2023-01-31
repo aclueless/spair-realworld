@@ -37,24 +37,24 @@ impl ArticleList {
     }
 
     fn request_article_list(&mut self) {
-        let filter = self.filter.clone();
-        let current_page = self.current_page;
         let cb = self
             .comp
             .callback_arg_mut(|state: &mut Self, list| match list {
                 Ok(list) => state.article_list = Some(list),
                 Err(e) => state.error = Some(e),
             });
-        async move {
-            use services::articles::*;
-            match filter {
-                ArticleFilter::Global => all(current_page).await,
-                ArticleFilter::Feed => feed().await,
-                ArticleFilter::Tag(tag) => by_tag(tag, current_page).await,
-                ArticleFilter::Author(author) => by_author(author, current_page).await,
-                ArticleFilter::FavoritedByUser(author) => favorited_by(author, current_page).await,
+        match &self.filter {
+            ArticleFilter::Global => services::articles::all(self.current_page),
+            ArticleFilter::Feed => services::articles::feed(),
+            ArticleFilter::Tag(tag) => services::articles::by_tag(tag, self.current_page),
+            ArticleFilter::Author(author) => {
+                services::articles::by_author(author, self.current_page)
+            }
+            ArticleFilter::FavoritedByUser(author) => {
+                services::articles::favorited_by(author, self.current_page)
             }
         }
+        .send()
         .spawn_local_with(cb);
     }
 
@@ -65,18 +65,15 @@ impl ArticleList {
     }
 
     fn toggle_favorite(&mut self, current_favorited_value: bool, slug: &str) {
-        let slug = slug.to_string();
         let cb = self.comp.callback_arg_mut(|state: &mut Self, a| match a {
             Ok(a) => state.update_article(a),
             Err(e) => state.error = Some(e),
         });
-        async move {
-            use services::articles::*;
-            match current_favorited_value {
-                false => favorite(slug).await,
-                true => unfavorite(slug).await,
-            }
+        match current_favorited_value {
+            false => services::articles::favorite(slug),
+            true => services::articles::unfavorite(slug),
         }
+        .send()
         .spawn_local_with(cb);
     }
 

@@ -86,17 +86,11 @@ impl App {
 
     pub fn set_user_info(&mut self, user: types::UserInfoWrapper) {
         let user = user.user;
-        services::set_token(
-            crate::LOCAL_STORAGE_TOKEN_KEY,
-            Some(user.token.as_str()),
-        );
+        services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, Some(user.token.as_str()));
         self.user = Some(user);
     }
 
-    pub fn set_user_and_navigate_to_home(
-        &mut self,
-        user: types::UserInfoWrapper,
-    ) {
+    pub fn set_user_and_navigate_to_home(&mut self, user: types::UserInfoWrapper) {
         self.set_user_info(user);
         crate::routes::Route::Home.execute_routing();
     }
@@ -106,7 +100,7 @@ impl App {
             Ok(rs) => state.set_user_info(rs),
             Err(_) => services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None),
         });
-        services::auth::current().spawn_local_with(cb);
+        services::auth::current().send().spawn_local_with(cb);
     }
 
     pub fn view_article(&mut self, article_info: types::ArticleInfo) {

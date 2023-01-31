@@ -9,8 +9,9 @@ impl spair::Component for super::ArticleList {
     fn render(&self, element: spair::Element<Self>) {
         element.match_if(|mi| match self.article_list.as_ref() {
             None => spair::set_arm!(mi).rstatic("Loading articles...").done(),
-            Some(article_list) if article_list.articles.is_empty() => spair::set_arm!(mi)
-                .rstatic("No articles found").done(),
+            Some(article_list) if article_list.articles.is_empty() => {
+                spair::set_arm!(mi).rstatic("No articles found").done()
+            }
             Some(article_list) => spair::set_arm!(mi)
                 .list_clone(article_list.articles.iter())
                 .rupdate(Pagination {

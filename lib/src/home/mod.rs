@@ -12,10 +12,7 @@ pub struct HomePage {
 }
 
 impl HomePage {
-    pub fn new(
-        comp: spair::Comp<Self>,
-        logged_in_user: Option<types::UserInfo>,
-    ) -> Self {
+    pub fn new(comp: spair::Comp<Self>, logged_in_user: Option<types::UserInfo>) -> Self {
         let filter = crate::article_list::ArticleFilter::Global;
         Self {
             comp,
@@ -56,6 +53,6 @@ impl HomePage {
                 Ok(tag_list) => state.tag_list = Some(tag_list),
                 Err(e) => state.error = Some(e),
             });
-        services::tags::get_all().spawn_local_with(cb);
+        services::tags::get_all().send().spawn_local_with(cb);
     }
 }

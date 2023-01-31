@@ -1,15 +1,13 @@
-use super::{request_delete, request_get, request_post};
-use crate::error::Error;
-use types::*;
+use super::{request_delete, request_get, request_post, Request};
 
-pub async fn follow(username: String) -> Result<ProfileInfoWrapper, Error> {
-    request_post::<(), ProfileInfoWrapper>(format!("/profiles/{}/follow", username), ()).await
+pub fn follow(username: &str) -> Request {
+    request_post(&format!("/profiles/{}/follow", username), &())
 }
 
-pub async fn unfollow(username: String) -> Result<ProfileInfoWrapper, Error> {
-    request_delete::<ProfileInfoWrapper>(format!("/profiles/{}/follow", username)).await
+pub fn unfollow(username: &str) -> Request {
+    request_delete(&format!("/profiles/{}/follow", username))
 }
 
-pub async fn get(username: String) -> Result<ProfileInfoWrapper, Error> {
-    request_get::<ProfileInfoWrapper>(format!("/profiles/{}", username)).await
+pub fn get(username: &str) -> Request {
+    request_get(&format!("/profiles/{}", username))
 }

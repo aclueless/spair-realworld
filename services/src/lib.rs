@@ -15,23 +15,19 @@ use parking_lot::RwLock;
 pub mod articles;
 pub mod auth;
 pub mod comments;
+pub mod error;
 pub mod profiles;
 pub mod tags;
-pub mod error;
 
-#[cfg(feature="reqwest")]
+#[cfg(feature = "reqwest")]
 mod reqwest;
-#[cfg(feature="reqwest")]
-pub use self::reqwest::{
-    request_delete, request_get, request_post, request_put,
-};
+#[cfg(feature = "reqwest")]
+pub use self::reqwest::{request_delete, request_get, request_post, request_put, Request};
 
-#[cfg(feature="gloo-net")]
+#[cfg(feature = "gloo-net")]
 mod gloo_net;
-#[cfg(feature="gloo-net")]
-pub use self::gloo_net::{
-    request_delete, request_get, request_post, request_put,
-};
+#[cfg(feature = "gloo-net")]
+pub use self::gloo_net::{request_delete, request_get, request_post, request_put, Request};
 
 // Make sure the value of API_ROOT is correctly set in `crate-root/.env`
 const API_ROOT: &str = dotenv!("API_ROOT");
@@ -47,7 +43,7 @@ lazy_static! {
 /// Set jwt token to local storage.
 pub fn set_token(key: &str, token: Option<&str>) {
     // Required the storage key to be passed in (originaly used const TOKEN_KEY)
-    if let Some(t) = token.clone() {
+    if let Some(t) = token {
         LocalStorage::set(key, t).expect("failed to set");
     } else {
         LocalStorage::delete(key);

@@ -1,24 +1,21 @@
-use super::{request_get, request_post, request_put};
-use crate::error::Error;
-use types::*;
+use super::{request_get, request_post, request_put, Request};
 
 /// Get current user info
-pub async fn current() -> Result<UserInfoWrapper, Error> {
-    request_get::<UserInfoWrapper>("/user".to_string()).await
+pub fn current() -> Request {
+    request_get("/user")
 }
 
 /// Login a user
-pub async fn login(login_info: LoginInfoWrapper) -> Result<UserInfoWrapper, Error> {
-    request_post::<LoginInfoWrapper, UserInfoWrapper>("/users/login".to_string(), login_info).await
+pub fn login(login_info: &types::LoginInfoWrapper) -> Request {
+    request_post("/users/login", login_info)
 }
 
 /// Register a new user
-pub async fn register(register_info: RegisterInfoWrapper) -> Result<UserInfoWrapper, Error> {
-    request_post::<RegisterInfoWrapper, UserInfoWrapper>("/users".to_string(), register_info).await
+pub fn register(register_info: &types::RegisterInfoWrapper) -> Request {
+    request_post("/users", register_info)
 }
 
 /// Save info of current user
-pub async fn save(user_update_info: UserUpdateInfoWrapper) -> Result<UserInfoWrapper, Error> {
-    request_put::<UserUpdateInfoWrapper, UserInfoWrapper>("/user".to_string(), user_update_info)
-        .await
+pub fn save(user_update_info: &types::UserUpdateInfoWrapper) -> Request {
+    request_put("/user", user_update_info)
 }

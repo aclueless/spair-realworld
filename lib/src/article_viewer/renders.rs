@@ -235,7 +235,8 @@ impl spair::ElementRender<super::ArticleViewer> for CommentList {
                     None => spair::set_arm!(mi).rupdate(LoginRegister).done(),
                     Some(user) => spair::set_arm!(mi)
                         .rupdate(crate::error::ErrorView(state.error.as_ref()))
-                        .rupdate(CommentForm(user)).done(),
+                        .rupdate(CommentForm(user))
+                        .done(),
                 })
                 .list_clone(state.comments.iter().flat_map(|v| v.iter()));
         });

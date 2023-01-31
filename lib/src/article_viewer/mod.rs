@@ -49,36 +49,33 @@ impl ArticleViewer {
         if self.article.is_some() {
             return;
         }
-        let slug = self.slug.clone();
         let cb = self.comp.callback_arg_mut(
-            |state: &mut Self,
-             a: Result<
-                types::ArticleInfoWrapper,
-                services::error::Error,
-            >| match a {
+            |state: &mut Self, a: Result<types::ArticleInfoWrapper, services::error::Error>| match a
+            {
                 Ok(a) => {
-                    let slug = a.article.slug.clone();
+                    state.get_comments(&a.article.slug);
                     state.set_article(a);
-                    state.get_comments(slug);
                 }
                 Err(e) => state.error = Some(e),
             },
         );
-        services::articles::get(slug).spawn_local_with(cb);
+        services::articles::get(&self.slug)
+            .send()
+            .spawn_local_with(cb);
     }
 
-    fn get_comments(&self, slug: String) {
+    fn get_comments(&self, slug: &str) {
         let cb = self.comp.callback_arg_mut(
-            |state: &mut Self,
-             comments: Result<
-                types::CommentListInfo,
-                services::error::Error,
-            >| match comments {
-                Ok(comments) => state.comments = Some(comments.comments),
-                Err(e) => state.error = Some(e),
+            |state: &mut Self, comments: Result<types::CommentListInfo, services::error::Error>| {
+                match comments {
+                    Ok(comments) => state.comments = Some(comments.comments),
+                    Err(e) => state.error = Some(e),
+                }
             },
         );
-        services::comments::for_article(slug).spawn_local_with(cb);
+        services::comments::for_article(slug)
+            .send()
+            .spawn_local_with(cb);
     }
 
     fn set_article(&mut self, article: types::ArticleInfoWrapper) {
@@ -86,20 +83,18 @@ impl ArticleViewer {
     }
 
     fn toggle_follow(&self) {
-        let Some((following, username)) = self.article.as_ref().map(|a| (a.author.following, a.author.username.clone())) else {
+        let Some(author) = self.article.as_ref().map(|a| &a.author) else {
             return;
         };
         let cb = self.comp.callback_arg_mut(|state: &mut Self, p| match p {
             Ok(p) => state.update_article_author_profile(p),
             Err(e) => state.error = Some(e),
         });
-        async move {
-            use services::profiles::*;
-            match following {
-                false => follow(username).await,
-                true => unfollow(username).await,
-            }
+        match author.following {
+            false => services::profiles::follow(&author.username),
+            true => services::profiles::unfollow(&author.username),
         }
+        .send()
         .spawn_local_with(cb);
     }
 
@@ -107,18 +102,19 @@ impl ArticleViewer {
         &mut self,
         new_article_author_profile: types::ProfileInfoWrapper,
     ) {
-        self.article
-            .as_mut()
-            .map(|a| a.author = new_article_author_profile.profile);
+        if let Some(a) = self.article.as_mut() {
+            a.author = new_article_author_profile.profile;
+        }
     }
 
     fn delete_article(&self) {
-        let slug = self.slug.clone();
         let cb = self.comp.callback_arg_mut(|state: &mut Self, d| match d {
             Ok(d) => state.delete_article_completed(d),
             Err(e) => state.error = Some(e),
         });
-        services::articles::del(slug).spawn_local_with(cb);
+        services::articles::del(&self.slug)
+            .send()
+            .spawn_local_with(cb);
     }
 
     fn delete_article_completed(&mut self, _: types::DeleteWrapper) {
@@ -129,18 +125,15 @@ impl ArticleViewer {
         let Some(favorited) = self.article.as_ref().map(|a| a.favorited) else {
             return;
         };
-        let slug = self.slug.clone();
         let cb = self.comp.callback_arg_mut(|state: &mut Self, a| match a {
             Ok(a) => state.set_article(a),
             Err(e) => state.error = Some(e),
         });
-        async move {
-            use services::articles::*;
-            match favorited {
-                true => unfavorite(slug).await,
-                false => favorite(slug).await,
-            }
+        match favorited {
+            true => services::articles::unfavorite(&self.slug),
+            false => services::articles::favorite(&self.slug),
         }
+        .send()
         .spawn_local_with(cb);
     }
 
@@ -152,7 +145,6 @@ impl ArticleViewer {
         if self.article.is_none() {
             return;
         }
-        let slug = self.slug.clone();
         let mut new_comment = String::new();
         std::mem::swap(&mut self.new_comment, &mut new_comment);
         let cb = self.comp.callback_arg_mut(|state: &mut Self, c| match c {
@@ -160,37 +152,39 @@ impl ArticleViewer {
             Err(e) => state.error = Some(e),
         });
         services::comments::create(
-            slug,
-            types::CommentCreateInfoWrapper {
+            &self.slug,
+            &types::CommentCreateInfoWrapper {
                 comment: types::CommentCreateInfo { body: new_comment },
             },
         )
+        .send()
         .spawn_local_with(cb);
     }
 
     fn add_comment(&mut self, comment: types::CommentInfoWrapper) {
-        self.comments
-            .as_mut()
-            .map(|comments| comments.insert(0, comment.comment));
+        if let Some(comments) = self.comments.as_mut() {
+            comments.insert(0, comment.comment);
+        }
     }
 
     fn delete_comment(&mut self, comment_id: u32) {
         if self.article.is_none() {
             return;
         }
-        let slug = self.slug.clone();
-        let cb = self
-            .comp
-            .callback_arg_mut(move |state: &mut Self, d| match d {
+        let cb = self.comp.callback_arg_mut(
+            move |state: &mut Self, d: Result<types::DeleteWrapper, _>| match d {
                 Ok(_) => state.remove_comment(comment_id),
                 Err(e) => state.error = Some(e),
-            });
-        services::comments::delete(slug, comment_id).spawn_local_with(cb);
+            },
+        );
+        services::comments::delete(&self.slug, comment_id)
+            .send()
+            .spawn_local_with(cb);
     }
 
     fn remove_comment(&mut self, comment_id: u32) {
-        self.comments
-            .as_mut()
-            .map(|comments| comments.retain(|c| c.id != comment_id));
+        if let Some(comments) = self.comments.as_mut() {
+            comments.retain(|c| c.id != comment_id);
+        }
     }
 }

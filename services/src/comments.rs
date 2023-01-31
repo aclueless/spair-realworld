@@ -1,22 +1,13 @@
-use super::{request_delete, request_get, request_post};
-use crate::error::Error;
-use types::*;
+use super::{request_delete, request_get, request_post, Request};
 
-pub async fn create(
-    slug: String,
-    comment: CommentCreateInfoWrapper,
-) -> Result<CommentInfoWrapper, Error> {
-    request_post::<CommentCreateInfoWrapper, CommentInfoWrapper>(
-        format!("/articles/{}/comments", slug),
-        comment,
-    )
-    .await
+pub fn create(slug: &str, comment: &types::CommentCreateInfoWrapper) -> Request {
+    request_post(&format!("/articles/{}/comments", slug), comment)
 }
 
-pub async fn delete(slug: String, comment_id: u32) -> Result<DeleteWrapper, Error> {
-    request_delete::<DeleteWrapper>(format!("/articles/{}/comments/{}", slug, comment_id)).await
+pub fn delete(slug: &str, comment_id: u32) -> Request {
+    request_delete(&format!("/articles/{}/comments/{}", slug, comment_id))
 }
 
-pub async fn for_article(slug: String) -> Result<CommentListInfo, Error> {
-    request_get::<CommentListInfo>(format!("/articles/{}/comments", slug)).await
+pub fn for_article(slug: &str) -> Request {
+    request_get(&format!("/articles/{}/comments", slug))
 }

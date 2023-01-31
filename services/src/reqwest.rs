@@ -1,85 +1,68 @@
-// Use dotenvy_macro instead of dotenv_codegen
-use serde::{de::DeserializeOwned, Serialize};
-
 use crate::error::Error;
-use types::ErrorInfo;
 
-// consts and token-management were move to the super module.
+pub struct Request(reqwest::RequestBuilder);
 
-/// build all kinds of http request: post/get/delete etc.
-pub async fn request<B, T>(method: reqwest::Method, url: String, body: B) -> Result<T, Error>
-where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-    B: Serialize + std::fmt::Debug,
-{
-    let allow_body = method == reqwest::Method::POST || method == reqwest::Method::PUT;
+fn request<B: serde::Serialize>(method: reqwest::Method, url: &str, body: &B) -> Request {
     let url = format!("{}{}", super::API_ROOT, url);
-    let mut builder = reqwest::Client::new()
+    let builder = reqwest::Client::new()
         .request(method, url)
         .header("Content-Type", "application/json");
-    if let Some(token) = super::get_token() {
-        builder = builder.bearer_auth(token);
+    let req = Request(builder).set_token();
+    Request(req.0.json(body))
+}
+
+impl Request {
+    fn set_token(self) -> Self {
+        let builder = match super::get_token() {
+            Some(token) => self.0.bearer_auth(token),
+            None => self.0,
+        };
+        Self(builder)
     }
 
-    if allow_body {
-        builder = builder.json(&body);
-    }
+    pub async fn send<T: serde::de::DeserializeOwned>(self) -> Result<T, Error> {
+        let response = self.0.send().await;
 
-    let response = builder.send().await;
-
-    if let Ok(data) = response {
-        if data.status().is_success() {
-            let data: Result<T, _> = data.json::<T>().await;
-            if let Ok(data) = data {
-                // log::debug!("Response: {:?}", data);
-                Ok(data)
+        if let Ok(data) = response {
+            if data.status().is_success() {
+                let data: Result<T, _> = data.json::<T>().await;
+                if let Ok(data) = data {
+                    Ok(data)
+                } else {
+                    Err(Error::DeserializeError)
+                }
             } else {
-                Err(Error::DeserializeError)
+                let status = data.status().as_u16();
+                let error = match data.json::<types::ErrorInfo>().await {
+                    Ok(data) => Error::UnprocessableEntity(data),
+                    Err(_) => Error::DeserializeError,
+                };
+                Err(Error::from_status_code(status, error))
             }
         } else {
-            let status = data.status().as_u16();
-            let error = match data.json::<ErrorInfo>().await {
-                Ok(data) => Error::UnprocessableEntity(data),
-                Err(_) => Error::DeserializeError,
-            };
-            Err(Error::from_status_code(status, error))
+            Err(Error::RequestError)
         }
-    } else {
-        Err(Error::RequestError)
     }
 }
 
-/// Delete request
-pub async fn request_delete<T>(url: String) -> Result<T, Error>
-where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-{
-    request(reqwest::Method::DELETE, url, ()).await
+pub fn request_delete(url: &str) -> Request {
+    Request(reqwest::Client::new().delete(url)).set_token()
 }
 
-/// Get request
-pub async fn request_get<T>(url: String) -> Result<T, Error>
-where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-{
-    request(reqwest::Method::GET, url, ()).await
+pub fn request_get(url: &str) -> Request {
+    Request(reqwest::Client::new().get(url)).set_token()
 }
 
-/// Post request with a body
-pub async fn request_post<B, T>(url: String, body: B) -> Result<T, Error>
+pub fn request_post<B>(url: &str, body: &B) -> Request
 where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-    B: Serialize + std::fmt::Debug,
+    B: serde::Serialize,
 {
-    request(reqwest::Method::POST, url, body).await
+    request(reqwest::Method::POST, url, body)
 }
 
-/// Put request with a body
-pub async fn request_put<B, T>(url: String, body: B) -> Result<T, Error>
+pub fn request_put<B>(url: &str, body: &B) -> Request
 where
-    T: DeserializeOwned + 'static + std::fmt::Debug,
-    B: Serialize + std::fmt::Debug,
+    B: serde::Serialize,
 {
-    request(reqwest::Method::PUT, url, body).await
+    request(reqwest::Method::PUT, url, body)
 }
-

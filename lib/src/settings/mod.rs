@@ -63,7 +63,7 @@ impl Settings {
                 services::set_token(crate::LOCAL_STORAGE_TOKEN_KEY, None);
             }
         });
-        services::auth::current().spawn_local_with(cb);
+        services::auth::current().send().spawn_local_with(cb);
     }
 
     fn request_update_user_info(&self) {
@@ -78,7 +78,7 @@ impl Settings {
             Err(e) => state.responsed_error(e),
         });
 
-        services::auth::save(data).spawn_local_with(cb);
+        services::auth::save(&data).send().spawn_local_with(cb);
     }
 
     fn set_user_info(&mut self, user_info: types::UserInfoWrapper) {

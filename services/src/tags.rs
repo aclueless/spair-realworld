@@ -1,8 +1,6 @@
-use super::request_get;
-use crate::error::Error;
-use types::*;
+use super::{request_get, Request};
 
 /// Get all tags
-pub async fn get_all() -> Result<TagListInfo, Error> {
-    request_get::<TagListInfo>("/tags".to_string()).await
+pub fn get_all() -> Request {
+    request_get("/tags")
 }

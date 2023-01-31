@@ -43,7 +43,7 @@ impl Register {
             Ok(r) => state.register_ok(r),
             Err(e) => state.register_error(e),
         });
-        services::auth::register(data).spawn_local_with(cb);
+        services::auth::register(&data).send().spawn_local_with(cb);
     }
 
     fn register_ok(&mut self, user: types::UserInfoWrapper) {
@@ -51,6 +51,6 @@ impl Register {
     }
 
     fn register_error(&mut self, e: services::error::Error) {
-        self.error = Some(e.into());
+        self.error = Some(e);
     }
 }

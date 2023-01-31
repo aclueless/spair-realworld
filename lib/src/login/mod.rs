@@ -37,10 +37,9 @@ impl Login {
             Ok(lr) => state.login_ok(lr),
             Err(e) => state.login_error(e),
         });
-        services::auth::login(types::LoginInfoWrapper {
-            user: login_info,
-        })
-        .spawn_local_with(cb);
+        services::auth::login(&types::LoginInfoWrapper { user: login_info })
+            .send()
+            .spawn_local_with(cb);
     }
 
     fn login_ok(&mut self, user: types::UserInfoWrapper) {

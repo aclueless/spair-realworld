@@ -1,74 +1,60 @@
-use super::{limit, request_delete, request_get, request_post, request_put};
-use crate::error::Error;
-use types::*;
+use super::{limit, request_delete, request_get, request_post, request_put, Request};
 
 /// Get all articles
-pub async fn all(page: u32) -> Result<ArticleListInfo, Error> {
-    request_get::<ArticleListInfo>(format!("/articles?{}", limit(10, page))).await
+pub fn all(page: u32) -> Request {
+    request_get(&format!("/articles?{}", limit(10, page)))
 }
 
 /// Get articles filtered by author
-pub async fn by_author(author: String, page: u32) -> Result<ArticleListInfo, Error> {
-    request_get::<ArticleListInfo>(format!("/articles?author={}&{}", author, limit(10, page))).await
+pub fn by_author(author: &str, page: u32) -> Request {
+    request_get(&format!("/articles?author={}&{}", author, limit(10, page)))
 }
 
 /// Get articles filtered by tag
-pub async fn by_tag(tag: String, page: u32) -> Result<ArticleListInfo, Error> {
-    request_get::<ArticleListInfo>(format!("/articles?tag={}&{}", tag, limit(10, page))).await
+pub fn by_tag(tag: &str, page: u32) -> Request {
+    request_get(&format!("/articles?tag={}&{}", tag, limit(10, page)))
 }
 
 /// Delete an article
-pub async fn del(slug: String) -> Result<DeleteWrapper, Error> {
-    request_delete::<DeleteWrapper>(format!("/articles/{}", slug)).await
+pub fn del(slug: &str) -> Request {
+    request_delete(&format!("/articles/{}", slug))
 }
 
 /// Favorite an article
-pub async fn favorite(slug: String) -> Result<ArticleInfoWrapper, Error> {
-    request_post::<(), ArticleInfoWrapper>(format!("/articles/{}/favorite", slug), ()).await
+pub fn favorite(slug: &str) -> Request {
+    request_post(&format!("/articles/{}/favorite", slug), &())
 }
 
 /// Unfavorite an article
-pub async fn unfavorite(slug: String) -> Result<ArticleInfoWrapper, Error> {
-    request_delete::<ArticleInfoWrapper>(format!("/articles/{}/favorite", slug)).await
+pub fn unfavorite(slug: &str) -> Request {
+    request_delete(&format!("/articles/{}/favorite", slug))
 }
 
 /// Get articles favorited by an author
-pub async fn favorited_by(author: String, page: u32) -> Result<ArticleListInfo, Error> {
-    request_get::<ArticleListInfo>(format!(
+pub fn favorited_by(author: &str, page: u32) -> Request {
+    request_get(&format!(
         "/articles?favorited={}&{}",
         author,
         limit(10, page)
     ))
-    .await
 }
 
 /// Get feed of articles
-pub async fn feed() -> Result<ArticleListInfo, Error> {
-    request_get::<ArticleListInfo>(format!("/articles/feed?{}", limit(10, 0))).await
+pub fn feed() -> Request {
+    request_get(&format!("/articles/feed?{}", limit(10, 0)))
 }
 
 /// Get an article
-pub async fn get(slug: String) -> Result<ArticleInfoWrapper, Error> {
-    request_get::<ArticleInfoWrapper>(format!("/articles/{}", slug)).await
+pub fn get(slug: &str) -> Request {
+    request_get(&format!("/articles/{}", slug))
 }
 
 /// Update an article
-pub async fn update(
-    slug: String,
-    article: ArticleCreateUpdateInfoWrapper,
-) -> Result<ArticleInfoWrapper, Error> {
-    request_put::<ArticleCreateUpdateInfoWrapper, ArticleInfoWrapper>(
-        format!("/articles/{}", slug),
-        article,
-    )
-    .await
+pub fn update(slug: &str, article: &types::ArticleCreateUpdateInfoWrapper) -> Request {
+    request_put(&format!("/articles/{}", slug), article)
 }
 
 /// Create an article
-pub async fn create(article: ArticleCreateUpdateInfoWrapper) -> Result<ArticleInfoWrapper, Error> {
-    request_post::<ArticleCreateUpdateInfoWrapper, ArticleInfoWrapper>(
-        "/articles".to_string(),
-        article,
-    )
-    .await
+pub fn create(article: &types::ArticleCreateUpdateInfoWrapper) -> Request {
+    request_post("/articles", article)
 }

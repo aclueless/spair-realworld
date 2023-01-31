@@ -32,18 +32,14 @@ impl ArticleEditor {
         let Some(slug) = self.slug.as_ref() else {
             return;
         };
-        let slug = slug.to_string();
         let cb = self.comp.callback_arg_mut(|state: &mut Self, a| match a {
             Ok(a) => state.set_article_for_editting(a),
             Err(e) => state.error = Some(e),
         });
-        services::articles::get(slug).spawn_local_with(cb);
+        services::articles::get(slug).send().spawn_local_with(cb);
     }
 
-    fn set_article_for_editting(
-        &mut self,
-        article_info: types::ArticleInfoWrapper,
-    ) {
+    fn set_article_for_editting(&mut self, article_info: types::ArticleInfoWrapper) {
         self.article = types::ArticleCreateUpdateInfo {
             title: article_info.article.title,
             description: article_info.article.description,
@@ -67,7 +63,7 @@ impl ArticleEditor {
 
     fn add_tag(&mut self, tag: String) {
         let tags = self.article.tag_list.get_or_insert_with(Vec::new);
-        if tags.contains(&tag) == false {
+        if !tags.contains(&tag) {
             tags.push(tag);
         }
     }
@@ -82,18 +78,16 @@ impl ArticleEditor {
         let data = types::ArticleCreateUpdateInfoWrapper {
             article: self.article.clone(),
         };
-        let slug = self.slug.clone();
         let cb = self.comp.callback_arg_mut(|state: &mut Self, a| match a {
             Ok(a) => state.responsed_article(a),
             Err(e) => state.error = Some(e),
         });
-        async move {
-            if let Some(slug) = slug {
-                services::articles::update(slug, data).await
-            } else {
-                services::articles::create(data).await
-            }
+        if let Some(slug) = self.slug.as_ref() {
+            services::articles::update(slug, &data)
+        } else {
+            services::articles::create(&data)
         }
+        .send()
         .spawn_local_with(cb);
     }
 

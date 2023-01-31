@@ -66,12 +66,13 @@ impl Profile {
     }
 
     fn request_profile_info(&mut self) {
-        let profile_username = self.profile_username.clone();
         let cb = self.comp.callback_arg_mut(|state: &mut Self, p| match p {
             Ok(p) => state.set_profile(p),
             Err(e) => state.error = Some(e),
         });
-        services::profiles::get(profile_username).spawn_local_with(cb);
+        services::profiles::get(&self.profile_username)
+            .send()
+            .spawn_local_with(cb);
     }
 
     fn set_profile(&mut self, p: types::ProfileInfoWrapper) {
@@ -82,18 +83,15 @@ impl Profile {
         let Some(p) = self.profile.as_ref() else {
             return;
         };
-        let following = p.following;
-        let username = p.username.clone();
         let cb = self.comp.callback_arg_mut(|state: &mut Self, p| match p {
             Ok(p) => state.set_profile(p),
             Err(e) => state.error = Some(e),
         });
-        async move {
-            match following {
-                true => services::profiles::unfollow(username).await,
-                false => services::profiles::follow(username).await,
-            }
+        match p.following {
+            true => services::profiles::unfollow(&p.username),
+            false => services::profiles::follow(&p.username),
         }
+        .send()
         .spawn_local_with(cb);
     }
 }
