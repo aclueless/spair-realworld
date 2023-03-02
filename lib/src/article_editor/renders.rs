@@ -15,7 +15,7 @@ impl spair::Component for super::ArticleEditor {
                         d.class("col-md-10")
                             .class("offset-md-1")
                             .class("col-xs-12")
-                            .rupdate(crate::error::ErrorView(self.error.as_ref()))
+                            .rfn(|nodes| crate::error::render_error(self.error.as_ref(), nodes))
                             .rfn(|nodes| self.render_form(nodes));
                     });
                 });
@@ -112,7 +112,7 @@ impl super::ArticleEditor {
                                 .placeholder("Enter tags");
                         })
                         .div(|d| {
-                            d.class("tag-list").lwr_clone(
+                            d.class("tag-list").list_clone(
                                 self.article.tag_list.iter().flat_map(|tags| tags.iter()),
                                 "span",
                                 |tag, s| {
@@ -129,7 +129,7 @@ impl super::ArticleEditor {
                                             .static_attributes()
                                             .class("ion-close-round");
                                         })
-                                        .rupdate(tag);
+                                        .update_text(tag);
                                 },
                             );
                         });
@@ -142,7 +142,7 @@ impl super::ArticleEditor {
                         .class("btn-primary")
                         .button_type(spair::ButtonType::Button)
                         .on_click(comp.handler(super::ArticleEditor::publish_article))
-                        .rupdate("Publish Article");
+                        .update_text("Publish Article");
                 });
             });
         });

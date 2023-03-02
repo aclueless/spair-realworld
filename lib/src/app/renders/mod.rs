@@ -15,7 +15,7 @@ impl spair::Component for super::App {
 
     fn render(&self, element: spair::Element<Self>) {
         element
-            .rupdate(header::Header)
+            .rfn(header::render_header)
             .component_ref(match &self.page {
                 super::Page::Home(child) => child.component_ref(),
                 super::Page::Register(child) => child.component_ref(),
@@ -25,7 +25,7 @@ impl spair::Component for super::App {
                 super::Page::Profile(child) => child.component_ref(),
                 super::Page::Settings(child) => child.component_ref(),
             })
-            .rupdate(footer::Footer);
+            .rfn(footer::render_footer);
     }
 }
 

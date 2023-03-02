@@ -22,7 +22,9 @@ impl spair::Component for super::Profile {
             d.class("profile-page")
                 .match_if(|mi| match self.profile.as_ref() {
                     None => spair::set_arm!(mi).done(),
-                    Some(profile) => spair::set_arm!(mi).rupdate(profile).done(),
+                    Some(profile) => spair::set_arm!(mi)
+                        .rfn(|nodes| render_profile_view(profile, nodes))
+                        .done(),
                 })
                 .div(|d| {
                     d.class("container").div(|d| {
@@ -30,7 +32,7 @@ impl spair::Component for super::Profile {
                             d.class("col-xs-12")
                                 .class("col-md-10")
                                 .class("offset-md-1")
-                                .rupdate(ProfileTabListView(&self.profile_username))
+                                .rfn(|nodes| render_tab_list(&self.profile_username, nodes))
                                 .component_ref(self.article_list_comp.component_ref());
                         });
                     });
@@ -47,107 +49,103 @@ impl spair::AsChildComp for super::Profile {
     }
 }
 
-impl spair::Render<super::Profile> for &types::ProfileInfo {
-    fn render(self, nodes: spair::Nodes<super::Profile>) {
-        nodes.div(|d| {
-            d.class("user-info").div(|d| {
-                d.class("container").div(|d| {
-                    d.class("row").div(|d| {
-                        d.class("col-xs-12")
-                            .class("col-md-10")
-                            .class("offset-md-1")
-                            .rupdate(ProfileView(self));
-                    });
+fn render_profile_view(profile: &types::ProfileInfo, nodes: spair::Nodes<super::Profile>) {
+    nodes.div(|d| {
+        d.class("user-info").div(|d| {
+            d.class("container").div(|d| {
+                d.class("row").div(|d| {
+                    d.class("col-xs-12")
+                        .class("col-md-10")
+                        .class("offset-md-1")
+                        .rfn(|nodes| render_profile(profile, nodes));
                 });
             });
         });
-    }
+    });
 }
 
-struct ProfileView<'a>(&'a types::ProfileInfo);
-impl<'a> spair::Render<super::Profile> for ProfileView<'a> {
-    fn render(self, nodes: spair::Nodes<super::Profile>) {
-        let state = nodes.state();
-        let comp = nodes.comp();
-        nodes
-            .img(|i| {
-                i.class("user-image").src(&self.0.image);
-            })
-            .h4(|h| h.rupdate(&self.0.username).done())
-            .match_if(|mi| match self.0.bio.as_ref() {
-                None => spair::set_arm!(mi).done(),
-                Some(bio) => spair::set_arm!(mi).p(|p| p.rupdate(bio).done()).done(),
-            })
-            .match_if(|mi| match state.is_logged_in_username(&self.0.username) {
-                None => spair::set_arm!(mi).done(),
-                Some(true) => spair::set_arm!(mi)
-                    .a(|a| {
-                        a.class("btn")
-                            .class("btn-sm")
-                            .class("btn-outline-secondary")
-                            .class("action-btn")
-                            .href(&crate::routes::Route::Settings)
-                            .rstatic("Edit Profile Settings");
-                    })
-                    .done(),
-                Some(false) => spair::set_arm!(mi)
-                    .button(|b| {
-                        b.class("btn")
-                            .class("btn-sm")
-                            .class_or(self.0.following, "btn-secondary", "btn-outline-secondary")
-                            .class("action-btn")
-                            .on_click(comp.handler(super::Profile::toggle_follow))
-                            .i(|i| i.class("ion-plus-round").done())
-                            .rupdate(if self.0.following {
-                                "Unfollow"
-                            } else {
-                                " Follow "
-                            })
-                            .rupdate(&self.0.username);
-                    })
-                    .done(),
-            });
-    }
-}
-
-struct ProfileTabListView<'a>(&'a str);
-impl<'a> spair::Render<super::Profile> for ProfileTabListView<'a> {
-    fn render(self, nodes: spair::Nodes<super::Profile>) {
-        let state = nodes.state();
-        nodes.div(|d| {
-            d.class("articles-toggle").ul(|u| {
-                u.class("nav")
-                    .class("nav-pills")
-                    .class("outline-active")
-                    .rupdate(ProfileTabView {
-                        title: "Articles",
-                        active: !state.favorited,
-                        route: crate::routes::Route::Profile(self.0.to_string()),
-                    })
-                    .rupdate(ProfileTabView {
-                        title: "Favorite Articles",
-                        active: state.favorited,
-                        route: crate::routes::Route::ProfileFavorites(self.0.to_string()),
-                    });
-            });
+fn render_profile(profile: &types::ProfileInfo, nodes: spair::Nodes<super::Profile>) {
+    let state = nodes.state();
+    let comp = nodes.comp();
+    nodes
+        .img(|i| {
+            i.class("user-image").src(&profile.image);
+        })
+        .h4(|h| h.update_text(&profile.username).done())
+        .match_if(|mi| match profile.bio.as_ref() {
+            None => spair::set_arm!(mi).done(),
+            Some(bio) => spair::set_arm!(mi).p(|p| p.update_text(bio).done()).done(),
+        })
+        .match_if(|mi| match state.is_logged_in_username(&profile.username) {
+            None => spair::set_arm!(mi).done(),
+            Some(true) => spair::set_arm!(mi)
+                .a(|a| {
+                    a.class("btn")
+                        .class("btn-sm")
+                        .class("btn-outline-secondary")
+                        .class("action-btn")
+                        .href(&crate::routes::Route::Settings)
+                        .static_text("Edit Profile Settings");
+                })
+                .done(),
+            Some(false) => spair::set_arm!(mi)
+                .button(|b| {
+                    b.class("btn")
+                        .class("btn-sm")
+                        .class_or(profile.following, "btn-secondary", "btn-outline-secondary")
+                        .class("action-btn")
+                        .on_click(comp.handler(super::Profile::toggle_follow))
+                        .i(|i| i.class("ion-plus-round").done())
+                        .update_text(if profile.following {
+                            "Unfollow"
+                        } else {
+                            " Follow "
+                        })
+                        .update_text(&profile.username);
+                })
+                .done(),
         });
-    }
 }
 
-struct ProfileTabView {
+fn render_tab_list(name: &str, nodes: spair::Nodes<super::Profile>) {
+    let state = nodes.state();
+    nodes.div(|d| {
+        d.class("articles-toggle").ul(|u| {
+            u.class("nav")
+                .class("nav-pills")
+                .class("outline-active")
+                .rfn(|nodes| {
+                    render_tab(
+                        "Articles",
+                        !state.favorited,
+                        crate::routes::Route::Profile(name.to_string()),
+                        nodes,
+                    )
+                })
+                .rfn(|nodes| {
+                    render_tab(
+                        "Favorite Articles",
+                        state.favorited,
+                        crate::routes::Route::ProfileFavorites(name.to_string()),
+                        nodes,
+                    )
+                });
+        });
+    });
+}
+
+fn render_tab(
     title: &'static str,
     active: bool,
     route: crate::routes::Route,
-}
-impl spair::Render<super::Profile> for ProfileTabView {
-    fn render(self, nodes: spair::Nodes<super::Profile>) {
-        nodes.li(|i| {
-            i.class("nav-item").a(|a| {
-                a.class("nav-link")
-                    .class_if(self.active, "active")
-                    .href(&self.route)
-                    .rstatic(self.title);
-            });
+    nodes: spair::Nodes<super::Profile>,
+) {
+    nodes.li(|i| {
+        i.class("nav-item").a(|a| {
+            a.class("nav-link")
+                .class_if(active, "active")
+                .href(&route)
+                .static_text(title);
         });
-    }
+    });
 }

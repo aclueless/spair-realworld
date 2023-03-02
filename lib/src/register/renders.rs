@@ -22,14 +22,14 @@ impl super::Register {
     fn render_register(&self, nodes: spair::Nodes<Self>) {
         let comp = nodes.comp();
         nodes
-            .h1(|h| h.class("text-xs-center").rstatic("Sign up").done())
+            .h1(|h| h.class("text-xs-center").static_text("Sign up").done())
             .p(|p| {
                 p.class("text-xs-center").a(|a| {
                     a.href(&crate::routes::Route::Login)
-                        .rstatic("Have an account?");
+                        .static_text("Have an account?");
                 });
             })
-            .rupdate(crate::error::ErrorView(self.error.as_ref()))
+            .rfn(|nodes| crate::error::render_error(self.error.as_ref(), nodes))
             .form(|f| {
                 f.fieldset(|f| {
                     f.class("form-group").input(|i| {
@@ -84,7 +84,7 @@ impl super::Register {
                         .class("pull-xs-right")
                         .button_type(spair::ButtonType::Button)
                         .on_click(comp.handler_mut(super::Register::send_register_request))
-                        .rstatic("Sign up");
+                        .static_text("Sign up");
                 });
             });
     }

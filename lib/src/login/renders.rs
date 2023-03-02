@@ -22,14 +22,14 @@ impl super::Login {
     fn render_login(&self, nodes: spair::Nodes<Self>) {
         let comp = nodes.comp();
         nodes
-            .h1(|h| h.class("text-xs-center").rstatic("Sign in").done())
+            .h1(|h| h.class("text-xs-center").static_text("Sign in").done())
             .p(|p| {
                 p.class("text-xs-center").a(|a| {
                     a.href(&crate::routes::Route::Register)
-                        .rstatic("Need an account?");
+                        .static_text("Need an account?");
                 });
             })
-            .rupdate(crate::error::ErrorView(self.error.as_ref()))
+            .rfn(|nodes| crate::error::render_error(self.error.as_ref(), nodes))
             .form(|f| {
                 f.fieldset(|f| {
                     f.class("form-group").input(|i| {
@@ -69,7 +69,7 @@ impl super::Login {
                         .class("pull-xs-right")
                         .button_type(spair::ButtonType::Button)
                         .on_click(comp.handler_mut(super::Login::send_login_request))
-                        .rstatic("Sign in");
+                        .static_text("Sign in");
                 });
             });
     }
